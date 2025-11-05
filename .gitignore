@@ -1,0 +1,10 @@
+﻿# No subir dependencias, IDE, temporales, credenciales
+vendor/
+node_modules/
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+.env
+.env.*
