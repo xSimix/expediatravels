@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= htmlspecialchars($title ?? 'Expediatravels'); ?></title>
-    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="css/app.css" />
 </head>
 <body class="page">
     <header class="hero">
@@ -57,7 +57,7 @@
                             <p><?= htmlspecialchars($package['resumen']); ?></p>
                             <div class="card__footer">
                                 <span class="card__price">S/ <?= number_format((float) $package['precio'], 2); ?></span>
-                                <a class="card__link" href="/paquete.php?id=<?= urlencode((string) $package['id']); ?>">Ver detalles</a>
+                                <a class="card__link" href="paquete.php?id=<?= urlencode((string) $package['id']); ?>">Ver detalles</a>
                             </div>
                         </div>
                     </article>
@@ -76,7 +76,7 @@
                         <div class="destination__badge"><?= htmlspecialchars($destination['region']); ?></div>
                         <h3><?= htmlspecialchars($destination['nombre']); ?></h3>
                         <p><?= htmlspecialchars($destination['descripcion']); ?></p>
-                        <a class="destination__link" href="/explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">Explorar</a>
+                        <a class="destination__link" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">Explorar</a>
                     </article>
                 <?php endforeach; ?>
             </div>
@@ -175,7 +175,7 @@
                 <ul>
                     <li><a href="#paquetes">Paquetes</a></li>
                     <li><a href="#destinos">Destinos</a></li>
-                    <li><a href="/explorar.php">Experiencias</a></li>
+                    <li><a href="explorar.php">Experiencias</a></li>
                 </ul>
             </div>
             <div>
