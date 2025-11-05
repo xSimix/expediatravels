@@ -291,7 +291,7 @@
             </div>
         </section>
 
-        <a class="cta" href="/web/">
+        <a class="cta" href="../web/">
             Continuar en versión web
             <span>Accede al sitio completo para escritorio</span>
         </a>

@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= htmlspecialchars($title ?? 'Tour'); ?></title>
-    <link rel="stylesheet" href="/css/app.css" />
+    <link rel="stylesheet" href="css/app.css" />
 </head>
 <body class="bg-gray-50 text-slate-900">
     <main class="max-w-4xl mx-auto py-12 px-6 space-y-8">
