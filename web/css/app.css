@@ -15,8 +15,6 @@
     --border-color: rgba(148, 163, 184, 0.2);
     --shadow-soft: 0 24px 60px rgba(15, 23, 42, 0.12);
     --header-height: 92px;
-    --page-max-width: 1440px;
-    --page-gutter: clamp(1.5rem, 5vw, 6rem);
 }
 
 * {
@@ -68,7 +66,7 @@ a:hover {
     justify-content: space-between;
     gap: 1.5rem;
     margin: 0 auto;
-    width: min(var(--page-max-width), 100%);
+    width: min(1200px, 100%);
 }
 
 .site-header__brand {
@@ -266,16 +264,9 @@ a:hover {
     min-height: 100vh;
 }
 
-.page > .hero,
-.page > main,
-.page > .site-footer {
-    width: min(100%, var(--page-max-width));
-    margin-inline: auto;
-}
-
 .hero {
     position: relative;
-    padding: 5rem var(--page-gutter) 4rem;
+    padding: 5rem clamp(1.5rem, 5vw, 6rem) 4rem;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     align-items: center;
@@ -435,7 +426,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 5rem;
-    padding: 4rem var(--page-gutter);
+    padding: 4rem clamp(1.5rem, 6vw, 6rem);
 }
 
 .section {
