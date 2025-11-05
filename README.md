@@ -28,7 +28,7 @@ expediatravels/
 │   ├── controllers/
 │   ├── models/
 │   └── views/
-├── public/
+├── web/
 │   ├── assets/
 │   ├── css/
 │   ├── js/
