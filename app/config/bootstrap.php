@@ -12,10 +12,27 @@ spl_autoload_register(function (string $class): void {
     }
 
     $relativeClass = substr($class, strlen($prefix));
-    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
+    $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
 
-    if (file_exists($file)) {
-        require $file;
+    $segments = explode('/', $relativePath);
+    $lastIndex = count($segments) - 1;
+    $lowercaseSegments = $segments;
+
+    for ($i = 0; $i < $lastIndex; $i++) {
+        $lowercaseSegments[$i] = strtolower($lowercaseSegments[$i]);
+    }
+
+    $candidates = array_unique([
+        $relativePath,
+        implode('/', $lowercaseSegments),
+    ]);
+
+    foreach ($candidates as $relativeFile) {
+        $file = $baseDir . $relativeFile;
+        if (file_exists($file)) {
+            require $file;
+            return;
+        }
     }
 });
 
