@@ -1,0 +1,21 @@
+:root {
+    color-scheme: light;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --sky-primary: #007aff;
+    --sky-light: #5ac8fa;
+    --gray-background: #f2f2f7;
+}
+
+body {
+    margin: 0;
+    background-color: var(--gray-background);
+}
+
+a {
+    color: var(--sky-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
