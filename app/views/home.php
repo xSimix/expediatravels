@@ -7,7 +7,38 @@
     <link rel="stylesheet" href="css/app.css" />
 </head>
 <body class="page">
-    <header class="hero">
+    <header class="site-header" data-site-header>
+        <div class="site-header__inner">
+            <a class="site-header__brand" href="#inicio">
+                <span class="site-header__logo" aria-hidden="true">🧭</span>
+                <span class="site-header__brand-text">
+                    <strong>Expediatravels</strong>
+                    <small>Travel Dev</small>
+                </span>
+            </a>
+            <button class="site-header__menu" type="button" aria-label="Abrir menú" aria-expanded="false" data-menu-toggle>
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="site-header__nav" aria-label="Menú principal" data-site-nav>
+                <a class="site-header__link site-header__link--active" href="#inicio">Inicio</a>
+                <a class="site-header__link" href="#paquetes">Paquetes</a>
+                <a class="site-header__link" href="#destinos">Destinos</a>
+                <a class="site-header__link" href="#experiencias">Experiencias</a>
+                <a class="site-header__link" href="#contacto">Contacto</a>
+            </nav>
+            <div class="site-header__cta">
+                <div class="site-header__contact">
+                    <span class="site-header__contact-label">Hablemos</span>
+                    <a class="site-header__contact-phone" href="tel:+51984635885">+51 984 635 885</a>
+                </div>
+                <a class="button button--primary site-header__cta-button" href="admin/index.php">Login</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero" id="inicio">
         <div class="hero__content">
             <div class="hero__badge">Selva Central, Perú</div>
             <h1 class="hero__title">Fly First. Conecta. <span>Respira</span> Oxapampa.</h1>
@@ -36,7 +67,7 @@
             </div>
             <div class="hero__floating-tag">+24 experiencias auténticas</div>
         </div>
-    </header>
+    </section>
 
     <main>
         <section id="paquetes" class="section section--packages">
@@ -103,7 +134,7 @@
             </div>
         </section>
 
-        <section class="section section--experiences">
+        <section class="section section--experiences" id="experiencias">
             <div class="section__header">
                 <h2>Signature Experiences</h2>
                 <p>Aventuras que combinan cultura viva, sostenibilidad y confort en cada detalle.</p>
@@ -156,7 +187,7 @@
             </div>
         </section>
 
-        <section class="section section--cta">
+        <section class="section section--cta" id="contacto">
             <div class="cta">
                 <div class="cta__copy">
                     <h2>¿Listo para tu próximo viaje?</h2>
@@ -197,5 +228,42 @@
         </div>
         <p class="site-footer__legal">© <?= date('Y'); ?> Expediatravels. Todos los derechos reservados.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const header = document.querySelector('[data-site-header]');
+            const toggle = document.querySelector('[data-menu-toggle]');
+            const nav = document.querySelector('[data-site-nav]');
+
+            if (!header) {
+                return;
+            }
+
+            const updateHeaderState = () => {
+                if (window.scrollY > 24) {
+                    header.classList.add('site-header--scrolled');
+                } else {
+                    header.classList.remove('site-header--scrolled');
+                }
+            };
+
+            updateHeaderState();
+            window.addEventListener('scroll', updateHeaderState, { passive: true });
+
+            if (toggle && nav) {
+                toggle.addEventListener('click', () => {
+                    const isOpen = header.classList.toggle('site-header--open');
+                    toggle.setAttribute('aria-expanded', String(isOpen));
+                });
+
+                nav.addEventListener('click', (event) => {
+                    if (event.target instanceof HTMLElement && event.target.classList.contains('site-header__link')) {
+                        header.classList.remove('site-header--open');
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>
