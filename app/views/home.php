@@ -92,7 +92,7 @@
     </section>
 
     <main>
-        <section class="featured-destinations" id="destinos">
+        <section class="destinations-showcase" id="destinos">
             <?php
                 $destinationStatsPresets = [
                     ['tours' => 1, 'departures' => 32, 'guests' => 12_774],
@@ -109,112 +109,119 @@
                     }
                 }
 
+                $fallbackImageMap = [
+                    'oxapampa.jpg' => 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1400&auto=format&fit=crop',
+                    'villa-rica.jpg' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop',
+                    'pozuzo.jpg' => 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?q=80&w=1400&auto=format&fit=crop',
+                    'perene.jpg' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1400&auto=format&fit=crop',
+                    'yanachaga.jpg' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1400&auto=format&fit=crop',
+                    'Oxapampa' => 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1400&auto=format&fit=crop',
+                    'Villa Rica' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop',
+                    'Pozuzo' => 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?q=80&w=1400&auto=format&fit=crop',
+                    'Perené' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=1400&auto=format&fit=crop',
+                    'Yanachaga' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1400&auto=format&fit=crop',
+                ];
+
                 $destinationsByRegion = [];
                 foreach ($destinations as $index => $destination) {
                     $region = trim((string) ($destination['region'] ?? 'Otros destinos'));
-                    $destinationName = trim((string) ($destination['nombre'] ?? ''));
-                    $description = trim((string) ($destination['descripcion'] ?? ''));
-
-                    $imagePath = null;
-                    if (!empty($destination['imagen']) && is_file(__DIR__ . '/../../web/assets/' . $destination['imagen'])) {
-                        $imagePath = 'assets/' . $destination['imagen'];
+                    if ($region === '') {
+                        $region = 'Otros destinos';
                     }
 
-                    $stats = $destinationStatsPresets[$index] ?? [
+                    $destinationName = trim((string) ($destination['nombre'] ?? ''));
+                    if ($destinationName === '') {
+                        continue;
+                    }
+
+                    $imagePath = null;
+                    $imageFile = trim((string) ($destination['imagen'] ?? ''));
+                    if ($imageFile !== '' && is_file(__DIR__ . '/../../web/assets/' . $imageFile)) {
+                        $imagePath = 'assets/' . $imageFile;
+                    } elseif ($imageFile !== '' && isset($fallbackImageMap[$imageFile])) {
+                        $imagePath = $fallbackImageMap[$imageFile];
+                    } elseif (isset($fallbackImageMap[$destinationName])) {
+                        $imagePath = $fallbackImageMap[$destinationName];
+                    }
+
+                    $stats = $destinationStatsPresets[$index % count($destinationStatsPresets)] ?? [
                         'tours' => $index + 1,
                         'departures' => 20 + ($index * 2),
                         'guests' => 9_200 + ($index * 480),
                     ];
 
-                    $toursCount = (int) ($packagesByDestination[$destinationName] ?? $stats['tours']);
+                    $toursCount = max(1, (int) ($packagesByDestination[$destinationName] ?? $stats['tours']));
                     $formattedTours = str_pad((string) $toursCount, 2, '0', STR_PAD_LEFT);
-                    $formattedDepartures = str_pad((string) $stats['departures'], 2, '0', STR_PAD_LEFT);
-                    $formattedGuests = number_format((int) $stats['guests']);
+                    $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
+                    $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
 
                     $destinationsByRegion[$region][] = [
                         'title' => $destinationName,
-                        'description' => $description,
                         'meta' => sprintf('%s tours | %s salidas · %s viajeros.', $formattedTours, $formattedDepartures, $formattedGuests),
-                        'image' => $imagePath,
-                        'initial' => mb_strtoupper(mb_substr($destinationName, 0, 1)),
+                        'img' => $imagePath,
                     ];
                 }
 
-                $regionNames = array_keys($destinationsByRegion);
-                $activeRegion = $regionNames[0] ?? null;
                 $destinationsPayload = [];
-
                 foreach ($destinationsByRegion as $region => $items) {
                     $destinationsPayload[$region] = array_values(array_map(
                         static function (array $item): array {
                             return [
                                 'title' => (string) $item['title'],
-                                'description' => (string) $item['description'],
                                 'meta' => (string) $item['meta'],
-                                'image' => $item['image'] ? (string) $item['image'] : null,
-                                'initial' => (string) $item['initial'],
+                                'img' => $item['img'] ? (string) $item['img'] : null,
                             ];
                         },
                         $items
                     ));
                 }
+
+                $regionNames = array_keys($destinationsPayload);
+                $activeRegion = $regionNames[0] ?? null;
             ?>
-            <div class="featured-destinations__container">
-                <header class="featured-destinations__intro">
-                    <p class="featured-destinations__eyebrow">Featured Destinations</p>
-                    <h2 class="featured-destinations__title">Vive la magia de la Selva Central</h2>
-                    <p class="featured-destinations__copy">Inspiración curada por nuestro equipo local con los paisajes, culturas y aventuras que definen Oxapampa y sus alrededores.</p>
-                </header>
-                <?php if ($regionNames): ?>
-                    <div class="featured-destinations__tabs" data-destination-tabs role="tablist" aria-label="Regiones destacadas">
-                        <?php foreach ($regionNames as $index => $region): ?>
-                            <button type="button" class="featured-destinations__tab<?= $index === 0 ? ' is-active' : ''; ?>" data-region="<?= htmlspecialchars($region); ?>" role="tab" aria-selected="<?= $index === 0 ? 'true' : 'false'; ?>">
-                                <?= htmlspecialchars($region); ?>
-                            </button>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-                <section class="featured-destinations__cards" data-destination-cards aria-live="polite">
+            <div class="destinations-showcase__container">
+                <h1>Featured Destinations</h1>
+                <div class="tabs" id="destination-tabs">
+                    <?php foreach ($regionNames as $index => $region): ?>
+                        <button type="button" class="tab<?= $index === 0 ? ' active' : ''; ?>" data-region="<?= htmlspecialchars($region); ?>">
+                            <?= htmlspecialchars($region); ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+                <section class="cards" id="destination-cards" aria-live="polite">
                     <?php if ($activeRegion): ?>
-                        <?php foreach ($destinationsByRegion[$activeRegion] as $index => $item): ?>
-                            <article class="destination-card<?= $index === 0 ? ' is-active' : ''; ?>" data-index="<?= $index; ?>" tabindex="0" role="article">
-                                <?php if (!empty($item['image'])): ?>
-                                    <img class="destination-card__media" src="<?= htmlspecialchars((string) $item['image']); ?>" alt="<?= htmlspecialchars((string) $item['title']); ?>" loading="lazy" />
-                                <?php else: ?>
-                                    <div class="destination-card__placeholder" aria-hidden="true">
-                                        <?= htmlspecialchars((string) $item['initial']); ?>
-                                    </div>
+                        <?php foreach ($destinationsPayload[$activeRegion] as $item): ?>
+                            <article class="card" role="article">
+                                <?php if (!empty($item['img'])): ?>
+                                    <img class="media" src="<?= htmlspecialchars($item['img']); ?>" alt="<?= htmlspecialchars($item['title']); ?>" />
                                 <?php endif; ?>
-                                <div class="destination-card__body">
-                                    <div class="destination-card__title">
-                                        <span class="destination-card__icon" aria-hidden="true">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 22s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5"></path>
-                                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"></circle>
+                                <div class="body">
+                                    <div class="title">
+                                        <span class="row">
+                                            <svg class="pin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 22s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5" />
+                                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
                                             </svg>
                                         </span>
-                                        <span><?= htmlspecialchars((string) $item['title']); ?></span>
+                                        <?= htmlspecialchars($item['title']); ?>
                                     </div>
-                                    <?php if (!empty($item['description'])): ?>
-                                        <p class="destination-card__description"><?= htmlspecialchars((string) $item['description']); ?></p>
-                                    <?php endif; ?>
                                     <?php if (!empty($item['meta'])): ?>
-                                        <p class="destination-card__meta"><?= htmlspecialchars((string) $item['meta']); ?></p>
+                                        <div class="meta"><?= htmlspecialchars($item['meta']); ?></div>
                                     <?php endif; ?>
                                 </div>
                             </article>
                         <?php endforeach; ?>
                     <?php else: ?>
-                        <p class="featured-destinations__empty">Pronto compartiremos nuevos destinos destacados.</p>
+                        <p class="destinations-showcase__empty">Pronto compartiremos nuevos destinos destacados.</p>
                     <?php endif; ?>
                 </section>
-                <?php if ($activeRegion): ?>
-                    <div class="featured-destinations__dots" data-destination-dots aria-hidden="true">
-                        <?php foreach ($destinationsByRegion[$activeRegion] as $index => $_): ?>
-                            <span class="featured-destinations__dot<?= $index === 0 ? ' is-active' : ''; ?>"></span>
+                <div class="dots" id="destination-dots" aria-hidden="true">
+                    <?php if ($activeRegion): ?>
+                        <?php foreach ($destinationsPayload[$activeRegion] as $index => $_): ?>
+                            <span class="dot<?= $index === 0 ? ' active' : ''; ?>"></span>
                         <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
+                    <?php endif; ?>
+                </div>
             </div>
         </section>
 
@@ -467,155 +474,68 @@
 
             const destinationsData = <?= json_encode((object) $destinationsPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
             const destinationRegions = Object.keys(destinationsData);
-            const tabsEl = document.querySelector('[data-destination-tabs]');
-            const cardsEl = document.querySelector('[data-destination-cards]');
-            const dotsEl = document.querySelector('[data-destination-dots]');
+            const tabsEl = document.getElementById('destination-tabs');
+            const cardsEl = document.getElementById('destination-cards');
+            const dotsEl = document.getElementById('destination-dots');
 
             if (destinationRegions.length && tabsEl && cardsEl && dotsEl) {
-                const pinIcon = '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5"></path><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"></circle></svg>';
-                let activeRegion = destinationRegions[0];
+                const iconPin = () => '<svg class="pin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 22s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5" /><circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" /></svg>';
+                const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;',
+                })[character] ?? character);
 
-                const setActiveCard = (index) => {
-                    const cards = cardsEl.querySelectorAll('.destination-card');
-                    const dots = dotsEl.querySelectorAll('.featured-destinations__dot');
-
-                    if (!cards.length) {
-                        return;
-                    }
-
-                    cards.forEach((card, cardIndex) => {
-                        card.classList.toggle('is-active', cardIndex === index);
+                const renderTabs = (activeRegion) => {
+                    tabsEl.innerHTML = '';
+                    destinationRegions.forEach((region) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = 'tab' + (region === activeRegion ? ' active' : '');
+                        button.textContent = region;
+                        button.dataset.region = region;
+                        button.addEventListener('click', () => selectRegion(region));
+                        tabsEl.appendChild(button);
                     });
+                };
 
-                    dots.forEach((dot, dotIndex) => {
-                        const isActive = dotIndex === index;
-                        dot.classList.toggle('is-active', isActive);
-                        if (isActive) {
-                            dot.setAttribute('aria-current', 'true');
-                        } else {
-                            dot.removeAttribute('aria-current');
-                        }
-                    });
+                const renderDots = (count) => {
+                    dotsEl.innerHTML = Array.from({ length: count }, (_, index) => `<span class="dot ${index === 0 ? 'active' : ''}"></span>`).join('');
                 };
 
                 const renderCards = (region) => {
                     const items = destinationsData[region] || [];
-                    cardsEl.innerHTML = '';
-                    dotsEl.innerHTML = '';
-                    cardsEl.setAttribute('data-region', region);
+                    cardsEl.innerHTML = items.map((item) => {
+                        const title = escapeHtml(item.title);
+                        const imageMarkup = item.img ? `<img class="media" src="${escapeHtml(item.img)}" alt="${title}" />` : '';
+                        const metaMarkup = item.meta ? `<div class="meta">${escapeHtml(item.meta)}</div>` : '';
+                        return `
+                            <article class="card" role="article">
+                                ${imageMarkup}
+                                <div class="body">
+                                    <div class="title"><span class="row">${iconPin()}</span> ${title}</div>
+                                    ${metaMarkup}
+                                </div>
+                            </article>
+                        `;
+                    }).join('');
 
-                    items.forEach((item, index) => {
-                        const article = document.createElement('article');
-                        article.className = 'destination-card';
-                        article.setAttribute('role', 'article');
-                        article.tabIndex = 0;
-
-                        if (item.image) {
-                            const img = document.createElement('img');
-                            img.className = 'destination-card__media';
-                            img.src = item.image;
-                            img.alt = item.title;
-                            img.loading = 'lazy';
-                            article.appendChild(img);
-                        } else {
-                            const placeholder = document.createElement('div');
-                            placeholder.className = 'destination-card__placeholder';
-                            placeholder.setAttribute('aria-hidden', 'true');
-                            const initial = item.initial && item.initial.length ? item.initial : (item.title ? item.title.charAt(0) : '•');
-                            placeholder.textContent = initial;
-                            article.appendChild(placeholder);
-                        }
-
-                        const body = document.createElement('div');
-                        body.className = 'destination-card__body';
-
-                        const titleRow = document.createElement('div');
-                        titleRow.className = 'destination-card__title';
-
-                        const iconWrapper = document.createElement('span');
-                        iconWrapper.className = 'destination-card__icon';
-                        iconWrapper.setAttribute('aria-hidden', 'true');
-                        iconWrapper.innerHTML = pinIcon;
-
-                        const titleText = document.createElement('span');
-                        titleText.textContent = item.title;
-
-                        titleRow.appendChild(iconWrapper);
-                        titleRow.appendChild(titleText);
-                        body.appendChild(titleRow);
-
-                        if (item.description) {
-                            const description = document.createElement('p');
-                            description.className = 'destination-card__description';
-                            description.textContent = item.description;
-                            body.appendChild(description);
-                        }
-
-                        if (item.meta) {
-                            const meta = document.createElement('p');
-                            meta.className = 'destination-card__meta';
-                            meta.textContent = item.meta;
-                            body.appendChild(meta);
-                        }
-
-                        article.appendChild(body);
-
-                        article.addEventListener('mouseenter', () => setActiveCard(index));
-                        article.addEventListener('focus', () => setActiveCard(index));
-                        article.addEventListener('click', () => setActiveCard(index));
-                        article.addEventListener('keydown', (event) => {
-                            if (event.key === 'Enter' || event.key === ' ') {
-                                event.preventDefault();
-                                setActiveCard(index);
-                            }
-                        });
-
-                        cardsEl.appendChild(article);
-
-                        const dot = document.createElement('span');
-                        dot.className = 'featured-destinations__dot';
-                        dotsEl.appendChild(dot);
-                    });
-
-                    if (items.length) {
-                        setActiveCard(0);
-                    }
-                };
-
-                const renderTabs = (selectedRegion) => {
-                    const tabs = tabsEl.querySelectorAll('.featured-destinations__tab');
-                    tabs.forEach((tab) => {
-                        const tabRegion = tab.getAttribute('data-region');
-                        const isActive = tabRegion === selectedRegion;
-                        tab.classList.toggle('is-active', isActive);
-                        tab.setAttribute('aria-selected', String(isActive));
-                    });
+                    renderDots(items.length);
                 };
 
                 const selectRegion = (region) => {
-                    activeRegion = region;
                     renderTabs(region);
                     renderCards(region);
+
+                    const firstDot = dotsEl.querySelector('.dot');
+                    if (firstDot) {
+                        firstDot.setAttribute('aria-current', 'true');
+                    }
                 };
 
-                tabsEl.querySelectorAll('.featured-destinations__tab').forEach((tab) => {
-                    const activate = () => {
-                        const region = tab.getAttribute('data-region');
-                        if (region) {
-                            selectRegion(region);
-                        }
-                    };
-
-                    tab.addEventListener('click', activate);
-                    tab.addEventListener('keydown', (event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            activate();
-                        }
-                    });
-                });
-
-                selectRegion(activeRegion);
+                selectRegion(destinationRegions[0]);
             }
         });
     </script>
