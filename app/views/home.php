@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title><?= htmlspecialchars($title ?? 'Expediatravels'); ?></title>
     <link rel="stylesheet" href="css/app.css" />
+    <script src="js/auth-modal.js" defer></script>
 </head>
 <body class="page">
 <?php
@@ -43,6 +44,8 @@
     };
 
     $primaryPhoneHref = $formatPhoneHref($primaryPhone);
+    $currentUser = $currentUser ?? null;
+    $isAuthenticated = is_array($currentUser) && !empty($currentUser);
 ?>
     <header class="site-header" data-site-header>
         <div class="site-header__inner">
@@ -76,7 +79,14 @@
                         </a>
                     </div>
                 <?php endif; ?>
-                <a class="button button--primary site-header__cta-button" href="admin/index.php">Login</a>
+                <?php if ($isAuthenticated): ?>
+                    <div class="site-header__user">
+                        <span class="site-header__user-greeting">Hola, <?= htmlspecialchars($currentUser['nombre'] ?? ''); ?></span>
+                        <button class="button button--secondary site-header__cta-button" type="button" data-auth-logout>Cerrar sesión</button>
+                    </div>
+                <?php else: ?>
+                    <button class="button button--primary site-header__cta-button" type="button" data-auth-open>Iniciar sesión</button>
+                <?php endif; ?>
             </div>
         </div>
     </header>
@@ -612,6 +622,125 @@
         </div>
         <p class="site-footer__legal">© <?= date('Y'); ?> <?= htmlspecialchars($siteTitle); ?>. Todos los derechos reservados.</p>
     </footer>
+
+    <div class="auth-modal" data-auth-modal hidden>
+        <div class="auth-modal__backdrop" data-auth-close></div>
+        <div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+            <button class="auth-modal__close" type="button" aria-label="Cerrar ventana" data-auth-close>×</button>
+            <div class="auth-modal__logo" aria-hidden="true">🧭</div>
+            <div class="auth-modal__message" data-auth-message role="status" aria-live="polite"></div>
+
+            <section class="auth-view auth-view--active" data-auth-view="login">
+                <header class="auth-view__header">
+                    <h2 id="auth-modal-title">Inicia sesión</h2>
+                    <p>Accede a tu cuenta para completar tus reservas y seguir tus itinerarios.</p>
+                </header>
+                <form class="auth-form" id="auth-login-form" novalidate>
+                    <label class="auth-field">
+                        <span>Correo electrónico</span>
+                        <input type="email" name="correo" autocomplete="email" required />
+                    </label>
+                    <label class="auth-field">
+                        <span>Contraseña</span>
+                        <input type="password" name="password" autocomplete="current-password" required />
+                    </label>
+                    <label class="auth-checkbox">
+                        <input type="checkbox" name="recordar" value="1" />
+                        <span>Recordar mi cuenta</span>
+                    </label>
+                    <button class="auth-submit" type="submit">Ingresar</button>
+                    <button class="auth-google" type="button" data-auth-google>
+                        <span aria-hidden="true">🔐</span>
+                        Continuar con Google
+                    </button>
+                    <p class="auth-links">
+                        <button class="auth-link" type="button" data-auth-switch="forgot">¿Olvidaste tu contraseña?</button>
+                    </p>
+                    <p class="auth-links">
+                        ¿No tienes una cuenta?
+                        <button class="auth-link" type="button" data-auth-switch="register">Crear una cuenta</button>
+                    </p>
+                </form>
+            </section>
+
+            <section class="auth-view" data-auth-view="register" hidden>
+                <header class="auth-view__header">
+                    <h2>Regístrate en minutos</h2>
+                    <p>Crea una cuenta para guardar tus datos y recibir confirmaciones rápidas.</p>
+                </header>
+                <form class="auth-form" id="auth-register-form" novalidate>
+                    <label class="auth-field">
+                        <span>Nombres</span>
+                        <input type="text" name="nombres" autocomplete="given-name" required />
+                    </label>
+                    <label class="auth-field">
+                        <span>Apellidos</span>
+                        <input type="text" name="apellidos" autocomplete="family-name" required />
+                    </label>
+                    <label class="auth-field">
+                        <span>Celular</span>
+                        <input type="tel" name="celular" autocomplete="tel" inputmode="tel" placeholder="Ej. +51 987 654 321" />
+                    </label>
+                    <label class="auth-field">
+                        <span>Correo electrónico</span>
+                        <input type="email" name="correo" autocomplete="email" required />
+                    </label>
+                    <label class="auth-field">
+                        <span>Contraseña</span>
+                        <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+                    </label>
+                    <button class="auth-submit" type="submit">Crear cuenta</button>
+                    <p class="auth-links">
+                        ¿Ya tienes una cuenta?
+                        <button class="auth-link" type="button" data-auth-switch="login">Iniciar sesión</button>
+                    </p>
+                </form>
+            </section>
+
+            <section class="auth-view" data-auth-view="verify" hidden>
+                <header class="auth-view__header">
+                    <h2>Verifica tu cuenta</h2>
+                    <p>Te enviamos un PIN de 6 dígitos a tu correo. Ingresa el código para activar tu cuenta.</p>
+                </header>
+                <form class="auth-form" id="auth-verify-form" novalidate>
+                    <label class="auth-field">
+                        <span>Correo electrónico</span>
+                        <input type="email" name="correo" autocomplete="email" required />
+                    </label>
+                    <label class="auth-field">
+                        <span>PIN de verificación</span>
+                        <input type="text" name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" required />
+                    </label>
+                    <button class="auth-submit" type="submit">Validar cuenta</button>
+                    <p class="auth-links">
+                        <button class="auth-link" type="button" data-auth-resend>Reenviar PIN</button>
+                    </p>
+                    <p class="auth-links">
+                        ¿Necesitas iniciar sesión?
+                        <button class="auth-link" type="button" data-auth-switch="login">Volver al inicio de sesión</button>
+                    </p>
+                </form>
+            </section>
+
+            <section class="auth-view" data-auth-view="forgot" hidden>
+                <header class="auth-view__header">
+                    <h2>Recupera tu contraseña</h2>
+                    <p>Te enviaremos un enlace para restablecerla en pocos pasos.</p>
+                </header>
+                <form class="auth-form" id="auth-forgot-form" novalidate>
+                    <label class="auth-field">
+                        <span>Correo electrónico</span>
+                        <input type="email" name="correo" autocomplete="email" required />
+                    </label>
+                    <button class="auth-submit" type="submit">Enviar instrucciones</button>
+                    <p class="auth-links">
+                        ¿Recordaste tu contraseña?
+                        <button class="auth-link" type="button" data-auth-switch="login">Volver al inicio de sesión</button>
+                    </p>
+                </form>
+            </section>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

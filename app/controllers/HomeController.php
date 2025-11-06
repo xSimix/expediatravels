@@ -7,6 +7,7 @@ use App\Repositories\InsightRepository;
 use App\Repositories\PackageRepository;
 use App\Repositories\ReviewRepository;
 use App\Repositories\SiteSettingsRepository;
+use App\Services\AuthService;
 use App\Views\View;
 
 class HomeController
@@ -17,6 +18,7 @@ class HomeController
         $destinationRepository = new DestinationRepository();
         $reviewRepository = new ReviewRepository();
         $insightRepository = new InsightRepository();
+        $authService = new AuthService();
 
         $settingsRepository = new SiteSettingsRepository();
         $siteSettings = $settingsRepository->get();
@@ -29,6 +31,7 @@ class HomeController
         $view = new View('home');
         $view->render([
             'title' => $pageTitle,
+            'currentUser' => $authService->currentUser(),
             'siteSettings' => $siteSettings,
             'featuredPackages' => $packagesRepository->getFeatured(),
             'signatureExperiences' => $packagesRepository->getSignatureExperiences(),
