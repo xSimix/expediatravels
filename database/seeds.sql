@@ -1,4 +1,15 @@
 -- Datos de muestra para Expediatravels.
+INSERT INTO usuarios (nombre, apellidos, celular, correo, contrasena_hash, verificado_en, rol)
+VALUES (
+    'Admin',
+    'Principal',
+    '+51 900 000 001',
+    'admin@expediatravels.pe',
+    '$2y$12$hzehrAtvj2Smn.qAn00yQ.VecHri4JjTJeUoj5u8BVUVqefWWIIxe',
+    '2024-01-01 09:00:00',
+    'administrador'
+);
+
 INSERT INTO destinos (nombre, descripcion, lat, lon, imagen, region) VALUES
 ('Oxapampa', 'Capital cafetalera y puerta de entrada a la Reserva de Biosfera Oxapampa-Ashaninka-Yanesha.', -10.5833333, -75.4, 'oxapampa.jpg', 'Pasco'),
 ('Villa Rica', 'Tierra del café de altura y de la Laguna El Oconal.', -10.7333333, -75.2666667, 'villa-rica.jpg', 'Pasco'),

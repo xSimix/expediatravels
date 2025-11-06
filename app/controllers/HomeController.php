@@ -23,6 +23,12 @@ class HomeController
         $settingsRepository = new SiteSettingsRepository();
         $siteSettings = $settingsRepository->get();
 
+        $accountDeleted = false;
+        if (!empty($_COOKIE['account_deleted_notice'])) {
+            $accountDeleted = true;
+            setcookie('account_deleted_notice', '', time() - 3600, '/', '', false, true);
+        }
+
         $pageTitle = $siteSettings['siteTitle'] ?? 'Expediatravels';
         if (!empty($siteSettings['siteTagline'])) {
             $pageTitle .= ' — ' . $siteSettings['siteTagline'];
@@ -32,6 +38,7 @@ class HomeController
         $view->render([
             'title' => $pageTitle,
             'currentUser' => $authService->currentUser(),
+            'accountDeleted' => $accountDeleted,
             'siteSettings' => $siteSettings,
             'featuredPackages' => $packagesRepository->getFeatured(),
             'signatureExperiences' => $packagesRepository->getSignatureExperiences(),

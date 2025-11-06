@@ -46,6 +46,7 @@
     $primaryPhoneHref = $formatPhoneHref($primaryPhone);
     $currentUser = $currentUser ?? null;
     $isAuthenticated = is_array($currentUser) && !empty($currentUser);
+    $accountDeleted = !empty($accountDeleted);
 ?>
     <header class="site-header" data-site-header>
         <div class="site-header__inner">
@@ -82,6 +83,7 @@
                 <?php if ($isAuthenticated): ?>
                     <div class="site-header__user">
                         <span class="site-header__user-greeting">Hola, <?= htmlspecialchars($currentUser['nombre'] ?? ''); ?></span>
+                        <a class="button button--ghost site-header__cta-button" href="profile.php">Mi cuenta</a>
                         <button class="button button--secondary site-header__cta-button" type="button" data-auth-logout>Cerrar sesión</button>
                     </div>
                 <?php else: ?>
@@ -90,6 +92,12 @@
             </div>
         </div>
     </header>
+
+    <?php if ($accountDeleted): ?>
+        <div class="global-alert alert alert--success" role="status">
+            Tu cuenta se eliminó correctamente. ¡Gracias por confiar en Expediatravels!
+        </div>
+    <?php endif; ?>
 
     <section class="hero" id="inicio" data-hero-slider>
         <?php if ($hasHeroSlides): ?>
