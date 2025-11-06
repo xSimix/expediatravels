@@ -68,7 +68,7 @@ try {
                         if (!move_uploaded_file($upload['tmp_name'], $destination)) {
                             $feedback = ['type' => 'error', 'message' => 'No se pudo guardar la imagen en el servidor.'];
                         } else {
-                            $publicPath = '/web/uploads/hero/' . $filename;
+                            $publicPath = '/uploads/hero/' . $filename;
                             $repository->addHeroSlide($publicPath, $label !== '' ? $label : null);
                             $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado y almacenado en el sitio.'];
                         }
@@ -98,9 +98,14 @@ try {
                 $imagePath = $repository->deleteHeroSlide($slideId);
 
                 if ($imagePath) {
-                    $normalizedPath = ltrim($imagePath, '/');
-                    if (str_starts_with($normalizedPath, 'web/uploads/hero/')) {
-                        $absolutePath = dirname(__DIR__) . '/' . $normalizedPath;
+                    $normalizedPath = ltrim(str_replace('\\', '/', $imagePath), '/');
+
+                    if (str_starts_with($normalizedPath, 'web/')) {
+                        $normalizedPath = substr($normalizedPath, 4);
+                    }
+
+                    if (str_starts_with($normalizedPath, 'uploads/hero/')) {
+                        $absolutePath = dirname(__DIR__) . '/web/' . $normalizedPath;
                         if (is_file($absolutePath)) {
                             @unlink($absolutePath);
                         }
