@@ -12,6 +12,16 @@
     $siteTitle = (string) ($siteSettings['siteTitle'] ?? 'Expediatravels');
     $siteTagline = $siteSettings['siteTagline'] ?? null;
     $heroSlides = $siteSettings['heroSlides'] ?? [];
+    $visibleHeroSlides = array_values(array_filter($heroSlides, static function ($slide) {
+        if (isset($slide['isVisible']) && !$slide['isVisible']) {
+            return false;
+        }
+
+        $imageUrl = (string) ($slide['image'] ?? '');
+
+        return $imageUrl !== '';
+    }));
+    $hasHeroSlides = !empty($visibleHeroSlides);
     $contact = $siteSettings['contact'] ?? [];
     $contactEmails = $contact['emails'] ?? [];
     $contactPhones = $contact['phones'] ?? [];
@@ -72,16 +82,9 @@
     </header>
 
     <section class="hero" id="inicio" data-hero-slider>
-        <?php if (!empty($heroSlides)): ?>
+        <?php if ($hasHeroSlides): ?>
             <div class="hero__backgrounds" data-hero-backgrounds>
-                <?php foreach ($heroSlides as $index => $slide):
-                    if (isset($slide['isVisible']) && !$slide['isVisible']) {
-                        continue;
-                    }
-                    $imageUrl = (string) ($slide['image'] ?? '');
-                    if ($imageUrl === '') {
-                        continue;
-                    }
+                <?php foreach ($visibleHeroSlides as $index => $slide):
                     $isActive = $index === 0;
                     $label = $slide['label'] ?? null;
                     $altText = trim((string) ($slide['altText'] ?? ''));
@@ -90,7 +93,7 @@
                 ?>
                     <div
                         class="hero__background<?= $isActive ? ' hero__background--active' : ''; ?>"
-                        style="background-image: url('<?= htmlspecialchars($imageUrl, ENT_QUOTES); ?>');"
+                        style="background-image: url('<?= htmlspecialchars((string) $slide['image'], ENT_QUOTES); ?>');"
                         role="img"
                         aria-label="<?= htmlspecialchars($ariaLabel, ENT_QUOTES); ?>"
                         data-hero-slide
@@ -150,20 +153,17 @@
                     <button class="booking-form__submit" type="submit">Buscar</button>
                 </div>
             </form>
-            <?php if (!empty($heroSlides)): ?>
+            <?php if ($hasHeroSlides): ?>
                 <div class="hero__slider-meta">
-                    <?php $initialLabel = $heroSlides[0]['label'] ?? null; ?>
+                    <?php $initialLabel = $visibleHeroSlides[0]['label'] ?? null; ?>
                     <?php if (!empty($initialLabel)): ?>
                         <div class="hero__slider-label" data-hero-label><?= htmlspecialchars($initialLabel); ?></div>
                     <?php else: ?>
                         <div class="hero__slider-label" data-hero-label hidden></div>
                     <?php endif; ?>
-                    <?php if (count($heroSlides) > 1): ?>
+                    <?php if (count($visibleHeroSlides) > 1): ?>
                         <div class="hero__slider-dots" role="tablist">
-                            <?php foreach ($heroSlides as $index => $slide):
-                                if (isset($slide['isVisible']) && !$slide['isVisible']) {
-                                    continue;
-                                }
+                            <?php foreach ($visibleHeroSlides as $index => $slide):
                                 $label = $slide['label'] ?? ('Fondo ' . ($index + 1));
                             ?>
                                 <button
