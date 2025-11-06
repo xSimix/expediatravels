@@ -75,6 +75,9 @@
         <?php if (!empty($heroSlides)): ?>
             <div class="hero__backgrounds" data-hero-backgrounds>
                 <?php foreach ($heroSlides as $index => $slide):
+                    if (isset($slide['isVisible']) && !$slide['isVisible']) {
+                        continue;
+                    }
                     $imageUrl = (string) ($slide['image'] ?? '');
                     if ($imageUrl === '') {
                         continue;
@@ -151,6 +154,9 @@
                     <?php if (count($heroSlides) > 1): ?>
                         <div class="hero__slider-dots" role="tablist">
                             <?php foreach ($heroSlides as $index => $slide):
+                                if (isset($slide['isVisible']) && !$slide['isVisible']) {
+                                    continue;
+                                }
                                 $label = $slide['label'] ?? ('Fondo ' . ($index + 1));
                             ?>
                                 <button
