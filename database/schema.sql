@@ -2,8 +2,15 @@
 CREATE TABLE usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(120) NOT NULL,
+    celular VARCHAR(30) DEFAULT NULL,
     correo VARCHAR(150) NOT NULL UNIQUE,
     contrasena_hash VARCHAR(255) NOT NULL,
+    verificacion_pin VARCHAR(6) DEFAULT NULL,
+    pin_expira_en DATETIME DEFAULT NULL,
+    verificado_en DATETIME DEFAULT NULL,
+    remember_token VARCHAR(255) DEFAULT NULL,
+    remember_token_expira_en DATETIME DEFAULT NULL,
     rol ENUM('admin', 'editor', 'cliente') DEFAULT 'cliente',
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
