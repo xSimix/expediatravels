@@ -98,6 +98,21 @@
                     static fn (array $destination): string => (string) ($destination['region'] ?? ''),
                     $destinations
                 ))));
+
+                $destinationStatsPresets = [
+                    ['tours' => 1, 'departures' => 32, 'guests' => 12774],
+                    ['tours' => 2, 'departures' => 26, 'guests' => 11892],
+                    ['tours' => 3, 'departures' => 18, 'guests' => 10115],
+                    ['tours' => 4, 'departures' => 22, 'guests' => 9420],
+                ];
+
+                $packagesByDestination = [];
+                foreach ($featuredPackages as $package) {
+                    $destinationKey = $package['destino'] ?? null;
+                    if ($destinationKey) {
+                        $packagesByDestination[$destinationKey] = ($packagesByDestination[$destinationKey] ?? 0) + 1;
+                    }
+                }
             ?>
             <div class="section__header section__header--centered">
                 <span class="section__eyebrow">Featured Destinations</span>
@@ -106,19 +121,14 @@
             </div>
             <div class="destinations-shell">
                 <?php if ($destinationRegions): ?>
-                    <div class="destinations-toolbar" role="list" aria-label="Regiones destacadas">
+                    <div class="destinations-toolbar" role="tablist" aria-label="Regiones destacadas">
                         <?php foreach ($destinationRegions as $index => $region): ?>
-                            <span class="destinations-tab<?= $index === 0 ? ' is-active' : ''; ?>" role="listitem">
+                            <button type="button" class="destinations-tab<?= $index === 0 ? ' is-active' : ''; ?>" data-region="<?= htmlspecialchars($region); ?>" role="tab" aria-selected="<?= $index === 0 ? 'true' : 'false'; ?>">
                                 <?= htmlspecialchars($region); ?>
-                            </span>
+                            </button>
                         <?php endforeach; ?>
                     </div>
                 <?php endif; ?>
-                <div class="destinations-indicators" aria-hidden="true">
-                    <?php foreach ($destinations as $index => $_): ?>
-                        <span class="destinations-dot<?= $index === 0 ? ' is-active' : ''; ?>"></span>
-                    <?php endforeach; ?>
-                </div>
                 <div class="destinations-carousel" role="list">
                     <?php foreach ($destinations as $index => $destination): ?>
                         <?php
@@ -127,25 +137,40 @@
                                 $imagePath = 'assets/' . $destination['imagen'];
                             }
                             $destinationName = $destination['nombre'] ?? '';
+                            $stats = $destinationStatsPresets[$index] ?? [
+                                'tours' => $index + 1,
+                                'departures' => 20 + ($index * 2),
+                                'guests' => 9200 + ($index * 480),
+                            ];
+                            $formattedTours = str_pad((string) ($packagesByDestination[$destinationName] ?? $stats['tours']), 2, '0', STR_PAD_LEFT);
+                            $formattedDepartures = str_pad((string) $stats['departures'], 2, '0', STR_PAD_LEFT);
+                            $formattedGuests = number_format((int) $stats['guests']);
                         ?>
-                        <article class="destination-card" role="listitem" tabindex="0">
-                            <figure class="destination-card__media"<?= $imagePath ? " style=\"background-image: url('" . htmlspecialchars($imagePath) . "');\"" : ''; ?> aria-hidden="true">
-                                <?php if (!$imagePath && $destinationName): ?>
+                        <article class="destination-card<?= $index === 0 ? ' is-active' : ''; ?>" data-region="<?= htmlspecialchars($destination['region']); ?>" role="listitem" tabindex="0">
+                            <figure class="destination-card__media" aria-hidden="true">
+                                <?php if ($imagePath): ?>
+                                    <img src="<?= htmlspecialchars($imagePath); ?>" alt="<?= htmlspecialchars($destinationName); ?>" loading="lazy" />
+                                <?php elseif ($destinationName): ?>
                                     <span class="destination-card__initial" aria-hidden="true"><?= htmlspecialchars(mb_substr($destinationName, 0, 1)); ?></span>
                                 <?php endif; ?>
                             </figure>
-                            <div class="destination-card__body">
-                                <span class="destination-card__region"><?= htmlspecialchars($destination['region']); ?></span>
+                            <div class="destination-card__content">
+                                <span class="destination-card__badge"><?= htmlspecialchars($destination['region']); ?></span>
                                 <h3 class="destination-card__title"><?= htmlspecialchars($destinationName); ?></h3>
-                                <p class="destination-card__excerpt"><?= htmlspecialchars($destination['descripcion']); ?></p>
+                                <span class="destination-card__location"><?= htmlspecialchars($destinationName); ?></span>
+                                <p class="destination-card__details"><?= htmlspecialchars($destination['descripcion']); ?></p>
+                                <div class="destination-card__stats" aria-hidden="true">
+                                    <span class="destination-card__stat"><strong><?= htmlspecialchars($formattedTours); ?></strong><small>Tours</small></span>
+                                    <span class="destination-card__stat"><strong><?= htmlspecialchars($formattedDepartures); ?></strong><small>Departures</small></span>
+                                    <span class="destination-card__stat"><strong><?= htmlspecialchars($formattedGuests); ?></strong><small>Guests travelled</small></span>
+                                </div>
                             </div>
-                            <footer class="destination-card__footer">
-                                <a class="destination-card__cta" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">
-                                    <span aria-hidden="true">&#x1F5FA;</span>
-                                    Explorar destino
-                                </a>
-                            </footer>
                         </article>
+                    <?php endforeach; ?>
+                </div>
+                <div class="destinations-indicators" aria-hidden="true">
+                    <?php foreach ($destinations as $index => $_): ?>
+                        <span class="destinations-dot<?= $index === 0 ? ' is-active' : ''; ?>"></span>
                     <?php endforeach; ?>
                 </div>
             </div>
@@ -368,6 +393,9 @@
             const header = document.querySelector('[data-site-header]');
             const toggle = document.querySelector('[data-menu-toggle]');
             const nav = document.querySelector('[data-site-nav]');
+            const destinationCards = Array.from(document.querySelectorAll('.destination-card'));
+            const destinationDots = Array.from(document.querySelectorAll('.destinations-dot'));
+            const destinationTabs = Array.from(document.querySelectorAll('.destinations-tab'));
 
             if (!header) {
                 return;
@@ -396,6 +424,55 @@
                         toggle.setAttribute('aria-expanded', 'false');
                     }
                 });
+            }
+
+            const setActiveDestination = (targetIndex) => {
+                if (!destinationCards.length) {
+                    return;
+                }
+
+                destinationCards.forEach((card, index) => {
+                    const isActive = index === targetIndex;
+                    card.classList.toggle('is-active', isActive);
+                });
+
+                destinationDots.forEach((dot, index) => {
+                    dot.classList.toggle('is-active', index === targetIndex);
+                });
+
+                const activeCard = destinationCards[targetIndex];
+                const activeRegion = activeCard ? activeCard.getAttribute('data-region') : null;
+
+                if (activeRegion) {
+                    destinationTabs.forEach((tab) => {
+                        const tabRegion = tab.getAttribute('data-region') || '';
+                        const isMatch = tabRegion === activeRegion;
+                        tab.classList.toggle('is-active', isMatch);
+                        tab.setAttribute('aria-selected', String(isMatch));
+                    });
+                }
+            };
+
+            destinationCards.forEach((card, index) => {
+                const activate = () => setActiveDestination(index);
+                card.addEventListener('mouseenter', activate);
+                card.addEventListener('focus', activate);
+                card.addEventListener('click', activate);
+            });
+
+            destinationTabs.forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    const tabRegion = tab.getAttribute('data-region') || '';
+                    const matchIndex = destinationCards.findIndex((card) => card.getAttribute('data-region') === tabRegion);
+                    if (matchIndex >= 0) {
+                        setActiveDestination(matchIndex);
+                    }
+                });
+            });
+
+            if (destinationCards.length) {
+                const defaultActiveIndex = destinationCards.findIndex((card) => card.classList.contains('is-active'));
+                setActiveDestination(defaultActiveIndex >= 0 ? defaultActiveIndex : 0);
             }
         });
     </script>
