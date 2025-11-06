@@ -84,12 +84,19 @@
                     }
                     $isActive = $index === 0;
                     $label = $slide['label'] ?? null;
+                    $altText = trim((string) ($slide['altText'] ?? ''));
+                    $description = $slide['description'] ?? null;
+                    $ariaLabel = $altText !== '' ? $altText : ($label !== null && $label !== '' ? $label : 'Imagen del hero');
                 ?>
                     <div
                         class="hero__background<?= $isActive ? ' hero__background--active' : ''; ?>"
                         style="background-image: url('<?= htmlspecialchars($imageUrl, ENT_QUOTES); ?>');"
+                        role="img"
+                        aria-label="<?= htmlspecialchars($ariaLabel, ENT_QUOTES); ?>"
                         data-hero-slide
                         <?= $label ? 'data-hero-label-text="' . htmlspecialchars($label, ENT_QUOTES) . '"' : ''; ?>
+                        <?= $altText !== '' ? 'data-hero-alt="' . htmlspecialchars($altText, ENT_QUOTES) . '"' : ''; ?>
+                        <?= $description ? 'data-hero-description="' . htmlspecialchars($description, ENT_QUOTES) . '"' : ''; ?>
                     ></div>
                 <?php endforeach; ?>
             </div>

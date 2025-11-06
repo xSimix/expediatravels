@@ -25,7 +25,7 @@ VALUES (
     'Instagram|https://instagram.com/expediatravels\nFacebook|https://facebook.com/expediatravels\nYouTube|https://youtube.com/@expediatravels'
 );
 
-INSERT INTO hero_slides (image_url, label, sort_order, is_visible) VALUES
-('https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80', 'Bosques de Oxapampa', 1, 1),
-('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', 'Laguna El Oconal', 2, 1),
-('https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1600&q=80', 'Cascadas de Pozuzo', 3, 1);
+INSERT INTO hero_slides (image_url, label, alt_text, description, sort_order, is_visible) VALUES
+('https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80', 'Bosques de Oxapampa', 'Bosque de neblina en Oxapampa con luz dorada al amanecer', 'Paisaje representativo de la Reserva de Biosfera Oxapampa-Ashaninka-Yanesha al amanecer.', 1, 1),
+('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', 'Laguna El Oconal', 'Reflejos en la Laguna El Oconal en Villa Rica', 'La laguna El Oconal de Villa Rica al atardecer, ideal para avistamiento de aves.', 2, 1),
+('https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1600&q=80', 'Cascadas de Pozuzo', 'Cascada rodeada de selva en Pozuzo, Selva Central del Perú', 'Cascadas cristalinas de Pozuzo rodeadas de vegetación amazónica.', 3, 1);

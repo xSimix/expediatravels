@@ -68,12 +68,24 @@ try {
                         if (!move_uploaded_file($upload['tmp_name'], $destination)) {
                             $feedback = ['type' => 'error', 'message' => 'No se pudo guardar la imagen en el servidor.'];
                         } else {
-                            $publicPath = 'web/uploads/hero/' . $filename;
+                            $publicPath = '/web/uploads/hero/' . $filename;
                             $repository->addHeroSlide($publicPath, $label !== '' ? $label : null);
                             $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado y almacenado en el sitio.'];
                         }
                     }
                 }
+            }
+        } elseif ($formType === 'update_slide') {
+            $slideId = isset($_POST['slide_id']) ? (int) $_POST['slide_id'] : 0;
+
+            if ($slideId > 0) {
+                $repository->updateHeroSlide($slideId, [
+                    'label' => $_POST['slide_label'] ?? null,
+                    'alt_text' => $_POST['slide_alt_text'] ?? null,
+                    'description' => $_POST['slide_description'] ?? null,
+                ]);
+
+                $feedback = ['type' => 'success', 'message' => 'Metadatos de la imagen actualizados correctamente.'];
             }
         } elseif ($formType === 'update_visibility') {
             $visibleSlides = $_POST['visible_slides'] ?? [];
@@ -301,6 +313,27 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             right: 12px;
             bottom: 12px;
         }
+        .hero-gallery__edit {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            border: none;
+            background: rgba(15, 23, 42, 0.85);
+            color: #e2e8f0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .hero-gallery__edit:hover {
+            background: rgba(56, 189, 248, 0.95);
+            color: #0f172a;
+            transform: translateY(-1px);
+        }
         .hero-gallery__delete {
             border: none;
             background: rgba(239, 68, 68, 0.95);
@@ -327,6 +360,84 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             background: rgba(248, 113, 113, 0.15);
             border-color: rgba(239, 68, 68, 0.35);
             color: #b91c1c;
+        }
+        .hero-gallery__dialog::backdrop {
+            background: rgba(15, 23, 42, 0.55);
+        }
+        .hero-gallery__dialog {
+            border: none;
+            border-radius: 20px;
+            padding: 0;
+            max-width: min(520px, 92vw);
+            width: 100%;
+            overflow: hidden;
+            background: #0f172a;
+            color: #e2e8f0;
+            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
+        }
+        .hero-gallery__dialog header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.1rem 1.4rem 0.6rem;
+            background: rgba(30, 41, 59, 0.65);
+        }
+        .hero-gallery__dialog header h3 {
+            margin: 0;
+            font-size: 1.05rem;
+        }
+        .hero-gallery__dialog form {
+            display: grid;
+            gap: 1rem;
+            padding: 1.4rem;
+        }
+        .hero-gallery__dialog .admin-field input,
+        .hero-gallery__dialog .admin-field textarea {
+            background: rgba(15, 23, 42, 0.65);
+            color: inherit;
+            border-color: rgba(148, 163, 184, 0.45);
+        }
+        .hero-gallery__dialog footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 0 1.4rem 1.4rem;
+        }
+        .hero-gallery__dialog button {
+            font: inherit;
+        }
+        .hero-gallery__dialog-close {
+            background: transparent;
+            border: none;
+            color: inherit;
+            font-size: 1.4rem;
+            cursor: pointer;
+        }
+        .hero-gallery__dialog-cancel {
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            background: transparent;
+            color: inherit;
+            border-radius: 999px;
+            padding: 0.55rem 1.3rem;
+            cursor: pointer;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        .hero-gallery__dialog-cancel:hover {
+            background: rgba(148, 163, 184, 0.15);
+        }
+        .hero-gallery__dialog-submit {
+            border: none;
+            border-radius: 999px;
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+            color: #0f172a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hero-gallery__dialog-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.35);
         }
         .admin-header {
             display: flex;
@@ -414,6 +525,8 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                             $slideId = $slide['id'] ?? null;
                             $slideLabel = $slide['label'] ?? '';
                             $slideImage = $slide['image'] ?? '';
+                            $slideAlt = $slide['altText'] ?? '';
+                            $slideDescription = $slide['description'] ?? '';
                             if (!$slideId || $slideImage === '') {
                                 continue;
                             }
@@ -421,6 +534,9 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                             $checkboxId = 'hero-slide-' . (int) $slideId;
                         ?>
                             <div class="hero-gallery__item<?= $isVisible ? '' : ' hero-gallery__item--inactive'; ?>">
+                                <button type="button" class="hero-gallery__edit" data-hero-edit-trigger aria-label="Editar metadatos de la imagen">
+                                    <span aria-hidden="true">✏️</span>
+                                </button>
                                 <label class="hero-gallery__select" for="<?= htmlspecialchars($checkboxId, ENT_QUOTES); ?>">
                                     <input
                                         type="checkbox"
@@ -432,11 +548,17 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                                         <?= $isVisible ? 'checked' : ''; ?>
                                     />
                                     <span class="hero-gallery__thumbnail">
-                                        <img src="<?= htmlspecialchars($slideImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Imagen del hero', ENT_QUOTES); ?>" loading="lazy" />
+                                        <img src="<?= htmlspecialchars($slideImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideAlt !== '' ? $slideAlt : ($slideLabel !== '' ? $slideLabel : 'Imagen del hero'), ENT_QUOTES); ?>" loading="lazy" />
                                     </span>
                                     <span class="hero-gallery__meta">
                                         <strong><?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Sin título'); ?></strong>
                                         <small><?= htmlspecialchars($slideImage); ?></small>
+                                        <?php if ($slideAlt !== ''): ?>
+                                            <small>ALT: <?= htmlspecialchars($slideAlt); ?></small>
+                                        <?php endif; ?>
+                                        <?php if ($slideDescription !== ''): ?>
+                                            <small><?= htmlspecialchars($slideDescription); ?></small>
+                                        <?php endif; ?>
                                     </span>
                                 </label>
                                 <form method="post" class="hero-gallery__delete-form" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
@@ -444,6 +566,35 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                                     <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
                                     <button type="submit" class="hero-gallery__delete">Eliminar</button>
                                 </form>
+                                <dialog class="hero-gallery__dialog" data-hero-edit-dialog>
+                                    <header>
+                                        <h3>Editar imagen del hero</h3>
+                                        <button type="button" class="hero-gallery__dialog-close" data-hero-edit-close aria-label="Cerrar editor">&times;</button>
+                                    </header>
+                                    <form method="post">
+                                        <input type="hidden" name="form_type" value="update_slide" />
+                                        <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
+                                        <div class="admin-field">
+                                            <label for="slide-label-<?= (int) $slideId; ?>">Título de la imagen</label>
+                                            <input type="text" id="slide-label-<?= (int) $slideId; ?>" name="slide_label" value="<?= htmlspecialchars($slideLabel, ENT_QUOTES); ?>" placeholder="Bosques de Oxapampa" />
+                                            <p class="admin-help">Se muestra como título del slider y texto principal.</p>
+                                        </div>
+                                        <div class="admin-field">
+                                            <label for="slide-alt-<?= (int) $slideId; ?>">Texto alternativo (ALT)</label>
+                                            <input type="text" id="slide-alt-<?= (int) $slideId; ?>" name="slide_alt_text" value="<?= htmlspecialchars($slideAlt, ENT_QUOTES); ?>" placeholder="Paisaje de los bosques de Oxapampa al amanecer" />
+                                            <p class="admin-help">Úsalo para accesibilidad y SEO. Describe la imagen en una frase.</p>
+                                        </div>
+                                        <div class="admin-field">
+                                            <label for="slide-description-<?= (int) $slideId; ?>">Descripción SEO</label>
+                                            <textarea id="slide-description-<?= (int) $slideId; ?>" name="slide_description" rows="3" placeholder="Describe el contexto de la imagen, ubicación o experiencia que representa."><?= htmlspecialchars($slideDescription, ENT_QUOTES); ?></textarea>
+                                            <p class="admin-help">Opcional. Profundiza en los detalles para motores de búsqueda.</p>
+                                        </div>
+                                        <footer>
+                                            <button type="button" class="hero-gallery__dialog-cancel" data-hero-edit-close>Cancelar</button>
+                                            <button type="submit" class="hero-gallery__dialog-submit">Guardar</button>
+                                        </footer>
+                                    </form>
+                                </dialog>
                             </div>
                         <?php endforeach; ?>
                     </div>
@@ -475,5 +626,50 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             </form>
         </section>
     </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const supportsDialog = typeof HTMLDialogElement !== 'undefined';
+
+            document.querySelectorAll('[data-hero-edit-trigger]').forEach((button) => {
+                const item = button.closest('.hero-gallery__item');
+                if (!item) {
+                    return;
+                }
+
+                const dialog = item.querySelector('[data-hero-edit-dialog]');
+                if (!dialog) {
+                    return;
+                }
+
+                const closeDialog = () => {
+                    if (supportsDialog && typeof dialog.close === 'function') {
+                        dialog.close();
+                    } else {
+                        dialog.removeAttribute('open');
+                    }
+                };
+
+                button.addEventListener('click', () => {
+                    if (supportsDialog && typeof dialog.showModal === 'function') {
+                        dialog.showModal();
+                    } else {
+                        dialog.setAttribute('open', '');
+                    }
+                });
+
+                dialog.querySelectorAll('[data-hero-edit-close]').forEach((closeButton) => {
+                    closeButton.addEventListener('click', () => {
+                        closeDialog();
+                    });
+                });
+
+                dialog.addEventListener('click', (event) => {
+                    if (event.target === dialog) {
+                        closeDialog();
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
