@@ -610,6 +610,7 @@ main {
     display: flex;
     flex-direction: column;
     gap: 5rem;
+    padding: 4rem var(--page-gutter);
 }
 
 .section {
