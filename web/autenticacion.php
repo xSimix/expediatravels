@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../aplicacion/configuracion/arranque.php';
+require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 use Aplicacion\Controladores\ControladorAutenticacion;
 

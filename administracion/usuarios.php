@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/../aplicacion/configuracion/arranque.php';
+require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 use Aplicacion\Repositorios\RepositorioUsuarios;
 
@@ -69,7 +69,7 @@ $users = $userRepository->all();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Usuarios — Expediatravels</title>
-    <link rel="stylesheet" href="../sitio_web/estilos/aplicacion.css" />
+    <link rel="stylesheet" href="../web/estilos/aplicacion.css" />
 </head>
 <body class="bg-gray-50 text-slate-900">
     <main class="max-w-5xl mx-auto py-12 px-6 space-y-6">

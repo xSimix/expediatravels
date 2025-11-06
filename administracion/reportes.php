@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Reportes — Expediatravels</title>
-    <link rel="stylesheet" href="../sitio_web/estilos/aplicacion.css" />
+    <link rel="stylesheet" href="../web/estilos/aplicacion.css" />
 </head>
 <body class="bg-gray-50 text-slate-900">
     <main class="max-w-4xl mx-auto py-12 px-6 space-y-6">

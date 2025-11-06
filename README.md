@@ -23,12 +23,12 @@ Centralizar la oferta turística de la región en una experiencia digital modern
 
 ```text
 expediatravels/
-├── aplicacion/
+├── app/
 │   ├── configuracion/
 │   ├── controladores/
 │   ├── modelos/
 │   └── vistas/
-├── sitio_web/
+├── web/
 │   ├── recursos/
 │   ├── estilos/
 │   ├── scripts/

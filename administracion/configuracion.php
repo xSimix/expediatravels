@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-require_once __DIR__ . '/../aplicacion/configuracion/arranque.php';
+require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
 
@@ -56,7 +56,7 @@ try {
                 if (!isset($allowedMimeTypes[$mimeType])) {
                     $feedback = ['type' => 'error', 'message' => 'Formato no permitido. Usa imágenes JPG, PNG o WEBP.'];
                 } else {
-                    $uploadDirectory = __DIR__ . '/../sitio_web/cargas/hero';
+                    $uploadDirectory = __DIR__ . '/../web/cargas/hero';
 
                     if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
                         $feedback = ['type' => 'error', 'message' => 'No se pudo preparar la carpeta de subida de imágenes.'];
@@ -68,7 +68,7 @@ try {
                         if (!move_uploaded_file($upload['tmp_name'], $destination)) {
                             $feedback = ['type' => 'error', 'message' => 'No se pudo guardar la imagen en el servidor.'];
                         } else {
-                            $publicPath = '/sitio_web/cargas/hero/' . $filename;
+                            $publicPath = '/web/cargas/hero/' . $filename;
                             $repository->addHeroSlide($publicPath, $label !== '' ? $label : null);
                             $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado y almacenado en el sitio.'];
                         }
@@ -99,7 +99,7 @@ try {
 
                 if ($imagePath) {
                     $normalizedPath = ltrim($imagePath, '/');
-                    if (str_starts_with($normalizedPath, 'sitio_web/cargas/hero/')) {
+                    if (str_starts_with($normalizedPath, 'web/cargas/hero/')) {
                         $absolutePath = dirname(__DIR__) . '/' . $normalizedPath;
                         if (is_file($absolutePath)) {
                             @unlink($absolutePath);
@@ -140,7 +140,7 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Configuración del sitio — Expediatravels</title>
-    <link rel="stylesheet" href="../sitio_web/estilos/aplicacion.css" />
+    <link rel="stylesheet" href="../web/estilos/aplicacion.css" />
     <style>
         body {
             background: #f8fafc;
@@ -514,7 +514,7 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
 
         <section class="admin-card">
             <h2>Fondos del hero</h2>
-            <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Al subirlas se guardan en el hosting del sitio dentro de <code>sitio_web/cargas/hero</code>.</p>
+            <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Al subirlas se guardan en el hosting del sitio dentro de <code>web/cargas/hero</code>.</p>
             <div class="hero-gallery">
                 <form method="post" id="hero-visibility-form" style="display: none;">
                     <input type="hidden" name="form_type" value="update_visibility" />
