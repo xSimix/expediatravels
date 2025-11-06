@@ -31,6 +31,13 @@ class SiteSettingsRepository
                     ],
                 ];
             }
+
+            $fallback = $this->fallback();
+            if (!empty($heroSlides)) {
+                $fallback['heroSlides'] = $heroSlides;
+            }
+
+            return $fallback;
         } catch (PDOException $exception) {
             // Fall back to static configuration when the database is unavailable.
         }
