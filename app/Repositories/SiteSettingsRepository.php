@@ -80,11 +80,18 @@ class SiteSettingsRepository
         ]);
     }
 
-    public function deleteHeroSlide(int $id): void
+    public function deleteHeroSlide(int $id): ?string
     {
         $pdo = Connection::get();
-        $statement = $pdo->prepare('DELETE FROM hero_slides WHERE id = :id');
+
+        $statement = $pdo->prepare('SELECT image_url FROM hero_slides WHERE id = :id');
         $statement->execute([':id' => $id]);
+        $imagePath = $statement->fetchColumn();
+
+        $delete = $pdo->prepare('DELETE FROM hero_slides WHERE id = :id');
+        $delete->execute([':id' => $id]);
+
+        return is_string($imagePath) ? $imagePath : null;
     }
 
     private function fetchHeroSlides(PDO $pdo): array

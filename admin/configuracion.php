@@ -37,19 +37,59 @@ try {
 
             $feedback = ['type' => 'success', 'message' => 'Configuración general guardada correctamente.'];
         } elseif ($formType === 'add_slide') {
-            $imageUrl = trim((string) ($_POST['slide_image'] ?? ''));
             $label = trim((string) ($_POST['slide_label'] ?? ''));
+            $upload = $_FILES['slide_upload'] ?? null;
 
-            if ($imageUrl === '') {
-                $feedback = ['type' => 'error', 'message' => 'Debes ingresar una URL válida para la imagen del hero.'];
+            if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+                $feedback = ['type' => 'error', 'message' => 'Debes seleccionar una imagen para el hero.'];
+            } elseif (($upload['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK || !isset($upload['tmp_name']) || !is_uploaded_file($upload['tmp_name'])) {
+                $feedback = ['type' => 'error', 'message' => 'No se pudo subir la imagen. Inténtalo nuevamente.'];
             } else {
-                $repository->addHeroSlide($imageUrl, $label !== '' ? $label : null);
-                $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado.'];
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->file($upload['tmp_name']);
+                $allowedMimeTypes = [
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/webp' => 'webp',
+                ];
+
+                if (!isset($allowedMimeTypes[$mimeType])) {
+                    $feedback = ['type' => 'error', 'message' => 'Formato no permitido. Usa imágenes JPG, PNG o WEBP.'];
+                } else {
+                    $uploadDirectory = __DIR__ . '/../web/uploads/hero';
+
+                    if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
+                        $feedback = ['type' => 'error', 'message' => 'No se pudo preparar la carpeta de subida de imágenes.'];
+                    } else {
+                        $extension = $allowedMimeTypes[$mimeType];
+                        $filename = 'hero-' . date('Ymd-His') . '-' . bin2hex(random_bytes(6)) . '.' . $extension;
+                        $destination = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
+
+                        if (!move_uploaded_file($upload['tmp_name'], $destination)) {
+                            $feedback = ['type' => 'error', 'message' => 'No se pudo guardar la imagen en el servidor.'];
+                        } else {
+                            $publicPath = 'web/uploads/hero/' . $filename;
+                            $repository->addHeroSlide($publicPath, $label !== '' ? $label : null);
+                            $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado y almacenado en el sitio.'];
+                        }
+                    }
+                }
             }
         } elseif ($formType === 'delete_slide') {
             $slideId = isset($_POST['slide_id']) ? (int) $_POST['slide_id'] : 0;
             if ($slideId > 0) {
-                $repository->deleteHeroSlide($slideId);
+                $imagePath = $repository->deleteHeroSlide($slideId);
+
+                if ($imagePath) {
+                    $normalizedPath = ltrim($imagePath, '/');
+                    if (str_starts_with($normalizedPath, 'web/uploads/hero/')) {
+                        $absolutePath = dirname(__DIR__) . '/' . $normalizedPath;
+                        if (is_file($absolutePath)) {
+                            @unlink($absolutePath);
+                        }
+                    }
+                }
+
                 $feedback = ['type' => 'success', 'message' => 'Imagen eliminada del slider del hero.'];
             }
         }
@@ -306,7 +346,7 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
 
         <section class="admin-card">
             <h2>Fondos del hero</h2>
-            <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Usa enlaces a imágenes optimizadas en alta resolución.</p>
+            <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Al subirlas se guardan en el hosting del sitio dentro de <code>web/uploads/hero</code>.</p>
             <div class="hero-slides">
                 <?php if (!empty($heroSlides)): ?>
                     <?php foreach ($heroSlides as $slide):
@@ -338,13 +378,13 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                 <?php endif; ?>
             </div>
 
-            <form method="post" class="admin-grid" style="margin-top: 1.5rem;">
+            <form method="post" class="admin-grid" style="margin-top: 1.5rem;" enctype="multipart/form-data">
                 <input type="hidden" name="form_type" value="add_slide" />
                 <div class="admin-grid two-columns">
                     <div class="admin-field">
-                        <label for="slide_image">URL de la imagen</label>
-                        <input type="url" id="slide_image" name="slide_image" placeholder="https://images.unsplash.com/..." required />
-                        <p class="admin-help">Usa imágenes horizontales (1600x900 o superior) y enlaces seguros (HTTPS).</p>
+                        <label for="slide_upload">Imagen del hero</label>
+                        <input type="file" id="slide_upload" name="slide_upload" accept="image/jpeg,image/png,image/webp" required />
+                        <p class="admin-help">Se admiten imágenes horizontales (1600x900 o superior). Formatos: JPG, PNG o WEBP.</p>
                     </div>
                     <div class="admin-field">
                         <label for="slide_label">Título o descripción</label>
