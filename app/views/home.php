@@ -93,19 +93,61 @@
 
     <main>
         <section class="section section--destinations" id="destinos">
-            <div class="section__header">
-                <h2>Tesoros de la Reserva de Biosfera</h2>
-                <p>Desde bosques nubosos hasta cataratas turquesa, seleccionamos los destinos imperdibles de la ruta Oxapampa.</p>
+            <?php
+                $destinationRegions = array_values(array_filter(array_unique(array_map(
+                    static fn (array $destination): string => (string) ($destination['region'] ?? ''),
+                    $destinations
+                ))));
+            ?>
+            <div class="section__header section__header--centered">
+                <span class="section__eyebrow">Featured Destinations</span>
+                <h2>Vive la magia de la Selva Central</h2>
+                <p>Inspiración curada por nuestro equipo local con los paisajes, culturas y aventuras que definen Oxapampa y sus alrededores.</p>
             </div>
-            <div class="destinations">
-                <?php foreach ($destinations as $destination): ?>
-                    <article class="destination">
-                        <div class="destination__badge"><?= htmlspecialchars($destination['region']); ?></div>
-                        <h3><?= htmlspecialchars($destination['nombre']); ?></h3>
-                        <p><?= htmlspecialchars($destination['descripcion']); ?></p>
-                        <a class="destination__link" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">Explorar</a>
-                    </article>
-                <?php endforeach; ?>
+            <div class="destinations-shell">
+                <?php if ($destinationRegions): ?>
+                    <div class="destinations-toolbar" role="list" aria-label="Regiones destacadas">
+                        <?php foreach ($destinationRegions as $index => $region): ?>
+                            <span class="destinations-tab<?= $index === 0 ? ' is-active' : ''; ?>" role="listitem">
+                                <?= htmlspecialchars($region); ?>
+                            </span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <div class="destinations-indicators" aria-hidden="true">
+                    <?php foreach ($destinations as $index => $_): ?>
+                        <span class="destinations-dot<?= $index === 0 ? ' is-active' : ''; ?>"></span>
+                    <?php endforeach; ?>
+                </div>
+                <div class="destinations-carousel" role="list">
+                    <?php foreach ($destinations as $index => $destination): ?>
+                        <?php
+                            $imagePath = null;
+                            if (!empty($destination['imagen']) && is_file(__DIR__ . '/../../web/assets/' . $destination['imagen'])) {
+                                $imagePath = 'assets/' . $destination['imagen'];
+                            }
+                            $destinationName = $destination['nombre'] ?? '';
+                        ?>
+                        <article class="destination-card" role="listitem" tabindex="0">
+                            <figure class="destination-card__media"<?= $imagePath ? " style=\"background-image: url('" . htmlspecialchars($imagePath) . "');\"" : ''; ?> aria-hidden="true">
+                                <?php if (!$imagePath && $destinationName): ?>
+                                    <span class="destination-card__initial" aria-hidden="true"><?= htmlspecialchars(mb_substr($destinationName, 0, 1)); ?></span>
+                                <?php endif; ?>
+                            </figure>
+                            <div class="destination-card__body">
+                                <span class="destination-card__region"><?= htmlspecialchars($destination['region']); ?></span>
+                                <h3 class="destination-card__title"><?= htmlspecialchars($destinationName); ?></h3>
+                                <p class="destination-card__excerpt"><?= htmlspecialchars($destination['descripcion']); ?></p>
+                            </div>
+                            <footer class="destination-card__footer">
+                                <a class="destination-card__cta" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">
+                                    <span aria-hidden="true">&#x1F5FA;</span>
+                                    Explorar destino
+                                </a>
+                            </footer>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
             </div>
         </section>
 
