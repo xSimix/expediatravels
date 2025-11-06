@@ -92,6 +92,23 @@
     </section>
 
     <main>
+        <section class="section section--destinations" id="destinos">
+            <div class="section__header">
+                <h2>Tesoros de la Reserva de Biosfera</h2>
+                <p>Desde bosques nubosos hasta cataratas turquesa, seleccionamos los destinos imperdibles de la ruta Oxapampa.</p>
+            </div>
+            <div class="destinations">
+                <?php foreach ($destinations as $destination): ?>
+                    <article class="destination">
+                        <div class="destination__badge"><?= htmlspecialchars($destination['region']); ?></div>
+                        <h3><?= htmlspecialchars($destination['nombre']); ?></h3>
+                        <p><?= htmlspecialchars($destination['descripcion']); ?></p>
+                        <a class="destination__link" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">Explorar</a>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
         <section id="paquetes" class="section section--packages">
             <div class="section__header">
                 <h2>Paquetes destacados</h2>
@@ -144,23 +161,6 @@
                             </div>
                             <a class="travel-card__cta" href="paquete.php?id=<?= urlencode((string) $package['id']); ?>">RESERVAR</a>
                         </footer>
-                    </article>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-        <section class="section section--destinations" id="destinos">
-            <div class="section__header">
-                <h2>Tesoros de la Reserva de Biosfera</h2>
-                <p>Desde bosques nubosos hasta cataratas turquesa, seleccionamos los destinos imperdibles de la ruta Oxapampa.</p>
-            </div>
-            <div class="destinations">
-                <?php foreach ($destinations as $destination): ?>
-                    <article class="destination">
-                        <div class="destination__badge"><?= htmlspecialchars($destination['region']); ?></div>
-                        <h3><?= htmlspecialchars($destination['nombre']); ?></h3>
-                        <p><?= htmlspecialchars($destination['descripcion']); ?></p>
-                        <a class="destination__link" href="explorar.php?destino=<?= urlencode((string) $destination['id']); ?>">Explorar</a>
                     </article>
                 <?php endforeach; ?>
             </div>
