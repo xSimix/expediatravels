@@ -12,3 +12,20 @@ INSERT INTO paquetes (destino_id, nombre, resumen, itinerario, duracion, precio,
 (3, 'Tour Pozuzo', 'Descubre la colonia austro-alemana y sus cascadas.', 'Recorrido histórico, visita a cervecería artesanal, caminata a cascadas y cruce por el puente colgante.', '1 día', 150.00, 'publicado'),
 (4, 'Tour Perené', 'Catarata Bayoz, Velo de la Novia y paseo en bote.', 'Tour por Mariposario, caminata a las cataratas y navegación por el río Perené.', '1 día', 95.00, 'publicado'),
 (5, 'Tour Yanachaga', 'Avistamiento de aves en Lluvias Eternas.', 'Senderismo interpretativo, observación de flora y fauna, visita al centro de interpretación.', '1 día', 130.00, 'publicado');
+
+INSERT INTO site_settings (id, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links)
+VALUES (
+    1,
+    'Expediatravels',
+    'Explora la Selva Central',
+    'hola@expediatravels.pe\nreservas@expediatravels.pe',
+    '+51 984 635 885\n+51 901 224 678',
+    'Jr. San Martín 245, Oxapampa\nCentro empresarial Aurora, Lima',
+    'Oxapampa, Pasco — Perú\nMiraflores, Lima — Perú',
+    'Instagram|https://instagram.com/expediatravels\nFacebook|https://facebook.com/expediatravels\nYouTube|https://youtube.com/@expediatravels'
+);
+
+INSERT INTO hero_slides (image_url, label, sort_order) VALUES
+('https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80', 'Bosques de Oxapampa', 1),
+('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80', 'Laguna El Oconal', 2),
+('https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1600&q=80', 'Cascadas de Pozuzo', 3);

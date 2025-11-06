@@ -7,13 +7,42 @@
     <link rel="stylesheet" href="css/app.css" />
 </head>
 <body class="page">
+<?php
+    $siteSettings = $siteSettings ?? [];
+    $siteTitle = (string) ($siteSettings['siteTitle'] ?? 'Expediatravels');
+    $siteTagline = $siteSettings['siteTagline'] ?? null;
+    $heroSlides = $siteSettings['heroSlides'] ?? [];
+    $contact = $siteSettings['contact'] ?? [];
+    $contactEmails = $contact['emails'] ?? [];
+    $contactPhones = $contact['phones'] ?? [];
+    $contactAddresses = $contact['addresses'] ?? [];
+    $contactLocations = $contact['locations'] ?? [];
+    $socialLinks = $contact['social'] ?? [];
+
+    $primaryPhone = $contactPhones[0] ?? null;
+    $primaryEmail = $contactEmails[0] ?? null;
+
+    $formatPhoneHref = static function (?string $phone): ?string {
+        if ($phone === null) {
+            return null;
+        }
+
+        $sanitised = preg_replace('/[^\\d+]/', '', $phone);
+
+        return $sanitised !== '' ? $sanitised : null;
+    };
+
+    $primaryPhoneHref = $formatPhoneHref($primaryPhone);
+?>
     <header class="site-header" data-site-header>
         <div class="site-header__inner">
             <a class="site-header__brand" href="#inicio">
                 <span class="site-header__logo" aria-hidden="true">🧭</span>
                 <span class="site-header__brand-text">
-                    <strong>Expediatravels</strong>
-                    <small>Travel Dev</small>
+                    <strong><?= htmlspecialchars($siteTitle); ?></strong>
+                    <?php if (!empty($siteTagline)): ?>
+                        <small><?= htmlspecialchars($siteTagline); ?></small>
+                    <?php endif; ?>
                 </span>
             </a>
             <button class="site-header__menu" type="button" aria-label="Abrir menú" aria-expanded="false" data-menu-toggle>
@@ -29,16 +58,39 @@
                 <a class="site-header__link" href="#contacto">Contacto</a>
             </nav>
             <div class="site-header__cta">
-                <div class="site-header__contact">
-                    <span class="site-header__contact-label">Hablemos</span>
-                    <a class="site-header__contact-phone" href="tel:+51984635885">+51 984 635 885</a>
-                </div>
+                <?php if (!empty($primaryPhone)): ?>
+                    <div class="site-header__contact">
+                        <span class="site-header__contact-label">Hablemos</span>
+                        <a class="site-header__contact-phone" href="<?= htmlspecialchars($primaryPhoneHref ? 'tel:' . $primaryPhoneHref : '#contacto', ENT_QUOTES); ?>">
+                            <?= htmlspecialchars($primaryPhone); ?>
+                        </a>
+                    </div>
+                <?php endif; ?>
                 <a class="button button--primary site-header__cta-button" href="admin/index.php">Login</a>
             </div>
         </div>
     </header>
 
-    <section class="hero" id="inicio">
+    <section class="hero" id="inicio" data-hero-slider>
+        <?php if (!empty($heroSlides)): ?>
+            <div class="hero__backgrounds" data-hero-backgrounds>
+                <?php foreach ($heroSlides as $index => $slide):
+                    $imageUrl = (string) ($slide['image'] ?? '');
+                    if ($imageUrl === '') {
+                        continue;
+                    }
+                    $isActive = $index === 0;
+                    $label = $slide['label'] ?? null;
+                ?>
+                    <div
+                        class="hero__background<?= $isActive ? ' hero__background--active' : ''; ?>"
+                        style="background-image: url('<?= htmlspecialchars($imageUrl, ENT_QUOTES); ?>');"
+                        data-hero-slide
+                        <?= $label ? 'data-hero-label-text="' . htmlspecialchars($label, ENT_QUOTES) . '"' : ''; ?>
+                    ></div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
         <div class="hero__content">
             <div class="hero__copy">
                 <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
@@ -88,6 +140,31 @@
                     <button class="booking-form__submit" type="submit">Buscar</button>
                 </div>
             </form>
+            <?php if (!empty($heroSlides)): ?>
+                <div class="hero__slider-meta">
+                    <?php $initialLabel = $heroSlides[0]['label'] ?? null; ?>
+                    <?php if (!empty($initialLabel)): ?>
+                        <div class="hero__slider-label" data-hero-label><?= htmlspecialchars($initialLabel); ?></div>
+                    <?php else: ?>
+                        <div class="hero__slider-label" data-hero-label hidden></div>
+                    <?php endif; ?>
+                    <?php if (count($heroSlides) > 1): ?>
+                        <div class="hero__slider-dots" role="tablist">
+                            <?php foreach ($heroSlides as $index => $slide):
+                                $label = $slide['label'] ?? ('Fondo ' . ($index + 1));
+                            ?>
+                                <button
+                                    type="button"
+                                    class="hero__dot<?= $index === 0 ? ' hero__dot--active' : ''; ?>"
+                                    data-hero-dot="<?= $index; ?>"
+                                    aria-label="Mostrar <?= htmlspecialchars($label, ENT_QUOTES); ?>"
+                                    aria-pressed="<?= $index === 0 ? 'true' : 'false'; ?>"
+                                ></button>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -401,13 +478,93 @@
                     <h2>¿Listo para tu próximo viaje?</h2>
                     <p>Agenda una videollamada con nuestro equipo y personaliza tu experiencia en Oxapampa según tus intereses.</p>
                 </div>
-                <a class="button button--primary" href="mailto:hola@expediatravels.pe">Agendar asesoría</a>
+                <?php if (!empty($primaryEmail)): ?>
+                    <a class="button button--primary" href="mailto:<?= htmlspecialchars($primaryEmail, ENT_QUOTES); ?>">Agendar asesoría</a>
+                <?php else: ?>
+                    <a class="button button--primary" href="#contacto">Solicitar información</a>
+                <?php endif; ?>
+            </div>
+            <div class="contact-cards">
+                <?php if (!empty($contactPhones)): ?>
+                    <article class="contact-card">
+                        <h3 class="contact-card__title">Teléfonos</h3>
+                        <ul class="contact-card__list">
+                            <?php foreach ($contactPhones as $phone):
+                                $phoneHref = $formatPhoneHref($phone);
+                            ?>
+                                <li class="contact-card__item">
+                                    <?php if ($phoneHref): ?>
+                                        <a href="tel:<?= htmlspecialchars($phoneHref, ENT_QUOTES); ?>"><?= htmlspecialchars($phone); ?></a>
+                                    <?php else: ?>
+                                        <?= htmlspecialchars($phone); ?>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </article>
+                <?php endif; ?>
+                <?php if (!empty($contactEmails)): ?>
+                    <article class="contact-card">
+                        <h3 class="contact-card__title">Correos</h3>
+                        <ul class="contact-card__list">
+                            <?php foreach ($contactEmails as $email): ?>
+                                <li class="contact-card__item">
+                                    <a href="mailto:<?= htmlspecialchars($email, ENT_QUOTES); ?>"><?= htmlspecialchars($email); ?></a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </article>
+                <?php endif; ?>
+                <?php if (!empty($contactAddresses) || !empty($contactLocations)): ?>
+                    <article class="contact-card">
+                        <h3 class="contact-card__title">Ubicaciones</h3>
+                        <ul class="contact-card__list">
+                            <?php foreach ($contactAddresses as $index => $address):
+                                $location = $contactLocations[$index] ?? null;
+                            ?>
+                                <li class="contact-card__item">
+                                    <strong><?= htmlspecialchars($address); ?></strong>
+                                    <?php if (!empty($location)): ?>
+                                        <small><?= htmlspecialchars($location); ?></small>
+                                    <?php endif; ?>
+                                </li>
+                            <?php endforeach; ?>
+                            <?php if (count($contactLocations) > count($contactAddresses)): ?>
+                                <?php for ($i = count($contactAddresses); $i < count($contactLocations); $i++): ?>
+                                    <li class="contact-card__item">
+                                        <?= htmlspecialchars($contactLocations[$i]); ?>
+                                    </li>
+                                <?php endfor; ?>
+                            <?php endif; ?>
+                        </ul>
+                    </article>
+                <?php endif; ?>
+                <?php if (!empty($socialLinks)): ?>
+                    <article class="contact-card">
+                        <h3 class="contact-card__title">Redes sociales</h3>
+                        <ul class="contact-card__list">
+                            <?php foreach ($socialLinks as $social):
+                                $label = $social['label'] ?? '';
+                                $url = $social['url'] ?? '';
+                                if ($label === '' || $url === '') {
+                                    continue;
+                                }
+                            ?>
+                                <li class="contact-card__item">
+                                    <a href="<?= htmlspecialchars($url, ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer">
+                                        <?= htmlspecialchars($label); ?>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </article>
+                <?php endif; ?>
             </div>
         </section>
     </main>
 
     <footer class="site-footer">
-        <div class="site-footer__brand">Expediatravels</div>
+        <div class="site-footer__brand"><?= htmlspecialchars($siteTitle); ?></div>
         <div class="site-footer__links">
             <div>
                 <h4>Explora</h4>
@@ -430,11 +587,17 @@
                 <ul>
                     <li><a href="#">Centro de soporte</a></li>
                     <li><a href="#">Políticas de viaje</a></li>
-                    <li><a href="mailto:hola@expediatravels.pe">Contacto</a></li>
+                    <li>
+                        <?php if (!empty($primaryEmail)): ?>
+                            <a href="mailto:<?= htmlspecialchars($primaryEmail, ENT_QUOTES); ?>">Contacto</a>
+                        <?php else: ?>
+                            <a href="#contacto">Contacto</a>
+                        <?php endif; ?>
+                    </li>
                 </ul>
             </div>
         </div>
-        <p class="site-footer__legal">© <?= date('Y'); ?> Expediatravels. Todos los derechos reservados.</p>
+        <p class="site-footer__legal">© <?= date('Y'); ?> <?= htmlspecialchars($siteTitle); ?>. Todos los derechos reservados.</p>
     </footer>
 
     <script>
@@ -470,6 +633,84 @@
                         toggle.setAttribute('aria-expanded', 'false');
                     }
                 });
+            }
+
+            const heroSection = document.querySelector('[data-hero-slider]');
+            const heroSlides = heroSection ? Array.from(heroSection.querySelectorAll('[data-hero-slide]')) : [];
+            const heroDots = heroSection ? Array.from(heroSection.querySelectorAll('[data-hero-dot]')) : [];
+            const heroLabel = heroSection ? heroSection.querySelector('[data-hero-label]') : null;
+
+            if (heroSection && heroSlides.length) {
+                let activeIndex = heroSlides.findIndex((slide) => slide.classList.contains('hero__background--active'));
+                if (activeIndex < 0) {
+                    activeIndex = 0;
+                }
+
+                const applyLabel = (slide) => {
+                    if (!heroLabel) {
+                        return;
+                    }
+
+                    const labelText = (slide.dataset.heroLabelText || '').trim();
+                    if (labelText) {
+                        heroLabel.textContent = labelText;
+                        heroLabel.hidden = false;
+                    } else {
+                        heroLabel.hidden = true;
+                        heroLabel.textContent = '';
+                    }
+                };
+
+                const setActive = (index) => {
+                    heroSlides.forEach((slide, slideIndex) => {
+                        slide.classList.toggle('hero__background--active', slideIndex === index);
+                    });
+
+                    heroDots.forEach((dot, dotIndex) => {
+                        dot.classList.toggle('hero__dot--active', dotIndex === index);
+                        dot.setAttribute('aria-pressed', dotIndex === index ? 'true' : 'false');
+                    });
+
+                    applyLabel(heroSlides[index]);
+                    activeIndex = index;
+                };
+
+                applyLabel(heroSlides[activeIndex]);
+
+                const advance = () => {
+                    const nextIndex = (activeIndex + 1) % heroSlides.length;
+                    setActive(nextIndex);
+                };
+
+                let intervalId = null;
+
+                const stop = () => {
+                    if (intervalId !== null) {
+                        window.clearInterval(intervalId);
+                        intervalId = null;
+                    }
+                };
+
+                const start = () => {
+                    if (heroSlides.length < 2) {
+                        return;
+                    }
+
+                    stop();
+                    intervalId = window.setInterval(advance, 6500);
+                };
+
+                heroDots.forEach((dot, dotIndex) => {
+                    dot.addEventListener('click', () => {
+                        setActive(dotIndex);
+                        start();
+                    });
+                });
+
+                heroSection.addEventListener('mouseenter', stop);
+                heroSection.addEventListener('mouseleave', start);
+
+                start();
             }
 
             const destinationsData = <?= json_encode((object) $destinationsPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;

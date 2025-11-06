@@ -14,6 +14,7 @@
             <p class="mt-2 text-slate-600">Gestiona destinos, paquetes, reservas y reportes del ecosistema Expediatravels.</p>
         </header>
         <ul class="grid gap-4">
+            <li><a href="configuracion.php">Configuración del sitio</a></li>
             <li><a href="destinos.php">Destinos</a></li>
             <li><a href="paquetes.php">Paquetes</a></li>
             <li><a href="usuarios.php">Usuarios</a></li>
