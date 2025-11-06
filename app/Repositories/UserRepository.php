@@ -19,6 +19,14 @@ class UserRepository
         return $user !== false ? $user : null;
     }
 
+    public function all(): array
+    {
+        $pdo = Connection::get();
+        $statement = $pdo->query('SELECT * FROM usuarios ORDER BY creado_en DESC, id DESC');
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     public function create(array $payload): int
     {
         $pdo = Connection::get();
@@ -149,6 +157,31 @@ class UserRepository
             ':apellidos' => $payload['apellidos'],
             ':celular' => $payload['celular'],
             ':correo' => mb_strtolower($payload['correo']),
+            ':id' => $userId,
+        ];
+
+        if (array_key_exists('contrasena_hash', $payload)) {
+            $query .= ', contrasena_hash = :contrasena_hash';
+            $params[':contrasena_hash'] = $payload['contrasena_hash'];
+        }
+
+        $query .= ' WHERE id = :id';
+
+        $statement = $pdo->prepare($query);
+        $statement->execute($params);
+    }
+
+    public function updateAdmin(int $userId, array $payload): void
+    {
+        $pdo = Connection::get();
+
+        $query = 'UPDATE usuarios SET nombre = :nombre, apellidos = :apellidos, celular = :celular, correo = :correo, rol = :rol';
+        $params = [
+            ':nombre' => $payload['nombre'],
+            ':apellidos' => $payload['apellidos'],
+            ':celular' => $payload['celular'] ?? null,
+            ':correo' => mb_strtolower($payload['correo']),
+            ':rol' => $payload['rol'],
             ':id' => $userId,
         ];
 
