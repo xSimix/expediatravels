@@ -6,6 +6,7 @@ use App\Repositories\DestinationRepository;
 use App\Repositories\InsightRepository;
 use App\Repositories\PackageRepository;
 use App\Repositories\ReviewRepository;
+use App\Repositories\SiteSettingsRepository;
 use App\Views\View;
 
 class HomeController
@@ -17,9 +18,18 @@ class HomeController
         $reviewRepository = new ReviewRepository();
         $insightRepository = new InsightRepository();
 
+        $settingsRepository = new SiteSettingsRepository();
+        $siteSettings = $settingsRepository->get();
+
+        $pageTitle = $siteSettings['siteTitle'] ?? 'Expediatravels';
+        if (!empty($siteSettings['siteTagline'])) {
+            $pageTitle .= ' — ' . $siteSettings['siteTagline'];
+        }
+
         $view = new View('home');
         $view->render([
-            'title' => 'Expediatravels — Explora Oxapampa',
+            'title' => $pageTitle,
+            'siteSettings' => $siteSettings,
             'featuredPackages' => $packagesRepository->getFeatured(),
             'signatureExperiences' => $packagesRepository->getSignatureExperiences(),
             'destinations' => $destinationRepository->getHighlights(),
