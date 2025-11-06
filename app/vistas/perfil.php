@@ -95,7 +95,19 @@ $phone = $user['celular'] ?? null;
     .name{ font-size:clamp(20px, 3.2vw, 28px); font-weight:800; }
     .badge{ padding:6px 10px; border-radius:999px; background:#e0f2fe; color:#0369a1; font-weight:700; font-size:12px; }
     .row{ display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-weight:600; }
+    .ph-meta + .row{ margin-top:6px; }
     .stat{ background:#f1f5f9; color:#0f172a; padding:8px 12px; border-radius:12px; font-weight:700; }
+
+    /* Typography helpers */
+    .section-title{ margin:0; font-size:1.1rem; font-weight:700; }
+    .section-title--compact{ font-size:1.05rem; margin-bottom:8px; }
+    .section-title--spaced{ margin-bottom:12px; }
+    .section-title--danger{ color:var(--danger); }
+    .section-subheading{ margin:0; font-size:1rem; font-weight:700; }
+    .section-text{ margin:0; color:var(--muted); line-height:1.55; }
+    .section-text--note{ font-size:14px; }
+    .card-section{ display:grid; gap:12px; }
+    .card-section + .card-section{ margin-top:18px; }
 
     /* Tabs */
     .tabs{ margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
@@ -108,19 +120,32 @@ $phone = $user['celular'] ?? null;
     /* Left column cards */
     .chips{ display:flex; flex-wrap:wrap; gap:8px; }
     .chip{ background:#eef2ff; color:#3730a3; padding:8px 12px; border-radius:999px; font-weight:700; }
+    .chip--info{ background:#e0f2fe; color:#0369a1; }
+    .chip--success{ background:#dcfce7; color:#14532d; }
+    .chip--warning{ background:#fff7ed; color:#9a3412; }
+    .chip--accent{ background:#fef9c3; color:#854d0e; }
     .list{ display:grid; gap:10px; }
+    .list--stacked{ margin:16px 0; }
+    .list--spaced{ margin-bottom:18px; }
     .list .item{ display:flex; align-items:center; gap:12px; }
     .icon{ width:34px; height:34px; border-radius:10px; background:#f1f5f9; display:grid; place-items:center; font-weight:900; }
 
     /* Right column cards */
     .trip{ display:grid; grid-template-columns:72px 1fr auto; gap:12px; align-items:center; padding:12px; border-radius:14px; background:#f8fafc; }
+    .trip-content{ display:grid; gap:4px; }
+    .trip-title{ margin:0; font-weight:800; }
+    .trip-text{ margin:0; color:var(--muted); }
     .thumb{ width:72px; height:72px; border-radius:12px; background:#ddd center/cover no-repeat; }
     .pill{ padding:6px 10px; border-radius:999px; background:#dcfce7; color:#166534; font-weight:800; font-size:12px; }
     .timeline{ border-left:3px solid #e5e7eb; padding-left:14px; display:grid; gap:16px; }
-    .dot{ width:12px; height:12px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 4px #e0f2fe; position:relative; left:-23px; top:6px; }
+    .timeline-item{ position:relative; padding-left:18px; }
+    .timeline-item::before{ content:""; position:absolute; left:-26px; top:6px; width:12px; height:12px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 4px #e0f2fe; }
+    .timeline-title{ margin:0; font-weight:700; }
+    .timeline-text{ margin:0; color:var(--muted); }
 
     /* Forms */
     .form{ display:grid; gap:12px; }
+    .form + .form{ margin-top:18px; }
     .field{ display:grid; gap:6px; }
     label{ font-weight:700; color:#0f172a; }
     input,select,textarea{
@@ -128,6 +153,8 @@ $phone = $user['celular'] ?? null;
     }
     input:focus,select:focus,textarea:focus{ outline:none; box-shadow:var(--ring); border-color:#bae6fd; }
     .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .form-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+    .form-actions--spaced{ margin-top:4px; }
 
     /* Photo grid */
     .photos{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
@@ -142,8 +169,9 @@ $phone = $user['celular'] ?? null;
     .alert--error{ background:#fee2e2; color:#7f1d1d; }
     .alert--info{ background:#e0f2fe; color:#0c4a6e; }
 
+    .btn.danger{ background:var(--danger); color:#fff; }
     .danger-card{ border:2px dashed rgba(239,68,68,0.25); }
-    .danger-card .btn.primary{ background:var(--danger); }
+    .danger-card .btn.primary{ background:var(--danger); color:#fff; }
 
     /* Responsive */
     @media (max-width: 960px){
@@ -186,7 +214,7 @@ $phone = $user['celular'] ?? null;
             <?= $verifiedAt ? 'Cuenta verificada' : 'Verificación pendiente'; ?>
           </span>
         </div>
-        <div class="row" style="margin-top:6px">
+        <div class="row">
           <span>📧 <?= htmlspecialchars($user['correo']); ?></span>
           <?php if (!empty($phone)): ?>
             <span>☎ <?= htmlspecialchars($phone); ?></span>
@@ -217,86 +245,94 @@ $phone = $user['celular'] ?? null;
     <section class="tab-panel" id="tab-resumen" aria-labelledby="Resumen">
       <div class="grid">
         <aside class="card pad" aria-label="Información del usuario">
-          <h2 style="margin:0 0 8px">Acerca de</h2>
-          <p style="margin:0 0 14px; color:var(--muted)">
-            <?= htmlspecialchars($user['nombre']); ?> administra su experiencia de viaje desde esta cuenta de Expediatravels. Aquí puedes consultar tus datos principales y el estado general de tu cuenta.
-          </p>
+          <div class="card-section">
+            <h2 class="section-title section-title--compact">Acerca de</h2>
+            <p class="section-text">
+              <?= htmlspecialchars($user['nombre']); ?> administra su experiencia de viaje desde esta cuenta de Expediatravels. Aquí puedes consultar tus datos principales y el estado general de tu cuenta.
+            </p>
 
-          <div class="list" style="margin:16px 0">
-            <div class="item"><span class="icon">✉</span> <a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></div>
-            <div class="item"><span class="icon">☎</span> <span><?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></span></div>
-            <div class="item"><span class="icon">🎟</span> <span><?= htmlspecialchars($roleLabel); ?></span></div>
+            <div class="list list--stacked">
+              <div class="item"><span class="icon">✉</span> <a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></div>
+              <div class="item"><span class="icon">☎</span> <span><?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></span></div>
+              <div class="item"><span class="icon">🎟</span> <span><?= htmlspecialchars($roleLabel); ?></span></div>
+            </div>
           </div>
 
-          <h3 style="margin:10px 0 8px">Estado de la cuenta</h3>
-          <div class="chips">
-            <span class="chip">ID <?= htmlspecialchars((string) $user['id']); ?></span>
-            <?php if ($createdAtFull !== null): ?>
-              <span class="chip">Creada <?= htmlspecialchars($createdAtFull); ?></span>
-            <?php endif; ?>
-            <span class="chip" style="background:#e0f2fe;color:#0369a1;">
-              <?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?>
-            </span>
+          <div class="card-section">
+            <h3 class="section-subheading">Estado de la cuenta</h3>
+            <div class="chips">
+              <span class="chip">ID <?= htmlspecialchars((string) $user['id']); ?></span>
+              <?php if ($createdAtFull !== null): ?>
+                <span class="chip">Creada <?= htmlspecialchars($createdAtFull); ?></span>
+              <?php endif; ?>
+              <span class="chip chip--info">
+                <?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?>
+              </span>
+            </div>
           </div>
 
-          <h3 style="margin:16px 0 8px">Recomendaciones</h3>
-          <div class="chips">
-            <span class="chip" style="background:#dcfce7;color:#14532d">Mantén tus datos actualizados</span>
-            <span class="chip" style="background:#fff7ed;color:#9a3412">Activa la verificación</span>
-            <span class="chip" style="background:#fef9c3;color:#854d0e">Protege tu contraseña</span>
+          <div class="card-section">
+            <h3 class="section-subheading">Recomendaciones</h3>
+            <div class="chips">
+              <span class="chip chip--success">Mantén tus datos actualizados</span>
+              <span class="chip chip--warning">Activa la verificación</span>
+              <span class="chip chip--accent">Protege tu contraseña</span>
+            </div>
           </div>
         </aside>
 
         <section class="card pad" aria-label="Actividad del perfil">
-          <h2 style="margin:0 0 12px">Próximos viajes</h2>
-          <div class="list" style="margin-bottom:18px">
-            <div class="trip">
-              <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?q=80&w=300&auto=format&fit=crop')"></div>
-              <div>
-                <div style="font-weight:800">Personaliza tus planes</div>
-                <div style="color:var(--muted)">Agrega tus próximos viajes desde el panel principal.</div>
-              </div>
-              <span class="pill">Disponible</span>
+          <div class="card-section">
+            <h2 class="section-title section-title--spaced">Próximos viajes</h2>
+            <div class="list list--spaced">
+              <article class="trip">
+                <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?q=80&w=300&auto=format&fit=crop')"></div>
+                <div class="trip-content">
+                  <h3 class="trip-title">Personaliza tus planes</h3>
+                  <p class="trip-text">Agrega tus próximos viajes desde el panel principal.</p>
+                </div>
+                <span class="pill">Disponible</span>
+              </article>
             </div>
           </div>
 
-          <h2 style="margin:6px 0 12px">Actividad reciente</h2>
-          <div class="timeline">
-            <?php if ($createdAtFull !== null): ?>
-              <div>
-                <div class="dot"></div>
-                <div style="font-weight:700">Cuenta creada</div>
-                <div style="color:var(--muted)">El <?= htmlspecialchars($createdAtFull); ?></div>
-              </div>
-            <?php endif; ?>
-            <?php if ($verifiedAt !== null): ?>
-              <div>
-                <div class="dot"></div>
-                <div style="font-weight:700">Verificación completada</div>
-                <div style="color:var(--muted)">El <?= htmlspecialchars($verifiedAt); ?></div>
-              </div>
-            <?php else: ?>
-              <div>
-                <div class="dot"></div>
-                <div style="font-weight:700">Verificación pendiente</div>
-                <div style="color:var(--muted)">Confirma tu correo para proteger tu cuenta.</div>
-              </div>
-            <?php endif; ?>
-            <div>
-              <div class="dot"></div>
-              <div style="font-weight:700">Última actualización</div>
-              <div style="color:var(--muted)">Gestiona tus datos en la pestaña Ajustes.</div>
+          <div class="card-section">
+            <h2 class="section-title section-title--spaced">Actividad reciente</h2>
+            <div class="timeline">
+              <?php if ($createdAtFull !== null): ?>
+                <article class="timeline-item">
+                  <h3 class="timeline-title">Cuenta creada</h3>
+                  <p class="timeline-text">El <?= htmlspecialchars($createdAtFull); ?></p>
+                </article>
+              <?php endif; ?>
+              <?php if ($verifiedAt !== null): ?>
+                <article class="timeline-item">
+                  <h3 class="timeline-title">Verificación completada</h3>
+                  <p class="timeline-text">El <?= htmlspecialchars($verifiedAt); ?></p>
+                </article>
+              <?php else: ?>
+                <article class="timeline-item">
+                  <h3 class="timeline-title">Verificación pendiente</h3>
+                  <p class="timeline-text">Confirma tu correo para proteger tu cuenta.</p>
+                </article>
+              <?php endif; ?>
+              <article class="timeline-item">
+                <h3 class="timeline-title">Última actualización</h3>
+                <p class="timeline-text">Gestiona tus datos en la pestaña Ajustes.</p>
+              </article>
             </div>
           </div>
 
-          <h2 style="margin:16px 0 12px">Fotos</h2>
-          <div class="photos">
-            <div>Sube tus recuerdos</div>
-            <div>Mantén tu perfil vivo</div>
-            <div>Comparte tu historia</div>
-            <div>Explora destinos</div>
-            <div>Inspira a otros</div>
-            <div>Expediatravels</div>
+          <div class="card-section">
+            <h2 class="section-title section-title--spaced">Fotos</h2>
+            <div class="photos">
+              <div>Sube tus recuerdos</div>
+              <div>Mantén tu perfil vivo</div>
+              <div>Comparte tu historia</div>
+              <div>Explora destinos</div>
+              <div>Inspira a otros</div>
+              <div>Expediatravels</div>
+            </div>
           </div>
         </section>
       </div>
@@ -305,23 +341,23 @@ $phone = $user['celular'] ?? null;
     <!-- TAB: VIAJES -->
     <section class="tab-panel" id="tab-viajes" hidden>
       <div class="card pad">
-        <h2 style="margin:0 0 12px">Historial de viajes</h2>
-        <p style="margin:0; color:var(--muted)">Aún no registras viajes en tu perfil. Cuando participes en actividades, aparecerán aquí para que puedas revisarlas.</p>
+        <h2 class="section-title section-title--spaced">Historial de viajes</h2>
+        <p class="section-text">Aún no registras viajes en tu perfil. Cuando participes en actividades, aparecerán aquí para que puedas revisarlas.</p>
       </div>
     </section>
 
     <!-- TAB: RESEÑAS -->
     <section class="tab-panel" id="tab-resenas" hidden>
       <div class="card pad">
-        <h2 style="margin:0 0 12px">Reseñas</h2>
-        <p style="margin:0; color:var(--muted)">Comparte tus experiencias sobre destinos y servicios turísticos desde la plataforma principal para verlas en tu perfil.</p>
+        <h2 class="section-title section-title--spaced">Reseñas</h2>
+        <p class="section-text">Comparte tus experiencias sobre destinos y servicios turísticos desde la plataforma principal para verlas en tu perfil.</p>
       </div>
     </section>
 
     <!-- TAB: AJUSTES -->
     <section class="tab-panel" id="tab-ajustes" hidden>
       <form class="card pad form" action="perfil.php" method="post" novalidate>
-        <h2 style="margin:0 0 12px">Actualizar datos personales</h2>
+        <h2 class="section-title section-title--spaced">Actualizar datos personales</h2>
         <input type="hidden" name="action" value="update" />
         <div class="row2">
           <div class="field">
@@ -363,7 +399,7 @@ $phone = $user['celular'] ?? null;
             <input id="coverInput" type="file" accept="image/*" />
           </div>
         </div>
-        <p style="margin:0; color:var(--muted); font-size:14px;">Las imágenes seleccionadas se muestran como vista previa y no se almacenan de forma permanente.</p>
+        <p class="section-text section-text--note">Las imágenes seleccionadas se muestran como vista previa y no se almacenan de forma permanente.</p>
         <div class="row2">
           <div class="field">
             <label for="rol">Rol asignado</label>
@@ -374,23 +410,23 @@ $phone = $user['celular'] ?? null;
             <input id="creado" value="<?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?>" disabled />
           </div>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:4px">
+        <div class="form-actions form-actions--spaced">
           <button class="btn" type="reset">Restablecer</button>
           <button class="btn primary" type="submit">Guardar cambios</button>
         </div>
       </form>
 
-      <form class="card pad form danger-card" action="perfil.php" method="post" style="margin-top:18px">
-        <h2 style="margin:0 0 12px; color:var(--danger)">Eliminar cuenta</h2>
-        <p style="margin:0; color:var(--muted)">Esta acción no se puede deshacer. Para confirmar, escribe <strong>ELIMINAR</strong> en el campo y envía el formulario.</p>
+      <form class="card pad form danger-card" action="perfil.php" method="post">
+        <h2 class="section-title section-title--spaced section-title--danger">Eliminar cuenta</h2>
+        <p class="section-text">Esta acción no se puede deshacer. Para confirmar, escribe <strong>ELIMINAR</strong> en el campo y envía el formulario.</p>
         <input type="hidden" name="action" value="delete" />
         <div class="field">
           <label for="confirmacion">Confirmación</label>
           <input id="confirmacion" name="confirmacion" placeholder="Escribe ELIMINAR" required />
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="form-actions">
           <button class="btn" type="reset">Cancelar</button>
-          <button class="btn primary" type="submit" style="background:var(--danger)">Cerrar mi cuenta</button>
+          <button class="btn danger" type="submit">Cerrar mi cuenta</button>
         </div>
       </form>
     </section>
