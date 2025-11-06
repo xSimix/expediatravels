@@ -40,8 +40,10 @@
 
     <section class="hero" id="inicio">
         <div class="hero__content">
-            <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
-            <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.</p>
+            <div class="hero__copy">
+                <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
+                <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.</p>
+            </div>
             <form class="booking-form" action="explorar.php" method="get" role="search">
                 <fieldset class="booking-form__tabs">
                     <legend class="visually-hidden">Tipo de servicio</legend>
