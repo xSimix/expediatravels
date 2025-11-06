@@ -99,20 +99,51 @@
             </div>
             <div class="cards-grid">
                 <?php foreach ($featuredPackages as $package): ?>
-                    <article class="card card--package">
-                        <div class="card__media" role="presentation"></div>
-                        <div class="card__content">
-                            <div class="card__header">
-                                <span class="card__tag"><?= htmlspecialchars($package['destino']); ?> • <?= htmlspecialchars($package['region']); ?></span>
-                                <span class="card__duration"><?= htmlspecialchars($package['duracion']); ?></span>
-                            </div>
-                            <h3><?= htmlspecialchars($package['nombre']); ?></h3>
-                            <p><?= htmlspecialchars($package['resumen']); ?></p>
-                            <div class="card__footer">
-                                <span class="card__price">S/ <?= number_format((float) $package['precio'], 2); ?></span>
-                                <a class="card__link" href="paquete.php?id=<?= urlencode((string) $package['id']); ?>">Ver detalles</a>
-                            </div>
+                    <?php
+                        $originalPrice = $package['precio'] * 1.18;
+                        $statusLabel = $package['precio'] <= 110 ? 'Oferta especial' : 'Salida garantizada';
+                        $tagLabel = $package['destino'] . ' • ' . $package['region'];
+                        $imagePath = null;
+                        if (!empty($package['imagen']) && is_file(__DIR__ . '/../../web/assets/' . $package['imagen'])) {
+                            $imagePath = 'assets/' . $package['imagen'];
+                        }
+                    ?>
+                    <article class="travel-card" data-theme="package">
+                        <div class="travel-card__media"<?= $imagePath ? " style=\"background-image: url('" . htmlspecialchars($imagePath) . "');\"" : ''; ?> aria-hidden="true"></div>
+                        <div class="travel-card__pill-group">
+                            <span class="travel-card__status"><?= htmlspecialchars($statusLabel); ?></span>
+                            <span class="travel-card__tag"><?= htmlspecialchars($tagLabel); ?></span>
                         </div>
+                        <div class="travel-card__content">
+                            <header class="travel-card__header">
+                                <span class="travel-card__category">Tour <?= htmlspecialchars($package['destino']); ?></span>
+                                <span class="travel-card__badge">Circuito destacado</span>
+                            </header>
+                            <h3 class="travel-card__title"><?= htmlspecialchars($package['nombre']); ?></h3>
+                            <p class="travel-card__excerpt"><?= htmlspecialchars($package['resumen']); ?></p>
+                            <dl class="travel-card__meta">
+                                <div>
+                                    <dt>Duración</dt>
+                                    <dd><?= htmlspecialchars($package['duracion']); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Destino</dt>
+                                    <dd><?= htmlspecialchars($package['destino']); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Incluye</dt>
+                                    <dd>Guía local • Traslados</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <footer class="travel-card__footer">
+                            <div class="travel-card__pricing">
+                                <span class="travel-card__price">S/ <?= number_format((float) $package['precio'], 2); ?></span>
+                                <span class="travel-card__price-original">S/ <?= number_format((float) $originalPrice, 2); ?></span>
+                                <span class="travel-card__price-note">por persona</span>
+                            </div>
+                            <a class="travel-card__cta" href="paquete.php?id=<?= urlencode((string) $package['id']); ?>">RESERVAR</a>
+                        </footer>
                     </article>
                 <?php endforeach; ?>
             </div>
@@ -158,17 +189,56 @@
 
         <section class="section section--experiences" id="experiencias">
             <div class="section__header">
-                <h2>Signature Experiences</h2>
+                <h2>Circuitos exclusivos</h2>
                 <p>Aventuras que combinan cultura viva, sostenibilidad y confort en cada detalle.</p>
             </div>
-            <div class="experience-grid">
+            <div class="cards-grid cards-grid--experiences">
                 <?php foreach ($signatureExperiences as $experience): ?>
-                    <article class="experience">
-                        <h3><?= htmlspecialchars($experience['nombre']); ?></h3>
-                        <p><?= htmlspecialchars($experience['resumen']); ?></p>
-                        <footer>
-                            <span><?= htmlspecialchars($experience['destino']); ?></span>
-                            <span><?= htmlspecialchars($experience['duracion']); ?></span>
+                    <?php
+                        $experiencePrice = $experience['precio'] ?? 0;
+                        $experienceOriginal = $experiencePrice ? $experiencePrice * 1.12 : null;
+                    ?>
+                    <article class="travel-card" data-theme="experience">
+                        <div class="travel-card__media" aria-hidden="true"></div>
+                        <div class="travel-card__pill-group">
+                            <span class="travel-card__status">Nuevo recorrido</span>
+                            <span class="travel-card__tag"><?= htmlspecialchars($experience['destino']); ?></span>
+                        </div>
+                        <div class="travel-card__content">
+                            <header class="travel-card__header">
+                                <span class="travel-card__category">Experiencia guiada</span>
+                                <span class="travel-card__badge">Circuito exclusivo</span>
+                            </header>
+                            <h3 class="travel-card__title"><?= htmlspecialchars($experience['nombre']); ?></h3>
+                            <p class="travel-card__excerpt"><?= htmlspecialchars($experience['resumen']); ?></p>
+                            <dl class="travel-card__meta">
+                                <div>
+                                    <dt>Duración</dt>
+                                    <dd><?= htmlspecialchars($experience['duracion']); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Destino</dt>
+                                    <dd><?= htmlspecialchars($experience['destino']); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Experiencia</dt>
+                                    <dd>Grupos reducidos</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <footer class="travel-card__footer">
+                            <div class="travel-card__pricing">
+                                <?php if ($experiencePrice): ?>
+                                    <span class="travel-card__price">S/ <?= number_format((float) $experiencePrice, 2); ?></span>
+                                    <?php if ($experienceOriginal): ?>
+                                        <span class="travel-card__price-original">S/ <?= number_format((float) $experienceOriginal, 2); ?></span>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="travel-card__price">Pronto</span>
+                                <?php endif; ?>
+                                <span class="travel-card__price-note">por persona</span>
+                            </div>
+                            <a class="travel-card__cta" href="#contacto">RESERVAR</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>
