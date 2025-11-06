@@ -23,27 +23,29 @@ Centralizar la oferta turística de la región en una experiencia digital modern
 
 ```text
 expediatravels/
-├── app/
-│   ├── config/
-│   ├── controllers/
-│   ├── models/
-│   └── views/
-├── web/
-│   ├── assets/
-│   ├── css/
-│   ├── js/
+├── aplicacion/
+│   ├── configuracion/
+│   ├── controladores/
+│   ├── modelos/
+│   └── vistas/
+├── sitio_web/
+│   ├── recursos/
+│   ├── estilos/
+│   ├── scripts/
 │   ├── explorar.php
 │   ├── index.php
-│   └── paquete.php
-├── admin/
+│   ├── paquete.php
+│   └── perfil.php
+├── administracion/
 │   ├── destinos.php
 │   ├── index.php
 │   ├── paquetes.php
 │   ├── reportes.php
 │   └── usuarios.php
-└── database/
-    ├── schema.sql
-    └── seeds.sql
+└── base_datos/
+    ├── esquema.sql
+    ├── datos_semilla.sql
+    └── migraciones/
 ```
 
 ## Módulos principales

@@ -12,7 +12,7 @@ $mobilePattern = '/(android|iphone|ipad|ipod|blackberry|bb10|mobile|iemobile|ope
 
 $isMobile = (bool) preg_match($mobilePattern, $userAgent);
 
-$target = $isMobile ? '/app/' : '/web/';
+$target = $isMobile ? '/aplicacion/' : '/sitio_web/';
 
 header('Location: ' . $target, true, 302);
 exit;
