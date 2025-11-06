@@ -205,10 +205,6 @@ class SiteSettingsRepository
 
         $normalized = '/' . ltrim(str_replace('\\', '/', $trimmed), '/');
 
-        if (str_starts_with($normalized, '/web/')) {
-            $normalized = '/' . ltrim(substr($normalized, 5), '/');
-        }
-
         return $normalized;
     }
 
