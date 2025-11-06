@@ -244,7 +244,7 @@
 
                     $imagePath = null;
                     $imageFile = trim((string) ($destination['imagen'] ?? ''));
-                    if ($imageFile !== '' && is_file(__DIR__ . '/../../sitio_web/recursos/' . $imageFile)) {
+                    if ($imageFile !== '' && is_file(__DIR__ . '/../../web/recursos/' . $imageFile)) {
                         $imagePath = 'recursos/' . $imageFile;
                     } elseif ($imageFile !== '' && isset($fallbackImageMap[$imageFile])) {
                         $imagePath = $fallbackImageMap[$imageFile];
@@ -345,7 +345,7 @@
                         $statusLabel = $package['precio'] <= 110 ? 'Oferta especial' : 'Salida garantizada';
                         $tagLabel = $package['destino'] . ' • ' . $package['region'];
                         $imagePath = null;
-                        if (!empty($package['imagen']) && is_file(__DIR__ . '/../../sitio_web/recursos/' . $package['imagen'])) {
+                        if (!empty($package['imagen']) && is_file(__DIR__ . '/../../web/recursos/' . $package['imagen'])) {
                             $imagePath = 'recursos/' . $package['imagen'];
                         }
                     ?>
