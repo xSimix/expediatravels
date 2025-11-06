@@ -18,6 +18,13 @@ class AuthService
         }
 
         if (isset($_SESSION['auth_user']) && is_array($_SESSION['auth_user'])) {
+            if (!isset($_SESSION['auth_user']['rol']) && isset($_SESSION['auth_user']['id'])) {
+                $record = $this->users->findById((int) $_SESSION['auth_user']['id']);
+                if ($record !== null) {
+                    $_SESSION['auth_user']['rol'] = $record['rol'] ?? 'suscriptor';
+                }
+            }
+
             return $_SESSION['auth_user'];
         }
 
@@ -45,6 +52,7 @@ class AuthService
             'nombre' => $user['nombre'],
             'apellidos' => $user['apellidos'],
             'correo' => $user['correo'],
+            'rol' => $user['rol'] ?? 'suscriptor',
         ];
 
         return $_SESSION['auth_user'];

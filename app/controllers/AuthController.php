@@ -60,6 +60,7 @@ class AuthController
                     'contrasena_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'verificacion_pin' => $pin,
                     'pin_expira_en' => $expiresAt->format('Y-m-d H:i:s'),
+                    'rol' => 'suscriptor',
                 ]);
 
                 $userId = (int) $existingUser['id'];
@@ -72,6 +73,7 @@ class AuthController
                     'contrasena_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'verificacion_pin' => $pin,
                     'pin_expira_en' => $expiresAt->format('Y-m-d H:i:s'),
+                    'rol' => 'suscriptor',
                 ]);
             }
         } catch (Exception) {
@@ -120,6 +122,7 @@ class AuthController
             'nombre' => $user['nombre'],
             'apellidos' => $user['apellidos'],
             'correo' => $user['correo'],
+            'rol' => $user['rol'] ?? 'suscriptor',
         ];
 
         if ($remember) {
@@ -180,6 +183,7 @@ class AuthController
             'nombre' => $user['nombre'],
             'apellidos' => $user['apellidos'],
             'correo' => $user['correo'],
+            'rol' => $user['rol'] ?? 'suscriptor',
         ];
 
         $this->respondSuccess('Cuenta verificada correctamente.', [

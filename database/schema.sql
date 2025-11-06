@@ -11,7 +11,7 @@ CREATE TABLE usuarios (
     verificado_en DATETIME DEFAULT NULL,
     remember_token VARCHAR(255) DEFAULT NULL,
     remember_token_expira_en DATETIME DEFAULT NULL,
-    rol ENUM('admin', 'editor', 'cliente') DEFAULT 'cliente',
+    rol ENUM('administrador', 'moderador', 'suscriptor') DEFAULT 'suscriptor',
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
