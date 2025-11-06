@@ -15,7 +15,7 @@ class SiteSettingsRepository
             $statement = $pdo->query('SELECT site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links FROM site_settings ORDER BY id ASC LIMIT 1');
             $settings = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
 
-            $heroSlides = $this->fetchHeroSlides($pdo);
+            $heroSlides = $this->getHeroSlides();
 
             if (!empty($settings)) {
                 return [
@@ -97,9 +97,54 @@ class SiteSettingsRepository
         return is_string($imagePath) ? $imagePath : null;
     }
 
-    private function fetchHeroSlides(PDO $pdo): array
+    public function getHeroSlides(bool $onlyVisible = true): array
     {
-        $statement = $pdo->query('SELECT id, image_url, label FROM hero_slides ORDER BY sort_order ASC, id ASC');
+        try {
+            $pdo = Connection::get();
+            $this->ensureTablesExist($pdo);
+
+            return $this->fetchHeroSlides($pdo, $onlyVisible);
+        } catch (PDOException $exception) {
+            return [];
+        }
+    }
+
+    public function updateHeroVisibility(array $visibleIds): void
+    {
+        $pdo = Connection::get();
+        $this->ensureTablesExist($pdo);
+
+        $visibleIds = array_values(array_filter(array_map(static fn ($id) => is_numeric($id) ? (int) $id : null, $visibleIds), static fn ($id) => $id !== null));
+
+        $pdo->beginTransaction();
+
+        try {
+            $pdo->exec('UPDATE hero_slides SET is_visible = 0');
+
+            if (!empty($visibleIds)) {
+                $placeholders = implode(',', array_fill(0, count($visibleIds), '?'));
+                $statement = $pdo->prepare("UPDATE hero_slides SET is_visible = 1 WHERE id IN ($placeholders)");
+                $statement->execute($visibleIds);
+            }
+
+            $pdo->commit();
+        } catch (PDOException $exception) {
+            $pdo->rollBack();
+            throw $exception;
+        }
+    }
+
+    private function fetchHeroSlides(PDO $pdo, bool $onlyVisible = true): array
+    {
+        $query = 'SELECT id, image_url, label, is_visible FROM hero_slides';
+
+        if ($onlyVisible) {
+            $query .= ' WHERE is_visible = 1';
+        }
+
+        $query .= ' ORDER BY sort_order ASC, id ASC';
+
+        $statement = $pdo->query($query);
         $slides = $statement->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
         return array_values(array_map(
@@ -107,6 +152,7 @@ class SiteSettingsRepository
                 'id' => isset($slide['id']) ? (int) $slide['id'] : null,
                 'image' => $slide['image_url'] ?? '',
                 'label' => $slide['label'] ?? null,
+                'isVisible' => isset($slide['is_visible']) ? (bool) (int) $slide['is_visible'] : true,
             ],
             $slides
         ));
@@ -135,16 +181,19 @@ class SiteSettingsRepository
                     'id' => null,
                     'image' => 'https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80',
                     'label' => 'Bosques de Oxapampa',
+                    'isVisible' => true,
                 ],
                 [
                     'id' => null,
                     'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
                     'label' => 'Laguna El Oconal',
+                    'isVisible' => true,
                 ],
                 [
                     'id' => null,
                     'image' => 'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?auto=format&fit=crop&w=1600&q=80',
                     'label' => 'Cascadas de Pozuzo',
+                    'isVisible' => true,
                 ],
             ],
             'contact' => [
@@ -235,9 +284,16 @@ class SiteSettingsRepository
                 image_url VARCHAR(255) NOT NULL,
                 label VARCHAR(120) DEFAULT NULL,
                 sort_order INT DEFAULT 0,
+                is_visible TINYINT(1) NOT NULL DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )'
         );
+
+        try {
+            $pdo->exec('ALTER TABLE hero_slides ADD COLUMN is_visible TINYINT(1) NOT NULL DEFAULT 1');
+        } catch (PDOException $exception) {
+            // Column already exists.
+        }
 
         $initialised = true;
     }

@@ -75,6 +75,11 @@ try {
                     }
                 }
             }
+        } elseif ($formType === 'update_visibility') {
+            $visibleSlides = $_POST['visible_slides'] ?? [];
+            $repository->updateHeroVisibility(is_array($visibleSlides) ? $visibleSlides : []);
+
+            $feedback = ['type' => 'success', 'message' => 'Visibilidad del slider actualizada.'];
         } elseif ($formType === 'delete_slide') {
             $slideId = isset($_POST['slide_id']) ? (int) $_POST['slide_id'] : 0;
             if ($slideId > 0) {
@@ -101,7 +106,13 @@ try {
 $siteSettings = $repository->get();
 $siteTitle = $siteSettings['siteTitle'] ?? 'Expediatravels';
 $siteTagline = $siteSettings['siteTagline'] ?? '';
-$heroSlides = $siteSettings['heroSlides'] ?? [];
+$heroSlides = $repository->getHeroSlides(false);
+$visibleHeroSlideIds = [];
+foreach ($heroSlides as $slide) {
+    if (!empty($slide['isVisible']) && isset($slide['id'])) {
+        $visibleHeroSlideIds[(int) $slide['id']] = true;
+    }
+}
 $contact = $siteSettings['contact'] ?? [];
 $contactEmails = $contact['emails'] ?? [];
 $contactPhones = $contact['phones'] ?? [];
@@ -203,60 +214,106 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             transform: translateY(-1px);
             box-shadow: 0 12px 24px rgba(2, 132, 199, 0.25);
         }
-        .hero-slides {
+        .hero-gallery {
+            display: grid;
+            gap: 1.5rem;
+        }
+        .hero-gallery__grid {
             display: grid;
             gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         }
-        .hero-slide {
+        .hero-gallery__item {
             position: relative;
             border-radius: 20px;
             overflow: hidden;
-            min-height: 180px;
             background: #0f172a;
             color: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.35);
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
+            border: 1px solid rgba(148, 163, 184, 0.28);
+            display: grid;
         }
-        .hero-slide::before {
-            content: '';
+        .hero-gallery__item:not(.hero-gallery__item--inactive) {
+            box-shadow: 0 24px 65px rgba(2, 132, 199, 0.24);
+            border-color: rgba(56, 189, 248, 0.45);
+        }
+        .hero-gallery__item--inactive {
+            opacity: 0.65;
+        }
+        .hero-gallery__item--inactive::after {
+            content: 'Oculta';
             position: absolute;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            background-image: var(--hero-slide-image);
-            opacity: 0.88;
-        }
-        .hero-slide__meta {
-            position: relative;
-            z-index: 1;
-            padding: 1rem 1.2rem;
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.75) 100%);
-        }
-        .hero-slide__label {
-            font-size: 0.95rem;
-            font-weight: 600;
-            letter-spacing: 0.08em;
+            top: 12px;
+            right: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
             text-transform: uppercase;
         }
-        .hero-slide__actions {
-            display: flex;
-            justify-content: flex-end;
-            padding: 0 1rem 1rem;
+        .hero-gallery__select {
+            display: grid;
+            gap: 0.9rem;
+            color: inherit;
+            text-decoration: none;
+            padding: 1.1rem 1.15rem 1rem;
+            cursor: pointer;
+            position: relative;
         }
-        .hero-slide__delete {
+        .hero-gallery__checkbox {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            width: 22px;
+            height: 22px;
+            accent-color: #38bdf8;
+            cursor: pointer;
+        }
+        .hero-gallery__thumbnail {
+            border-radius: 16px;
+            overflow: hidden;
+            aspect-ratio: 16 / 9;
+            background: rgba(15, 23, 42, 0.45);
+        }
+        .hero-gallery__thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .hero-gallery__meta {
+            display: grid;
+            gap: 0.4rem;
+        }
+        .hero-gallery__meta strong {
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .hero-gallery__meta small {
+            font-size: 0.78rem;
+            color: rgba(226, 232, 240, 0.75);
+            word-break: break-word;
+        }
+        .hero-gallery__delete-form {
+            position: absolute;
+            right: 12px;
+            bottom: 12px;
+        }
+        .hero-gallery__delete {
             border: none;
             background: rgba(239, 68, 68, 0.95);
             color: #fff;
             padding: 0.45rem 1.1rem;
             border-radius: 999px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 600;
+            letter-spacing: 0.04em;
             transition: background 0.2s ease;
         }
-        .hero-slide__delete:hover {
+        .hero-gallery__delete:hover {
             background: rgba(220, 38, 38, 1);
         }
         .admin-alert {
@@ -347,34 +404,54 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
         <section class="admin-card">
             <h2>Fondos del hero</h2>
             <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Al subirlas se guardan en el hosting del sitio dentro de <code>web/uploads/hero</code>.</p>
-            <div class="hero-slides">
+            <div class="hero-gallery">
+                <form method="post" id="hero-visibility-form" style="display: none;">
+                    <input type="hidden" name="form_type" value="update_visibility" />
+                </form>
                 <?php if (!empty($heroSlides)): ?>
-                    <?php foreach ($heroSlides as $slide):
-                        $slideId = $slide['id'] ?? null;
-                        $slideLabel = $slide['label'] ?? '';
-                        $slideImage = $slide['image'] ?? '';
-                        if ($slideImage === '') {
-                            continue;
-                        }
-                    ?>
-                        <article class="hero-slide" style="--hero-slide-image: url('<?= htmlspecialchars($slideImage, ENT_QUOTES); ?>');">
-                            <div class="hero-slide__meta">
-                                <div class="hero-slide__label"><?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Sin título'); ?></div>
-                                <small><?= htmlspecialchars($slideImage); ?></small>
+                    <div class="hero-gallery__grid">
+                        <?php foreach ($heroSlides as $slide):
+                            $slideId = $slide['id'] ?? null;
+                            $slideLabel = $slide['label'] ?? '';
+                            $slideImage = $slide['image'] ?? '';
+                            if (!$slideId || $slideImage === '') {
+                                continue;
+                            }
+                            $isVisible = isset($visibleHeroSlideIds[(int) $slideId]);
+                            $checkboxId = 'hero-slide-' . (int) $slideId;
+                        ?>
+                            <div class="hero-gallery__item<?= $isVisible ? '' : ' hero-gallery__item--inactive'; ?>">
+                                <label class="hero-gallery__select" for="<?= htmlspecialchars($checkboxId, ENT_QUOTES); ?>">
+                                    <input
+                                        type="checkbox"
+                                        class="hero-gallery__checkbox"
+                                        id="<?= htmlspecialchars($checkboxId, ENT_QUOTES); ?>"
+                                        name="visible_slides[]"
+                                        value="<?= (int) $slideId; ?>"
+                                        form="hero-visibility-form"
+                                        <?= $isVisible ? 'checked' : ''; ?>
+                                    />
+                                    <span class="hero-gallery__thumbnail">
+                                        <img src="<?= htmlspecialchars($slideImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Imagen del hero', ENT_QUOTES); ?>" loading="lazy" />
+                                    </span>
+                                    <span class="hero-gallery__meta">
+                                        <strong><?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Sin título'); ?></strong>
+                                        <small><?= htmlspecialchars($slideImage); ?></small>
+                                    </span>
+                                </label>
+                                <form method="post" class="hero-gallery__delete-form" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
+                                    <input type="hidden" name="form_type" value="delete_slide" />
+                                    <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
+                                    <button type="submit" class="hero-gallery__delete">Eliminar</button>
+                                </form>
                             </div>
-                            <?php if (!empty($slideId)): ?>
-                                <div class="hero-slide__actions">
-                                    <form method="post" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
-                                        <input type="hidden" name="form_type" value="delete_slide" />
-                                        <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
-                                        <button type="submit" class="hero-slide__delete">Eliminar</button>
-                                    </form>
-                                </div>
-                            <?php endif; ?>
-                        </article>
-                    <?php endforeach; ?>
+                        <?php endforeach; ?>
+                    </div>
+                    <div class="admin-actions">
+                        <button class="admin-button" type="submit" form="hero-visibility-form">Guardar selección</button>
+                    </div>
                 <?php else: ?>
-                    <p class="admin-help">Aún no hay imágenes registradas. Agrega la primera para activar el slider.</p>
+                    <p class="admin-help">Aún no hay imágenes registradas. Agrega la primera para activar la galería del slider.</p>
                 <?php endif; ?>
             </div>
 

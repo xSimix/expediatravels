@@ -17,5 +17,6 @@ CREATE TABLE IF NOT EXISTS hero_slides (
     image_url VARCHAR(255) NOT NULL,
     label VARCHAR(120) DEFAULT NULL,
     sort_order INT DEFAULT 0,
+    is_visible TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
