@@ -43,6 +43,7 @@ class SiteSettingsRepository
         $settings = $this->normalisePayload($payload);
 
         $pdo = Connection::get();
+        $this->ensureTablesExist($pdo);
         $statement = $pdo->prepare(
             'INSERT INTO site_settings (id, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links)
              VALUES (1, :title, :tagline, :emails, :phones, :addresses, :locations, :social)
@@ -70,6 +71,7 @@ class SiteSettingsRepository
     public function addHeroSlide(string $imageUrl, ?string $label = null): void
     {
         $pdo = Connection::get();
+        $this->ensureTablesExist($pdo);
         $sortOrder = (int) $pdo->query('SELECT IFNULL(MAX(sort_order), 0) FROM hero_slides')->fetchColumn();
 
         $statement = $pdo->prepare('INSERT INTO hero_slides (image_url, label, sort_order) VALUES (:image_url, :label, :sort_order)');
@@ -83,6 +85,7 @@ class SiteSettingsRepository
     public function deleteHeroSlide(int $id): ?string
     {
         $pdo = Connection::get();
+        $this->ensureTablesExist($pdo);
 
         $statement = $pdo->prepare('SELECT image_url FROM hero_slides WHERE id = :id');
         $statement->execute([':id' => $id]);
@@ -201,6 +204,42 @@ class SiteSettingsRepository
         }
 
         return $social;
+    }
+
+    private function ensureTablesExist(PDO $pdo): void
+    {
+        static $initialised = false;
+
+        if ($initialised) {
+            return;
+        }
+
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS site_settings (
+                id INT PRIMARY KEY,
+                site_title VARCHAR(150) NOT NULL,
+                site_tagline VARCHAR(150) DEFAULT NULL,
+                contact_emails TEXT DEFAULT NULL,
+                contact_phones TEXT DEFAULT NULL,
+                contact_addresses TEXT DEFAULT NULL,
+                contact_locations TEXT DEFAULT NULL,
+                social_links TEXT DEFAULT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )'
+        );
+
+        $pdo->exec(
+            'CREATE TABLE IF NOT EXISTS hero_slides (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                image_url VARCHAR(255) NOT NULL,
+                label VARCHAR(120) DEFAULT NULL,
+                sort_order INT DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )'
+        );
+
+        $initialised = true;
     }
 
     private function nullableTrim(mixed $value): ?string
