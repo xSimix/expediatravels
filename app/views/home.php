@@ -40,32 +40,52 @@
 
     <section class="hero" id="inicio">
         <div class="hero__content">
-            <div class="hero__badge">Selva Central, Perú</div>
-            <h1 class="hero__title">Fly First. Conecta. <span>Respira</span> Oxapampa.</h1>
-            <p class="hero__subtitle">Diseñamos viajes inmersivos que combinan aventura, cultura viva y hospitalidad local en Oxapampa, Villa Rica, Pozuzo, Perené y Yanachaga.</p>
-            <div class="hero__actions">
-                <a class="button button--primary" href="#paquetes">Explorar paquetes</a>
-                <a class="button button--ghost" href="#destinos">Ver destinos</a>
-            </div>
-            <ul class="hero__selling-points">
-                <?php foreach ($sellingPoints as $point): ?>
-                    <li class="selling-point">
-                        <span class="selling-point__icon" aria-hidden="true"><?= htmlspecialchars($point['icon']); ?></span>
-                        <div>
-                            <h3><?= htmlspecialchars($point['title']); ?></h3>
-                            <p><?= htmlspecialchars($point['description']); ?></p>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-        <div class="hero__media" aria-hidden="true">
-            <div class="hero__card">
-                <span>Reserva confirmada</span>
-                <strong>Tour <?= htmlspecialchars($featuredPackages[0]['destino'] ?? 'Oxapampa'); ?></strong>
-                <p>Salida este fin de semana • 6 viajeros</p>
-            </div>
-            <div class="hero__floating-tag">+24 experiencias auténticas</div>
+            <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
+            <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.</p>
+            <form class="booking-form" action="explorar.php" method="get" role="search">
+                <fieldset class="booking-form__tabs">
+                    <legend class="visually-hidden">Tipo de servicio</legend>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="destinos" checked />
+                        <span>Destinos</span>
+                    </label>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="circuitos" />
+                        <span>Circuitos</span>
+                    </label>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="paquetes" />
+                        <span>Paquetes</span>
+                    </label>
+                </fieldset>
+                <div class="booking-form__fields">
+                    <label class="booking-field">
+                        <span class="booking-field__label">Destino</span>
+                        <select name="destino" required>
+                            <option value="" disabled selected>Selecciona un destino</option>
+                            <option value="oxapampa">Oxapampa</option>
+                            <option value="villa-rica">Villa Rica</option>
+                            <option value="pozuzo">Pozuzo</option>
+                            <option value="selva-central">Selva Central</option>
+                        </select>
+                    </label>
+                    <label class="booking-field">
+                        <span class="booking-field__label">Fecha de viaje</span>
+                        <input type="date" name="fecha" min="<?= date('Y-m-d'); ?>" />
+                    </label>
+                    <label class="booking-field">
+                        <span class="booking-field__label">Tipo de tour</span>
+                        <select name="tipo">
+                            <option value="" selected>Selecciona una experiencia</option>
+                            <option value="aventura">Aventura</option>
+                            <option value="cultural">Cultural</option>
+                            <option value="gastronomia">Gastronomía</option>
+                            <option value="naturaleza">Naturaleza</option>
+                        </select>
+                    </label>
+                    <button class="booking-form__submit" type="submit">Buscar</button>
+                </div>
+            </form>
         </div>
     </section>
 
