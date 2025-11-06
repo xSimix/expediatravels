@@ -40,13 +40,57 @@
 
     <section class="hero" id="inicio">
         <div class="hero__content">
-            <div class="hero__badge">Selva Central, Perú</div>
-            <h1 class="hero__title">Fly First. Conecta. <span>Respira</span> Oxapampa.</h1>
-            <p class="hero__subtitle">Diseñamos viajes inmersivos que combinan aventura, cultura viva y hospitalidad local en Oxapampa, Villa Rica, Pozuzo, Perené y Yanachaga.</p>
-            <div class="hero__actions">
-                <a class="button button--primary" href="#paquetes">Explorar paquetes</a>
-                <a class="button button--ghost" href="#destinos">Ver destinos</a>
-            </div>
+            <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
+            <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas biosfera a tu ritmo.</p>
+            <form class="booking-form" action="explorar.php" method="get" role="search">
+                <fieldset class="booking-form__tabs">
+                    <legend class="visually-hidden">Tipo de servicio</legend>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="tours" checked />
+                        <span> Tours </span>
+                    </label>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="hoteles" />
+                        <span> Hoteles </span>
+                    </label>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="visa" />
+                        <span> Visa </span>
+                    </label>
+                    <label class="booking-tab">
+                        <input type="radio" name="categoria" value="experiencias" />
+                        <span> Experiencias </span>
+                    </label>
+                </fieldset>
+                <div class="booking-form__fields">
+                    <label class="booking-field">
+                        <span class="booking-field__label">Destino</span>
+                        <select name="destino" required>
+                            <option value="" disabled selected>Selecciona un destino</option>
+                            <option value="oxapampa">Oxapampa</option>
+                            <option value="villa-rica">Villa Rica</option>
+                            <option value="pozuzo">Pozuzo</option>
+                            <option value="selva-central">Selva Central</option>
+                        </select>
+                    </label>
+                    <label class="booking-field">
+                        <span class="booking-field__label">Fecha de viaje</span>
+                        <input type="date" name="fecha" min="<?= date('Y-m-d'); ?>" />
+                    </label>
+                    <label class="booking-field">
+                        <span class="booking-field__label">Tipo de tour</span>
+                        <select name="tipo">
+                            <option value="" selected>Selecciona una experiencia</option>
+                            <option value="aventura">Aventura</option>
+                            <option value="cultural">Cultural</option>
+                            <option value="gastronomia">Gastronomía</option>
+                            <option value="naturaleza">Naturaleza</option>
+                        </select>
+                    </label>
+                    <button class="booking-form__submit" type="submit">Buscar</button>
+                </div>
+                <p class="booking-form__note">¿No encuentras lo que buscas? Diseña tu <a href="explorar.php?custom=1">itinerario personalizado</a>.</p>
+            </form>
             <ul class="hero__selling-points">
                 <?php foreach ($sellingPoints as $point): ?>
                     <li class="selling-point">
