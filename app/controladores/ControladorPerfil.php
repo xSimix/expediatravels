@@ -421,6 +421,24 @@ class ControladorPerfil
             return $path;
         }
 
-        return '/' . ltrim($path, '/');
+        $normalized = ltrim(str_replace('\\', '/', $path), '/');
+        if ($normalized === '') {
+            return null;
+        }
+
+        $scriptName = $_SERVER['SCRIPT_NAME'] ?? '';
+        $scriptName = trim(str_replace('\\', '/', $scriptName), '/');
+        $segments = $scriptName !== '' ? explode('/', $scriptName) : [];
+        $baseSegment = $segments[0] ?? '';
+        $baseSegment = $baseSegment === 'index.php' ? '' : $baseSegment;
+
+        $prefixed = $baseSegment !== '' ? $baseSegment . '/' . $normalized : $normalized;
+        $prefixed = '/' . ltrim($prefixed, '/');
+
+        if ($baseSegment !== '' && str_starts_with('/' . $normalized, '/' . $baseSegment . '/')) {
+            return '/' . ltrim($normalized, '/');
+        }
+
+        return $prefixed;
     }
 }
