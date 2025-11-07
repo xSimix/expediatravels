@@ -7,6 +7,7 @@ require_once __DIR__ . '/panel.php';
 $paginaActiva = $paginaActiva ?? 'inicio';
 $tituloPagina = $tituloPagina ?? 'Expediatravels · Panel de Control';
 $estilosExtra = $estilosExtra ?? [];
+$scriptsExtra = $scriptsExtra ?? [];
 
 $contextoPanel = null;
 $requiereContexto = !isset($panelMetricas, $panelNombreAdmin, $panelCorreoAdmin, $panelInicialesAdmin) || !($panelZonaHoraria ?? null) instanceof DateTimeZone;
@@ -45,7 +46,24 @@ $procesarEstilos = static function (array $estilos): array {
     return $salida;
 };
 
+$procesarScripts = static function (array $scripts): array {
+    $salida = [];
+
+    foreach ($scripts as $script) {
+        if (is_string($script) && $script !== '') {
+            if (str_starts_with($script, '<')) {
+                $salida[] = $script;
+            } else {
+                $salida[] = sprintf('<script src="%s"></script>', htmlspecialchars($script, ENT_QUOTES));
+            }
+        }
+    }
+
+    return $salida;
+};
+
 $estilosProcesados = $procesarEstilos(is_array($estilosExtra) ? $estilosExtra : []);
+$scriptsProcesados = $procesarScripts(is_array($scriptsExtra) ? $scriptsExtra : []);
 
 $navActivo = static function (string $clave) use ($paginaActiva): string {
     return $paginaActiva === $clave ? 'active' : '';

@@ -81,6 +81,11 @@ function paquetesNormalizarPaquete(array $paquete): array
         $estado = 'borrador';
     }
 
+    $imagenPortada = trim((string) ($paquete['imagen_portada'] ?? ''));
+    $imagenDestacada = trim((string) ($paquete['imagen_destacada'] ?? ''));
+    $galeria = array_values(array_unique(array_filter(array_map('trim', (array) ($paquete['galeria'] ?? [])), static fn (string $valor): bool => $valor !== '')));
+    $videoDestacado = trim((string) ($paquete['video_destacado_url'] ?? $paquete['video_destacado'] ?? ''));
+
     return [
         'id' => (int) ($paquete['id'] ?? 0),
         'nombre' => trim((string) ($paquete['nombre'] ?? '')),
@@ -98,7 +103,10 @@ function paquetesNormalizarPaquete(array $paquete): array
         'cupos_max' => isset($paquete['cupos_max']) ? (int) $paquete['cupos_max'] : null,
         'destinos' => array_values(array_map('intval', (array) ($paquete['destinos'] ?? []))),
         'circuitos' => array_values(array_map('intval', (array) ($paquete['circuitos'] ?? []))),
-        'imagen_destacada' => trim((string) ($paquete['imagen_destacada'] ?? '')),
+        'imagen_portada' => $imagenPortada,
+        'imagen_destacada' => $imagenDestacada,
+        'galeria' => $galeria,
+        'video_destacado_url' => $videoDestacado,
         'actualizado_en' => $paquete['actualizado_en'] ?? null,
     ];
 }

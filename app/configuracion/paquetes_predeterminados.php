@@ -21,6 +21,9 @@ return [
         'cupos_max' => 18,
         'beneficios' => ['Atención 24/7', 'Seguro de viaje básico'],
         'imagen_destacada' => 'oxapampa.jpg',
+        'imagen_portada' => 'oxapampa.jpg',
+        'galeria' => [],
+        'video_destacado_url' => '',
         'actualizado_en' => '2024-01-04T12:00:00-05:00',
     ],
     [
@@ -41,6 +44,9 @@ return [
         'cupos_max' => 12,
         'beneficios' => ['Fotografías digitales', 'Kit de bienvenida'],
         'imagen_destacada' => 'villa-rica.jpg',
+        'imagen_portada' => 'villa-rica.jpg',
+        'galeria' => [],
+        'video_destacado_url' => '',
         'actualizado_en' => '2024-01-04T12:00:00-05:00',
     ],
 ];
