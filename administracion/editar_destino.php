@@ -1,0 +1,203 @@
+<?php
+
+declare(strict_types=1);
+
+require_once __DIR__ . '/../app/configuracion/arranque.php';
+
+use Aplicacion\Servicios\ServicioAlmacenamientoJson;
+
+require_once __DIR__ . '/includes/destinos_util.php';
+
+$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
+$destinosPredeterminados = obtenerDestinosPredeterminados();
+$errores = [];
+
+$destinos = cargarDestinosCatalogo($archivoDestinos, $destinosPredeterminados, $errores);
+
+$destinoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $destinoId = isset($_POST['destino_id']) ? (int) $_POST['destino_id'] : $destinoId;
+}
+
+$destinoSeleccionado = null;
+foreach ($destinos as $destino) {
+    if ($destino['id'] === $destinoId) {
+        $destinoSeleccionado = $destino;
+        break;
+    }
+}
+
+if ($destinoSeleccionado === null) {
+    http_response_code(404);
+    $errores[] = 'No se encontró el destino solicitado.';
+    $destinoSeleccionado = [
+        'id' => $destinoId,
+        'nombre' => '',
+        'region' => '',
+        'descripcion' => '',
+        'tagline' => '',
+        'latitud' => null,
+        'longitud' => null,
+        'imagen' => '',
+        'tags' => [],
+        'estado' => 'activo',
+    ];
+}
+
+$datos = [
+    'nombre' => $destinoSeleccionado['nombre'] ?? '',
+    'region' => $destinoSeleccionado['region'] ?? '',
+    'descripcion' => $destinoSeleccionado['descripcion'] ?? '',
+    'tagline' => $destinoSeleccionado['tagline'] ?? '',
+    'latitud' => $destinoSeleccionado['latitud'] !== null ? (string) $destinoSeleccionado['latitud'] : '',
+    'longitud' => $destinoSeleccionado['longitud'] !== null ? (string) $destinoSeleccionado['longitud'] : '',
+    'imagen' => $destinoSeleccionado['imagen'] ?? '',
+    'estado' => $destinoSeleccionado['estado'] ?? 'activo',
+    'etiquetas' => implode(', ', $destinoSeleccionado['tags'] ?? []),
+];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
+    $datos['nombre'] = trim((string) ($_POST['nombre'] ?? $datos['nombre']));
+    $datos['region'] = trim((string) ($_POST['region'] ?? $datos['region']));
+    $datos['descripcion'] = trim((string) ($_POST['descripcion'] ?? $datos['descripcion']));
+    $datos['tagline'] = trim((string) ($_POST['tagline'] ?? $datos['tagline']));
+    $datos['latitud'] = trim((string) ($_POST['latitud'] ?? $datos['latitud']));
+    $datos['longitud'] = trim((string) ($_POST['longitud'] ?? $datos['longitud']));
+    $datos['imagen'] = trim((string) ($_POST['imagen'] ?? $datos['imagen']));
+    $datos['estado'] = normalizarEstado($_POST['estado'] ?? $datos['estado']);
+    $datos['etiquetas'] = trim((string) ($_POST['etiquetas'] ?? $datos['etiquetas']));
+
+    if ($datos['nombre'] === '') {
+        $errores[] = 'El nombre del destino no puede estar vacío.';
+    }
+
+    if ($datos['region'] === '') {
+        $errores[] = 'Debes indicar la región del destino.';
+    }
+
+    $latitud = normalizarCoordenada($datos['latitud'], 'latitud', $errores);
+    $longitud = normalizarCoordenada($datos['longitud'], 'longitud', $errores);
+    $etiquetas = convertirEtiquetas($datos['etiquetas']);
+
+    if (empty($errores)) {
+        foreach ($destinos as &$destino) {
+            if ($destino['id'] === $destinoId) {
+                $destino['nombre'] = $datos['nombre'];
+                $destino['region'] = $datos['region'];
+                $destino['descripcion'] = $datos['descripcion'];
+                $destino['tagline'] = $datos['tagline'];
+                $destino['latitud'] = $latitud;
+                $destino['longitud'] = $longitud;
+                $destino['imagen'] = $datos['imagen'];
+                $destino['tags'] = $etiquetas;
+                $destino['estado'] = $datos['estado'];
+                $destino['actualizado_en'] = date('c');
+                break;
+            }
+        }
+        unset($destino);
+
+        $destinos = ordenarDestinos($destinos);
+
+        try {
+            ServicioAlmacenamientoJson::guardar($archivoDestinos, $destinos);
+            header('Location: destinos.php?actualizado=1');
+            exit;
+        } catch (RuntimeException $exception) {
+            $errores[] = 'Los cambios se aplicaron, pero no se pudieron guardar.';
+        }
+    }
+}
+
+$paginaActiva = 'destinos_editar';
+$tituloPagina = 'Editar destino — Panel de Control';
+$estilosExtra = ['recursos/panel-admin.css'];
+
+require __DIR__ . '/plantilla/cabecera.php';
+?>
+<div class="admin-wrapper">
+    <header class="admin-header">
+        <div>
+            <h1>Editar destino</h1>
+            <p>Actualiza la información del destino para mantener coherencia en paquetes y circuitos.</p>
+        </div>
+        <div class="admin-actions">
+            <a class="admin-button secondary" href="destinos.php">← Volver al listado</a>
+        </div>
+    </header>
+
+    <?php if (!empty($errores)): ?>
+        <div class="admin-alert error">
+            <p><strong>No pudimos actualizar el destino:</strong></p>
+            <ul>
+                <?php foreach ($errores as $error): ?>
+                    <li><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <section class="admin-card">
+        <form method="post" class="admin-grid">
+            <input type="hidden" name="destino_id" value="<?= (int) $destinoId; ?>" />
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="nombre">Nombre del destino *</label>
+                    <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($datos['nombre'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+                <div class="admin-field">
+                    <label for="region">Región o provincia *</label>
+                    <input type="text" id="region" name="region" required value="<?= htmlspecialchars($datos['region'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+            </div>
+
+            <div class="admin-field">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" rows="4"><?= htmlspecialchars($datos['descripcion'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+            </div>
+
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="tagline">Frase destacada</label>
+                    <input type="text" id="tagline" name="tagline" value="<?= htmlspecialchars($datos['tagline'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+                <div class="admin-field">
+                    <label for="imagen">Imagen de portada</label>
+                    <input type="text" id="imagen" name="imagen" value="<?= htmlspecialchars($datos['imagen'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+            </div>
+
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="latitud">Latitud</label>
+                    <input type="text" id="latitud" name="latitud" value="<?= htmlspecialchars($datos['latitud'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+                <div class="admin-field">
+                    <label for="longitud">Longitud</label>
+                    <input type="text" id="longitud" name="longitud" value="<?= htmlspecialchars($datos['longitud'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+            </div>
+
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="etiquetas">Etiquetas</label>
+                    <input type="text" id="etiquetas" name="etiquetas" value="<?= htmlspecialchars($datos['etiquetas'], ENT_QUOTES, 'UTF-8'); ?>" />
+                </div>
+                <div class="admin-field">
+                    <label for="estado">Estado</label>
+                    <select id="estado" name="estado">
+                        <option value="activo" <?= $datos['estado'] === 'activo' ? 'selected' : ''; ?>>Activo</option>
+                        <option value="oculto" <?= $datos['estado'] === 'oculto' ? 'selected' : ''; ?>>Oculto</option>
+                        <option value="borrador" <?= $datos['estado'] === 'borrador' ? 'selected' : ''; ?>>Borrador</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="admin-actions">
+                <button type="submit" class="admin-button">Guardar cambios</button>
+                <a class="admin-button secondary" href="destinos.php">Cancelar</a>
+            </div>
+        </form>
+    </section>
+</div>
+<?php require __DIR__ . '/plantilla/pie.php'; ?>
