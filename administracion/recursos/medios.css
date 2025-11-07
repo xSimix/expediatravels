@@ -1,0 +1,209 @@
+.media-library {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.media-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: flex-end;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+}
+
+.media-toolbar__form {
+    display: grid;
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.media-toolbar__form label {
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.media-toolbar__form input[type="text"],
+.media-toolbar__form textarea,
+.media-toolbar__form input[type="file"] {
+    font: inherit;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 10px;
+    padding: 0.65rem 0.75rem;
+    background: #f8fafc;
+}
+
+.media-toolbar__form textarea {
+    min-width: 280px;
+    min-height: 90px;
+    resize: vertical;
+}
+
+.media-toolbar__form button {
+    justify-self: start;
+    background: var(--primary, #14532d);
+    color: #fff;
+    padding: 0.65rem 1.25rem;
+    border-radius: 999px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-toolbar__form button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px rgba(20, 83, 45, 0.25);
+}
+
+.media-toolbar__info {
+    max-width: 320px;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.media-toolbar__info ul {
+    margin: 0.5rem 0 0;
+    padding-left: 1.2rem;
+}
+
+.media-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}
+
+.media-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.media-card figure {
+    margin: 0;
+    position: relative;
+    padding-top: 66%;
+    background: #f1f5f9;
+}
+
+.media-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-card__body {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem 1.1rem;
+}
+
+.media-card__meta {
+    font-size: 0.85rem;
+    color: var(--muted);
+    display: grid;
+    gap: 0.35rem;
+}
+
+.media-card__meta code {
+    background: rgba(15, 23, 42, 0.08);
+    padding: 0.2rem 0.4rem;
+    border-radius: 6px;
+    word-break: break-all;
+}
+
+.media-card__form {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.media-card__form label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.media-card__form input,
+.media-card__form textarea {
+    font: inherit;
+    padding: 0.5rem 0.6rem;
+    border-radius: 8px;
+    border: 1px solid rgba(15, 23, 42, 0.15);
+    background: #f8fafc;
+}
+
+.media-card__form textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+.media-card__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.media-card__actions button,
+.media-card__actions .media-delete {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+}
+
+.media-card__actions button {
+    background: var(--primary, #14532d);
+    color: #fff;
+}
+
+.media-card__actions button:hover {
+    background: #0f3a20;
+}
+
+.media-card__actions .media-delete {
+    background: rgba(220, 38, 38, 0.12);
+    color: #991b1b;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.media-card__actions .media-delete:hover {
+    background: rgba(220, 38, 38, 0.2);
+}
+
+.media-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: #fff;
+    border-radius: 14px;
+    border: 1px dashed rgba(15, 23, 42, 0.18);
+    color: var(--muted);
+}
+
+@media (max-width: 768px) {
+    .media-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .media-toolbar__form {
+        width: 100%;
+    }
+
+    .media-toolbar__info {
+        max-width: none;
+    }
+}
