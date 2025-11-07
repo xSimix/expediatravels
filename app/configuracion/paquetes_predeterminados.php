@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    [
+        'id' => 1,
+        'nombre' => 'Escapada Oxapampa 3D/2N',
+        'estado' => 'publicado',
+        'duracion' => '3 días / 2 noches',
+        'precio_desde' => 599.0,
+        'moneda' => 'PEN',
+        'descripcion_breve' => 'Incluye hospedaje boutique, transporte turístico y circuito clásico por Oxapampa.',
+        'descripcion_detallada' => 'Vive la Selva Central con alojamiento en lodge ecológico, visitas guiadas y gastronomía local.',
+        'incluye' => ['Transporte Lima - Oxapampa - Lima', '2 noches de hospedaje con desayuno', 'Circuito Oxapampa Clásico', 'Guía oficial de turismo'],
+        'no_incluye' => ['Almuerzos y cenas no especificados', 'Gastos personales'],
+        'circuitos' => [1],
+        'destinos' => [1],
+        'salidas' => ['2024-07-15', '2024-08-05'],
+        'cupos_min' => 6,
+        'cupos_max' => 18,
+        'beneficios' => ['Atención 24/7', 'Seguro de viaje básico'],
+        'imagen_destacada' => 'oxapampa.jpg',
+        'actualizado_en' => '2024-01-04T12:00:00-05:00',
+    ],
+    [
+        'id' => 2,
+        'nombre' => 'Experiencia Café Villa Rica',
+        'estado' => 'borrador',
+        'duracion' => '2 días / 1 noche',
+        'precio_desde' => 420.0,
+        'moneda' => 'PEN',
+        'descripcion_breve' => 'Tour cafetalero premium con cata especializada y navegación en la Laguna El Oconal.',
+        'descripcion_detallada' => 'Ideal para amantes del café. Incluye alojamiento, experiencias de bienestar y degustaciones.',
+        'incluye' => ['Transporte interno', '1 noche de hospedaje con desayuno', 'Ruta Cafetalera Villa Rica', 'Sesión de catación guiada'],
+        'no_incluye' => ['Traslado desde Lima', 'Almuerzos libres'],
+        'circuitos' => [2],
+        'destinos' => [2],
+        'salidas' => ['2024-07-20', '2024-08-10'],
+        'cupos_min' => 4,
+        'cupos_max' => 12,
+        'beneficios' => ['Fotografías digitales', 'Kit de bienvenida'],
+        'imagen_destacada' => 'villa-rica.jpg',
+        'actualizado_en' => '2024-01-04T12:00:00-05:00',
+    ],
+];

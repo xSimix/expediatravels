@@ -86,6 +86,7 @@ $navActivo = static function (string $clave) use ($paginaActiva): string {
       <nav class="nav" role="navigation">
         <a class="<?= $navActivo('inicio'); ?>" href="index.php"><span>🏠</span> Inicio</a>
         <a class="<?= $navActivo('destinos'); ?>" href="destinos.php"><span>📍</span> Destinos</a>
+        <a class="<?= $navActivo('circuitos'); ?>" href="circuitos.php"><span>🧭</span> Circuitos</a>
         <a class="<?= $navActivo('paquetes'); ?>" href="paquetes.php"><span>🎒</span> Paquetes</a>
         <a class="<?= $navActivo('usuarios'); ?>" href="usuarios.php"><span>🧑‍💼</span> Usuarios</a>
       </nav>

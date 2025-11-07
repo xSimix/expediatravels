@@ -1,0 +1,48 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    [
+        'id' => 1,
+        'nombre' => 'Circuito Oxapampa Clásico',
+        'destino' => ['id' => 1, 'nombre' => 'Oxapampa'],
+        'duracion' => 'Full day',
+        'categoria' => 'naturaleza',
+        'dificultad' => 'relajado',
+        'descripcion' => 'Explora cavernas, fundos cafetaleros y cataratas icónicas en una experiencia integral por Oxapampa.',
+        'puntos_interes' => ['Tunqui Cueva', 'El Wharapo', 'Catarata Río Tigre', 'Parque Temático Oxapampa'],
+        'servicios' => ['Transporte turístico', 'Guía oficial', 'Entradas a atractivos', 'Degustación de productos locales'],
+        'frecuencia' => 'Diario',
+        'estado' => 'activo',
+        'actualizado_en' => '2024-01-04T12:00:00-05:00',
+    ],
+    [
+        'id' => 2,
+        'nombre' => 'Ruta Cafetalera Villa Rica',
+        'destino' => ['id' => 2, 'nombre' => 'Villa Rica'],
+        'duracion' => 'Medio día',
+        'categoria' => 'cultural',
+        'dificultad' => 'relajado',
+        'descripcion' => 'Conoce los secretos del café de altura, navega por la Laguna El Oconal y disfruta vistas desde el mirador La Cumbre.',
+        'puntos_interes' => ['Laguna El Oconal', 'Centro de Interpretación del Café', 'Mirador La Cumbre'],
+        'servicios' => ['Transporte interno', 'Guía barista', 'Catación de café', 'Ictioterapia en piscigranja'],
+        'frecuencia' => 'Jueves a domingo',
+        'estado' => 'activo',
+        'actualizado_en' => '2024-01-04T12:00:00-05:00',
+    ],
+    [
+        'id' => 3,
+        'nombre' => 'Colonia Pozuzo y Cataratas',
+        'destino' => ['id' => 3, 'nombre' => 'Pozuzo'],
+        'duracion' => 'Full day',
+        'categoria' => 'aventura',
+        'dificultad' => 'moderado',
+        'descripcion' => 'Vive la cultura austro-alemana y recorre cascadas escondidas rodeadas de bosques nubosos.',
+        'puntos_interes' => ['Plaza de Pozuzo', 'Museo Schafferer', 'Cascada Yulitunqui', 'Puente colgante Emperador Guillermo'],
+        'servicios' => ['Transporte 4x4', 'Guía local', 'Almuerzo típico', 'Equipo de seguridad'],
+        'frecuencia' => 'Salidas martes y sábado',
+        'estado' => 'borrador',
+        'actualizado_en' => '2024-01-04T12:00:00-05:00',
+    ],
+];
