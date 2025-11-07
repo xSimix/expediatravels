@@ -21,7 +21,7 @@ CREATE TABLE usuario_fotos_perfil (
     ruta VARCHAR(255) NOT NULL,
     es_actual TINYINT(1) NOT NULL DEFAULT 1,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     INDEX idx_usuario_fotos_perfil_usuario_actual (usuario_id, es_actual)
 );
 
@@ -31,7 +31,7 @@ CREATE TABLE usuario_fotos_portada (
     ruta VARCHAR(255) NOT NULL,
     es_actual TINYINT(1) NOT NULL DEFAULT 1,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (usuario_id) REFERENCES usuarios(id),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     INDEX idx_usuario_fotos_portada_usuario_actual (usuario_id, es_actual)
 );
 
