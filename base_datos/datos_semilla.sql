@@ -81,3 +81,8 @@ VALUES
 (3, '2024-07-15', 'confirmada', 30, 26, 'Grupo completo con guía bilingüe'),
 (4, '2024-07-18', 'reprogramada', 18, 12, 'Reprogramada por mantenimiento en catarata'),
 (5, '2024-07-22', 'programada', 16, 8, NULL);
+
+INSERT INTO media_items (titulo, descripcion, texto_alternativo, creditos, ruta, nombre_archivo, nombre_original, tipo_mime, extension, tamano_bytes, ancho, alto, sha1_hash, creado_en)
+VALUES
+('Bosque neblinoso', 'Amanecer en los bosques de Oxapampa con neblina dorada.', 'Bosque iluminado por el amanecer en Oxapampa', 'Foto: Lucía Salazar', 'almacenamiento/medios/oxapampa-bosque.jpg', 'oxapampa-bosque.jpg', 'oxapampa-bosque.jpg', 'image/jpeg', 'jpg', 284512, 1600, 1067, '0f2c5f98c9ea7f1d233a7a52f7d022d2a3e2b1d3', '2024-07-01 09:00:00'),
+('Laguna el Oconal', 'Reflejos perfectos en la Laguna El Oconal durante el atardecer.', 'Laguna con reflejo de montañas y cielo dorado', 'Foto: Jorge Huamán', 'almacenamiento/medios/laguna-oconal.jpg', 'laguna-oconal.jpg', 'laguna-oconal.jpg', 'image/jpeg', 'jpg', 315440, 1600, 1067, '9e320fb2d4b79e3c47691d9961c3c2de3c8a6d4f', '2024-07-02 18:20:00');
