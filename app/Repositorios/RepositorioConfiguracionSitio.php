@@ -12,7 +12,7 @@ class RepositorioConfiguracionSitio
     {
         try {
             $pdo = Conexion::obtener();
-            $statement = $pdo->query('SELECT site_logo, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links FROM site_settings ORDER BY id ASC LIMIT 1');
+            $statement = $pdo->query('SELECT site_logo, site_favicon, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links FROM site_settings ORDER BY id ASC LIMIT 1');
             $settings = $statement->fetch(PDO::FETCH_ASSOC) ?: [];
 
             $heroSlides = $this->getHeroSlides();
@@ -20,6 +20,7 @@ class RepositorioConfiguracionSitio
             if (!empty($settings)) {
                 return [
                     'siteLogo' => ($logo = $this->resolveHeroImageUrl($settings['site_logo'] ?? null)) !== '' ? $logo : null,
+                    'siteFavicon' => ($favicon = $this->resolveHeroImageUrl($settings['site_favicon'] ?? null)) !== '' ? $favicon : null,
                     'siteTitle' => $settings['site_title'] ?? $this->fallback()['siteTitle'],
                     'siteTagline' => $settings['site_tagline'] ?? null,
                     'heroSlides' => $heroSlides ?: $this->fallback()['heroSlides'],
@@ -53,10 +54,11 @@ class RepositorioConfiguracionSitio
         $pdo = Conexion::obtener();
         $this->ensureTablesExist($pdo);
         $statement = $pdo->prepare(
-            'INSERT INTO site_settings (id, site_logo, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links)
-             VALUES (1, :logo, :title, :tagline, :emails, :phones, :addresses, :locations, :social)
+            'INSERT INTO site_settings (id, site_logo, site_favicon, site_title, site_tagline, contact_emails, contact_phones, contact_addresses, contact_locations, social_links)
+             VALUES (1, :logo, :favicon, :title, :tagline, :emails, :phones, :addresses, :locations, :social)
              ON DUPLICATE KEY UPDATE
                 site_logo = VALUES(site_logo),
+                site_favicon = VALUES(site_favicon),
                 site_title = VALUES(site_title),
                 site_tagline = VALUES(site_tagline),
                 contact_emails = VALUES(contact_emails),
@@ -68,6 +70,7 @@ class RepositorioConfiguracionSitio
 
         $statement->execute([
             ':logo' => $settings['siteLogo'],
+            ':favicon' => $settings['siteFavicon'],
             ':title' => $settings['siteTitle'],
             ':tagline' => $settings['siteTagline'],
             ':emails' => $settings['contactEmails'],
@@ -222,6 +225,7 @@ class RepositorioConfiguracionSitio
     {
         return [
             'siteLogo' => $this->nullableTrim($payload['siteLogo'] ?? null),
+            'siteFavicon' => $this->nullableTrim($payload['siteFavicon'] ?? null),
             'siteTitle' => trim((string) ($payload['siteTitle'] ?? 'Expediatravels')) ?: 'Expediatravels',
             'siteTagline' => $this->nullableTrim($payload['siteTagline'] ?? null),
             'contactEmails' => $this->implodeList($payload['contactEmails'] ?? []),
@@ -236,6 +240,7 @@ class RepositorioConfiguracionSitio
     {
         return [
             'siteLogo' => null,
+            'siteFavicon' => null,
             'siteTitle' => 'Expediatravels',
             'siteTagline' => 'Explora la Selva Central',
             'heroSlides' => [
@@ -362,6 +367,7 @@ class RepositorioConfiguracionSitio
 
         foreach ([
             'ALTER TABLE site_settings ADD COLUMN site_logo VARCHAR(255) DEFAULT NULL AFTER id',
+            'ALTER TABLE site_settings ADD COLUMN site_favicon VARCHAR(255) DEFAULT NULL AFTER site_logo',
             'ALTER TABLE hero_slides ADD COLUMN is_visible TINYINT(1) NOT NULL DEFAULT 1',
             'ALTER TABLE hero_slides ADD COLUMN alt_text VARCHAR(160) DEFAULT NULL',
             'ALTER TABLE hero_slides ADD COLUMN description TEXT DEFAULT NULL',
