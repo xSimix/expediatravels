@@ -11,6 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($action === 'delete') {
         $controlador->destroy();
+    } elseif ($action === 'logout') {
+        $controlador->logout();
     } else {
         $controlador->update();
     }
