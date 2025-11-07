@@ -36,6 +36,22 @@ $coverStyle = $coverPhoto ? '--cover-image: url(' . json_encode($coverPhoto) . '
 $avatarStyle = $profilePhoto ? '--avatar-image: url(' . json_encode($profilePhoto) . ');' : '';
 $coverClass = 'cover' . ($coverPhoto ? ' has-cover' : '');
 
+$normalizeList = static function ($value): array {
+    if (is_array($value)) {
+        return $value;
+    }
+
+    if ($value instanceof \Traversable) {
+        return iterator_to_array($value);
+    }
+
+    return [];
+};
+
+$upcomingTrips = $normalizeList($user['proximos_viajes'] ?? []);
+$recentActivity = $normalizeList($user['actividad_reciente'] ?? []);
+$recentReviews = $normalizeList($user['ultimas_resenas'] ?? []);
+
 $icons = [
     'document-text' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 13.5h6m-6-3h6m2.25 9h-9.75A2.25 2.25 0 0 1 5.25 17.25V6.75A2.25 2.25 0 0 1 7.5 4.5h6l3.75 3.75v9a2.25 2.25 0 0 1-2.25 2.25Z" />',
     'sparkles' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v4.5m0 9V21m9-9h-4.5M7.5 12H3m13.364-6.364-3.182 3.182m0 6.364 3.182 3.182M9.818 8.818 6.636 5.636m0 12.728 3.182-3.182" />',
@@ -53,6 +69,7 @@ $icons = [
     'arrow-uturn-left' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3" />',
     'save' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 7.5H6a1.5 1.5 0 0 0-1.5 1.5v9A1.5 1.5 0 0 0 6 19.5h12a1.5 1.5 0 0 0 1.5-1.5V9l-3-3h-7.5ZM15 7.5V12a3 3 0 1 1-6 0V7.5m0 0V3h6v4.5" />',
     'logout' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l3-3m0 0 3 3m-3-3v12" />',
+    'photo' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 7.5h10.5A2.25 2.25 0 0 1 19.5 9.75v7.5A2.25 2.25 0 0 1 17.25 19.5h-10.5A2.25 2.25 0 0 1 4.5 17.25v-7.5A2.25 2.25 0 0 1 6.75 7.5Z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.5 15.75 8.25 12l3 3 2.25-2.25 3.75 3.75" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 10.5a1.125 1.125 0 1 1-2.25 0 1.125 1.125 0 0 1 2.25 0Z" />',
 ];
 
 $renderIcon = static function (string $name, string $sizeClass = '') use ($icons): string {
@@ -299,6 +316,57 @@ $renderIcon = static function (string $name, string $sizeClass = '') use ($icons
 
     main { display: grid; gap: 24px; margin-top: 32px; }
 
+    .tabs {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      padding: 8px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .tab-button {
+      flex: 1;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-weight: 600;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .15s ease, color .15s ease, transform .15s ease;
+    }
+
+    .tab-button:hover,
+    .tab-button:focus-visible {
+      background: rgba(14, 165, 233, .12);
+      color: var(--text);
+      outline: none;
+    }
+
+    .tab-button.active {
+      background: var(--brand);
+      color: #fff;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    .tab-panels { display: grid; gap: 24px; }
+
+    .tab-panel[hidden] { display: none !important; }
+
+    .tab-layout {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .tab-layout--single { grid-template-columns: minmax(0, 1fr); }
+
+    .tab-column { display: grid; gap: 24px; align-content: start; }
+
     .card {
       background: var(--surface);
       border-radius: var(--radius);
@@ -385,6 +453,23 @@ $renderIcon = static function (string $name, string $sizeClass = '') use ($icons
     .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     .form-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
+    .list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
+    .list-item { display: grid; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid #e2e8f0; }
+    .list-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .list-item__meta { color: var(--muted); font-size: .9rem; display: flex; gap: 8px; flex-wrap: wrap; }
+
+    .empty-state {
+      display: grid;
+      gap: 8px;
+      text-align: center;
+      color: var(--muted);
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(14, 165, 233, .08);
+    }
+
+    .upload-helper { color: var(--muted); font-size: .85rem; }
+
     .card--danger { border: 1px solid rgba(239, 68, 68, .25); }
 
     .footer { text-align: center; color: var(--muted); padding: 32px 0 24px; font-size: .9rem; }
@@ -397,6 +482,9 @@ $renderIcon = static function (string $name, string $sizeClass = '') use ($icons
       .cover-actions { justify-content: flex-start; }
       .avatar { width: 92px; height: 92px; }
       .contact-chip { font-size: .95rem; }
+      .tab-layout { grid-template-columns: minmax(0, 1fr); }
+      .tabs { flex-wrap: wrap; }
+      .tab-button { flex: 1 1 calc(50% - 12px); }
     }
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
@@ -405,6 +493,14 @@ $renderIcon = static function (string $name, string $sizeClass = '') use ($icons
   <header class="wrap">
     <div class="<?= htmlspecialchars($coverClass); ?>" role="img" aria-label="Portada del perfil de <?= htmlspecialchars($displayName); ?>"<?php if ($coverStyle !== ''): ?> style="<?= htmlspecialchars($coverStyle, ENT_QUOTES); ?>"<?php endif; ?>>
       <div class="cover-actions">
+        <label class="btn" for="foto_portada" data-open-tab="ajustes" data-scroll-target="#foto_portada">
+          <span class="btn__icon" aria-hidden="true"><?= $renderIcon('photo'); ?></span>
+          <span>Cambiar portada</span>
+        </label>
+        <label class="btn" for="foto_perfil" data-open-tab="ajustes" data-scroll-target="#foto_perfil">
+          <span class="btn__icon" aria-hidden="true"><?= $renderIcon('photo'); ?></span>
+          <span>Cambiar foto</span>
+        </label>
         <button class="btn primary" type="button" data-auth-logout>
           <span class="btn__icon" aria-hidden="true"><?= $renderIcon('logout'); ?></span>
           <span>Cerrar sesión</span>
@@ -457,161 +553,347 @@ $renderIcon = static function (string $name, string $sizeClass = '') use ($icons
       </div>
     <?php endif; ?>
 
-    <section class="card" aria-label="Resumen del perfil">
-      <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('document-text', 'icon--md'); ?></span> Información principal</h2>
-      <dl class="info-grid">
-        <div class="info-item">
-          <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('user', 'icon--sm'); ?></span> Nombre completo</dt>
-          <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
-        </div>
-        <div class="info-item">
-          <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('mail', 'icon--sm'); ?></span> Correo</dt>
-          <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
-        </div>
-        <div class="info-item">
-          <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('shield-check', 'icon--sm'); ?></span> Rol</dt>
-          <dd><?= htmlspecialchars($roleLabel); ?></dd>
-        </div>
-        <div class="info-item">
-          <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('calendar', 'icon--sm'); ?></span> Miembro desde</dt>
-          <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
-        </div>
-        <div class="info-item">
-          <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('check-circle', 'icon--sm'); ?></span> Estado</dt>
-          <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
-        </div>
-      </dl>
-    </section>
+    <nav class="tabs" aria-label="Secciones del perfil">
+      <button class="tab-button active" type="button" data-tab-button="resumen">Resumen</button>
+      <button class="tab-button" type="button" data-tab-button="viajes">Viajes</button>
+      <button class="tab-button" type="button" data-tab-button="resenas">Reseñas</button>
+      <button class="tab-button" type="button" data-tab-button="ajustes">Ajustes</button>
+    </nav>
 
-    <section class="card" aria-label="Acciones rápidas">
-      <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span> Acciones rápidas</h2>
-      <div class="quick-actions">
-        <button class="btn" type="button" data-action="toggle-settings">
-          <span class="btn__icon" aria-hidden="true"><?= $renderIcon('pencil-square', 'icon--sm'); ?></span>
-          <span>Editar información</span>
-        </button>
-        <button class="btn" type="button" data-action="toggle-delete">
-          <span class="btn__icon" aria-hidden="true"><?= $renderIcon('trash', 'icon--sm'); ?></span>
-          <span>Eliminar cuenta</span>
-        </button>
-        <a class="btn" href="index.php">
-          <span class="btn__icon" aria-hidden="true"><?= $renderIcon('home', 'icon--sm'); ?></span>
-          <span>Volver al inicio</span>
-        </a>
-        <?php if ($role === 'administrador'): ?>
-          <a class="btn" href="../administracion/index.php">
-            <span class="btn__icon" aria-hidden="true"><?= $renderIcon('compass', 'icon--sm'); ?></span>
-            <span>Ir al panel administrativo</span>
-          </a>
-        <?php endif; ?>
-      </div>
-    </section>
+    <div class="tab-panels">
+      <section class="tab-panel" data-tab-panel="resumen">
+        <div class="tab-layout">
+          <div class="tab-column">
+            <section class="card" aria-label="Resumen del perfil">
+              <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('document-text', 'icon--md'); ?></span> Información principal</h2>
+              <dl class="info-grid">
+                <div class="info-item">
+                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('user', 'icon--sm'); ?></span> Nombre completo</dt>
+                  <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
+                </div>
+                <div class="info-item">
+                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('mail', 'icon--sm'); ?></span> Correo</dt>
+                  <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
+                </div>
+                <div class="info-item">
+                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('shield-check', 'icon--sm'); ?></span> Rol</dt>
+                  <dd><?= htmlspecialchars($roleLabel); ?></dd>
+                </div>
+                <div class="info-item">
+                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('calendar', 'icon--sm'); ?></span> Miembro desde</dt>
+                  <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
+                </div>
+                <div class="info-item">
+                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderIcon('check-circle', 'icon--sm'); ?></span> Estado</dt>
+                  <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
+                </div>
+              </dl>
+            </section>
 
-    <section class="card" id="settings-panel" aria-label="Editar perfil" hidden>
-      <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('pencil-square', 'icon--md'); ?></span> Editar información personal</h2>
-      <form action="perfil.php" method="post" novalidate>
-        <input type="hidden" name="action" value="update" />
-        <div class="form-grid">
-          <div class="field">
-            <label for="nombres">Nombres</label>
-            <input id="nombres" name="nombre" value="<?= htmlspecialchars($user['nombre']); ?>" required />
+            <section class="card" aria-label="Acciones rápidas">
+              <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span> Acciones rápidas</h2>
+              <div class="quick-actions">
+                <button class="btn" type="button" data-open-tab="ajustes" data-scroll-target="#ajustes-form">
+                  <span class="btn__icon" aria-hidden="true"><?= $renderIcon('pencil-square', 'icon--sm'); ?></span>
+                  <span>Editar información</span>
+                </button>
+                <button class="btn" type="button" data-open-tab="ajustes" data-scroll-target="#eliminar-cuenta">
+                  <span class="btn__icon" aria-hidden="true"><?= $renderIcon('trash', 'icon--sm'); ?></span>
+                  <span>Eliminar cuenta</span>
+                </button>
+                <a class="btn" href="index.php">
+                  <span class="btn__icon" aria-hidden="true"><?= $renderIcon('home', 'icon--sm'); ?></span>
+                  <span>Volver al inicio</span>
+                </a>
+                <?php if ($role === 'administrador'): ?>
+                  <a class="btn" href="../administracion/index.php">
+                    <span class="btn__icon" aria-hidden="true"><?= $renderIcon('compass', 'icon--sm'); ?></span>
+                    <span>Ir al panel administrativo</span>
+                  </a>
+                <?php endif; ?>
+              </div>
+            </section>
           </div>
-          <div class="field">
-            <label for="apellidos">Apellidos</label>
-            <input id="apellidos" name="apellidos" value="<?= htmlspecialchars($user['apellidos']); ?>" required />
-          </div>
-          <div class="field">
-            <label for="correo">Correo</label>
-            <input id="correo" name="correo" type="email" value="<?= htmlspecialchars($user['correo']); ?>" required />
-          </div>
-          <div class="field">
-            <label for="telefono">Teléfono</label>
-            <input id="telefono" name="celular" value="<?= $phone ? htmlspecialchars($phone) : ''; ?>" placeholder="Opcional" />
-          </div>
-          <div class="field">
-            <label for="password">Nueva contraseña</label>
-            <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para mantener" />
-          </div>
-          <div class="field">
-            <label for="password_confirmation">Confirmar contraseña</label>
-            <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" placeholder="Repite tu nueva contraseña" />
-          </div>
-        </div>
-        <div class="form-actions">
-          <button class="btn" type="button" data-action="close-settings">
-            <span class="btn__icon" aria-hidden="true"><?= $renderIcon('arrow-uturn-left', 'icon--sm'); ?></span>
-            <span>Cancelar</span>
-          </button>
-          <button class="btn primary" type="submit">
-            <span class="btn__icon" aria-hidden="true"><?= $renderIcon('save', 'icon--sm'); ?></span>
-            <span>Guardar cambios</span>
-          </button>
-        </div>
-      </form>
-    </section>
 
-    <section class="card card--danger" id="delete-panel" aria-label="Eliminar cuenta" hidden>
-      <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('trash', 'icon--md'); ?></span> Eliminar cuenta</h2>
-      <form action="perfil.php" method="post">
-        <p>Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
-        <input type="hidden" name="action" value="delete" />
-        <div class="field">
-          <label for="confirmacion">Confirmación</label>
-          <input id="confirmacion" name="confirmacion" placeholder="Escribe ELIMINAR" required />
-        </div>
-        <div class="form-actions">
-          <button class="btn" type="button" data-action="close-delete">
-            <span class="btn__icon" aria-hidden="true"><?= $renderIcon('arrow-uturn-left', 'icon--sm'); ?></span>
-            <span>Cancelar</span>
-          </button>
-          <button class="btn danger" type="submit">
-            <span class="btn__icon" aria-hidden="true"><?= $renderIcon('logout', 'icon--sm'); ?></span>
-            <span>Cerrar mi cuenta</span>
-          </button>
-        </div>
-      </form>
-    </section>
+          <aside class="tab-column">
+            <section class="card" aria-label="Próximos viajes">
+              <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('calendar', 'icon--md'); ?></span> Próximos viajes</h2>
+              <?php if ($upcomingTrips): ?>
+                <ul class="list">
+                  <?php foreach ($upcomingTrips as $trip): ?>
+                    <?php
+                      $tripTitle = is_array($trip) ? ($trip['titulo'] ?? $trip['destino'] ?? 'Viaje programado') : (string) $trip;
+                      $tripDate = is_array($trip) ? ($trip['fecha'] ?? null) : null;
+                      $tripStatus = is_array($trip) ? ($trip['estado'] ?? null) : null;
+                      $tripNotes = is_array($trip) ? ($trip['descripcion'] ?? $trip['notas'] ?? null) : null;
+                    ?>
+                    <li class="list-item">
+                      <strong><?= htmlspecialchars($tripTitle); ?></strong>
+                      <?php if ($tripDate || $tripStatus): ?>
+                        <span class="list-item__meta">
+                          <?php if ($tripDate): ?><span><?= htmlspecialchars($tripDate); ?></span><?php endif; ?>
+                          <?php if ($tripStatus): ?><span><?= htmlspecialchars($tripStatus); ?></span><?php endif; ?>
+                        </span>
+                      <?php endif; ?>
+                      <?php if ($tripNotes): ?><span><?= htmlspecialchars($tripNotes); ?></span><?php endif; ?>
+                    </li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php else: ?>
+                <div class="empty-state">
+                  <span aria-hidden="true"><?= $renderIcon('calendar', 'icon--md'); ?></span>
+                  <span>No hay viajes próximos programados todavía.</span>
+                </div>
+              <?php endif; ?>
+            </section>
 
+            <section class="card" aria-label="Actividad reciente">
+              <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('clock', 'icon--md'); ?></span> Actividad reciente</h2>
+              <?php if ($recentActivity): ?>
+                <ul class="list">
+                  <?php foreach ($recentActivity as $activity): ?>
+                    <?php
+                      $activityTitle = is_array($activity) ? ($activity['evento'] ?? $activity['titulo'] ?? 'Actualización') : (string) $activity;
+                      $activityDate = is_array($activity) ? ($activity['fecha'] ?? null) : null;
+                      $activityDetails = is_array($activity) ? ($activity['detalle'] ?? $activity['descripcion'] ?? null) : null;
+                    ?>
+                    <li class="list-item">
+                      <strong><?= htmlspecialchars($activityTitle); ?></strong>
+                      <?php if ($activityDate): ?><span class="list-item__meta"><span><?= htmlspecialchars($activityDate); ?></span></span><?php endif; ?>
+                      <?php if ($activityDetails): ?><span><?= htmlspecialchars($activityDetails); ?></span><?php endif; ?>
+                    </li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php else: ?>
+                <div class="empty-state">
+                  <span aria-hidden="true"><?= $renderIcon('clock', 'icon--md'); ?></span>
+                  <span>Sin actividad registrada recientemente.</span>
+                </div>
+              <?php endif; ?>
+            </section>
+
+            <section class="card" aria-label="Últimas reseñas">
+              <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span> Últimas reseñas</h2>
+              <?php if ($recentReviews): ?>
+                <ul class="list">
+                  <?php foreach ($recentReviews as $review): ?>
+                    <?php
+                      $reviewTitle = is_array($review) ? ($review['destino'] ?? $review['titulo'] ?? 'Reseña') : (string) $review;
+                      $reviewRating = is_array($review) ? ($review['puntuacion'] ?? null) : null;
+                      $reviewDate = is_array($review) ? ($review['fecha'] ?? null) : null;
+                      $reviewBody = is_array($review) ? ($review['comentario'] ?? $review['descripcion'] ?? null) : null;
+                    ?>
+                    <li class="list-item">
+                      <strong><?= htmlspecialchars($reviewTitle); ?></strong>
+                      <span class="list-item__meta">
+                        <?php if ($reviewRating !== null && $reviewRating !== ''): ?><span><?= htmlspecialchars('⭐ ' . $reviewRating . '/5'); ?></span><?php endif; ?>
+                        <?php if ($reviewDate): ?><span><?= htmlspecialchars($reviewDate); ?></span><?php endif; ?>
+                      </span>
+                      <?php if ($reviewBody): ?><span><?= htmlspecialchars($reviewBody); ?></span><?php endif; ?>
+                    </li>
+                  <?php endforeach; ?>
+                </ul>
+              <?php else: ?>
+                <div class="empty-state">
+                  <span aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span>
+                  <span>No se han publicado reseñas recientes.</span>
+                </div>
+              <?php endif; ?>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="viajes" hidden>
+        <div class="tab-layout tab-layout--single">
+          <section class="card" aria-label="Historial de viajes">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('compass', 'icon--md'); ?></span> Tus viajes</h2>
+            <?php if ($upcomingTrips): ?>
+              <ul class="list">
+                <?php foreach ($upcomingTrips as $trip): ?>
+                  <?php
+                    $tripTitle = is_array($trip) ? ($trip['titulo'] ?? $trip['destino'] ?? 'Viaje programado') : (string) $trip;
+                    $tripDate = is_array($trip) ? ($trip['fecha'] ?? null) : null;
+                    $tripStatus = is_array($trip) ? ($trip['estado'] ?? null) : null;
+                    $tripNotes = is_array($trip) ? ($trip['descripcion'] ?? $trip['notas'] ?? null) : null;
+                  ?>
+                  <li class="list-item">
+                    <strong><?= htmlspecialchars($tripTitle); ?></strong>
+                    <span class="list-item__meta">
+                      <?php if ($tripDate): ?><span><?= htmlspecialchars('Salida: ' . $tripDate); ?></span><?php endif; ?>
+                      <?php if ($tripStatus): ?><span><?= htmlspecialchars('Estado: ' . $tripStatus); ?></span><?php endif; ?>
+                    </span>
+                    <?php if ($tripNotes): ?><span><?= htmlspecialchars($tripNotes); ?></span><?php endif; ?>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php else: ?>
+              <div class="empty-state">
+                <span aria-hidden="true"><?= $renderIcon('compass', 'icon--md'); ?></span>
+                <span>Aún no tienes viajes programados. ¡Explora nuevos destinos!</span>
+              </div>
+            <?php endif; ?>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="resenas" hidden>
+        <div class="tab-layout tab-layout--single">
+          <section class="card" aria-label="Reseñas realizadas">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span> Historial de reseñas</h2>
+            <?php if ($recentReviews): ?>
+              <ul class="list">
+                <?php foreach ($recentReviews as $review): ?>
+                  <?php
+                    $reviewTitle = is_array($review) ? ($review['destino'] ?? $review['titulo'] ?? 'Reseña') : (string) $review;
+                    $reviewRating = is_array($review) ? ($review['puntuacion'] ?? null) : null;
+                    $reviewDate = is_array($review) ? ($review['fecha'] ?? null) : null;
+                    $reviewBody = is_array($review) ? ($review['comentario'] ?? $review['descripcion'] ?? null) : null;
+                  ?>
+                  <li class="list-item">
+                    <strong><?= htmlspecialchars($reviewTitle); ?></strong>
+                    <span class="list-item__meta">
+                      <?php if ($reviewRating !== null && $reviewRating !== ''): ?><span><?= htmlspecialchars('⭐ ' . $reviewRating . '/5'); ?></span><?php endif; ?>
+                      <?php if ($reviewDate): ?><span><?= htmlspecialchars($reviewDate); ?></span><?php endif; ?>
+                    </span>
+                    <?php if ($reviewBody): ?><span><?= htmlspecialchars($reviewBody); ?></span><?php endif; ?>
+                  </li>
+                <?php endforeach; ?>
+              </ul>
+            <?php else: ?>
+              <div class="empty-state">
+                <span aria-hidden="true"><?= $renderIcon('sparkles', 'icon--md'); ?></span>
+                <span>Todavía no has dejado reseñas en tus viajes.</span>
+              </div>
+            <?php endif; ?>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="ajustes" hidden>
+        <div class="tab-layout tab-layout--single">
+          <section class="card" aria-label="Editar perfil" id="ajustes-form">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('pencil-square', 'icon--md'); ?></span> Editar información personal</h2>
+            <form action="perfil.php" method="post" enctype="multipart/form-data" novalidate>
+              <input type="hidden" name="action" value="update" />
+              <div class="form-grid">
+                <div class="field">
+                  <label for="nombres">Nombres</label>
+                  <input id="nombres" name="nombre" value="<?= htmlspecialchars($user['nombre']); ?>" required />
+                </div>
+                <div class="field">
+                  <label for="apellidos">Apellidos</label>
+                  <input id="apellidos" name="apellidos" value="<?= htmlspecialchars($user['apellidos']); ?>" required />
+                </div>
+                <div class="field">
+                  <label for="correo">Correo</label>
+                  <input id="correo" name="correo" type="email" value="<?= htmlspecialchars($user['correo']); ?>" required />
+                </div>
+                <div class="field">
+                  <label for="telefono">Teléfono</label>
+                  <input id="telefono" name="celular" value="<?= $phone ? htmlspecialchars($phone) : ''; ?>" placeholder="Opcional" />
+                </div>
+                <div class="field">
+                  <label for="foto_portada">Foto de portada</label>
+                  <input id="foto_portada" name="foto_portada" type="file" accept="image/*" />
+                  <span class="upload-helper">Sube una imagen en formato JPG o PNG para personalizar la portada.</span>
+                </div>
+                <div class="field">
+                  <label for="foto_perfil">Foto de perfil</label>
+                  <input id="foto_perfil" name="foto_perfil" type="file" accept="image/*" />
+                  <span class="upload-helper">Elige una imagen cuadrada para una mejor visualización.</span>
+                </div>
+                <div class="field">
+                  <label for="password">Nueva contraseña</label>
+                  <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para mantener" />
+                </div>
+                <div class="field">
+                  <label for="password_confirmation">Confirmar contraseña</label>
+                  <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" placeholder="Repite tu nueva contraseña" />
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn primary" type="submit">
+                  <span class="btn__icon" aria-hidden="true"><?= $renderIcon('save', 'icon--sm'); ?></span>
+                  <span>Guardar cambios</span>
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="card card--danger" aria-label="Eliminar cuenta" id="eliminar-cuenta">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderIcon('trash', 'icon--md'); ?></span> Eliminar cuenta</h2>
+            <form action="perfil.php" method="post">
+              <p>Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
+              <input type="hidden" name="action" value="delete" />
+              <div class="field">
+                <label for="confirmacion">Confirmación</label>
+                <input id="confirmacion" name="confirmacion" placeholder="Escribe ELIMINAR" required />
+              </div>
+              <div class="form-actions">
+                <button class="btn danger" type="submit">
+                  <span class="btn__icon" aria-hidden="true"><?= $renderIcon('logout', 'icon--sm'); ?></span>
+                  <span>Cerrar mi cuenta</span>
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </section>
+    </div>
   </main>
 
   <footer class="footer wrap">© <?= date('Y'); ?> Expediatravels — Perfil de usuario</footer>
 
   <script>
-    const settingsPanel = document.getElementById('settings-panel');
-    const deletePanel = document.getElementById('delete-panel');
+    const tabButtons = Array.from(document.querySelectorAll('[data-tab-button]'));
+    const tabPanels = Array.from(document.querySelectorAll('[data-tab-panel]'));
 
-    const toggleVisibility = (panel, force) => {
-      if (!panel) return;
-      const show = typeof force === 'boolean' ? force : panel.hasAttribute('hidden');
-      if (show) {
-        panel.removeAttribute('hidden');
-        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        panel.setAttribute('hidden', '');
-      }
+    const activateTab = (tabId) => {
+      tabButtons.forEach((button) => {
+        const isActive = button.dataset.tabButton === tabId;
+        button.classList.toggle('active', isActive);
+        if (isActive) {
+          button.setAttribute('aria-current', 'page');
+        } else {
+          button.removeAttribute('aria-current');
+        }
+      });
+
+      tabPanels.forEach((panel) => {
+        const shouldShow = panel.dataset.tabPanel === tabId;
+        if (shouldShow) {
+          panel.removeAttribute('hidden');
+        } else {
+          panel.setAttribute('hidden', '');
+        }
+      });
     };
 
-    document.querySelectorAll('[data-action="toggle-settings"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        toggleVisibility(deletePanel, false);
-        toggleVisibility(settingsPanel, true);
+    tabButtons.forEach((button) => {
+      button.addEventListener('click', () => activateTab(button.dataset.tabButton));
+    });
+
+    document.querySelectorAll('[data-open-tab]').forEach((trigger) => {
+      trigger.addEventListener('click', () => {
+        const tabId = trigger.dataset.openTab;
+        if (!tabId) return;
+        activateTab(tabId);
+
+        const scrollTarget = trigger.dataset.scrollTarget;
+        if (scrollTarget) {
+          const targetElement = document.querySelector(scrollTarget);
+          if (targetElement) {
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
       });
     });
 
-    document.querySelectorAll('[data-action="close-settings"]').forEach(btn => {
-      btn.addEventListener('click', () => toggleVisibility(settingsPanel, false));
-    });
-
-    document.querySelectorAll('[data-action="toggle-delete"]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        toggleVisibility(settingsPanel, false);
-        toggleVisibility(deletePanel, true);
-      });
-    });
-
-    document.querySelectorAll('[data-action="close-delete"]').forEach(btn => {
-      btn.addEventListener('click', () => toggleVisibility(deletePanel, false));
-    });
+    const defaultTabButton = document.querySelector('[data-tab-button].active') || tabButtons[0];
+    if (defaultTabButton) {
+      activateTab(defaultTabButton.dataset.tabButton);
+    }
   </script>
 </body>
 </html>
