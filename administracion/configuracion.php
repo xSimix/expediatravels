@@ -5,516 +5,137 @@ declare(strict_types=1);
 $ajustes = require __DIR__ . '/ajustes_controlador.php';
 
 extract($ajustes, EXTR_OVERWRITE);
+
+$paginaActiva = 'configuracion';
+$tituloPagina = 'Configuración del sitio — Expediatravels';
+$estilosExtra = ['recursos/panel-admin.css'];
+
+require __DIR__ . '/plantilla/cabecera.php';
 ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Configuración del sitio — Expediatravels</title>
-    <link rel="stylesheet" href="../web/estilos/aplicacion.css" />
-    <style>
-        body {
-            background: #f8fafc;
-            color: #0f172a;
-        }
-        .admin-wrapper {
-            max-width: 1080px;
-            margin: 0 auto;
-            padding: clamp(2rem, 4vw, 4rem) clamp(1.5rem, 4vw, 3rem);
-            display: grid;
-            gap: 2.5rem;
-        }
-        .admin-card {
-            background: #ffffff;
-            border-radius: 28px;
-            padding: clamp(1.8rem, 3vw, 2.6rem);
-            box-shadow: 0 25px 65px rgba(15, 23, 42, 0.12);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            display: grid;
-            gap: 1.75rem;
-        }
-        .admin-card h2 {
-            margin: 0;
-            font-size: 1.45rem;
-        }
-        .admin-grid {
-            display: grid;
-            gap: 1.5rem;
-        }
-        .admin-grid.two-columns {
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        }
-        .admin-field {
-            display: grid;
-            gap: 0.5rem;
-        }
-        .admin-field label {
-            font-weight: 600;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            font-size: 0.8rem;
-            color: #475569;
-        }
-        .admin-field input,
-        .admin-field textarea {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 16px;
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            font: inherit;
-            resize: vertical;
-            min-height: 52px;
-            background: rgba(248, 250, 252, 0.7);
-        }
-        .admin-field textarea {
-            min-height: 120px;
-        }
-        .admin-help {
-            font-size: 0.85rem;
-            color: #64748b;
-        }
-        .admin-logo-preview {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding: 0.75rem 1rem;
-            background: #f1f5f9;
-            border-radius: 18px;
-        }
-        .admin-logo-preview__image {
-            flex: 0 0 auto;
-            display: grid;
-            place-items: center;
-            width: 140px;
-            height: 70px;
-            background: #ffffff;
-            border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            overflow: hidden;
-        }
-        .admin-logo-preview__image--square {
-            width: 70px;
-            height: 70px;
-        }
-        .admin-logo-preview__image img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
-        .admin-logo-preview__meta {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            font-size: 0.95rem;
-            color: #475569;
-        }
-        .admin-logo-preview__label {
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            font-size: 0.75rem;
-            color: #0f172a;
-        }
-        .admin-logo-preview__path {
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-            font-size: 0.85rem;
-            word-break: break-all;
-        }
-        .admin-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            align-items: center;
-        }
-        .admin-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            border: none;
-            border-radius: 999px;
-            padding: 0.75rem 1.6rem;
-            font-weight: 600;
-            cursor: pointer;
-            background: linear-gradient(135deg, #0284c7, #38bdf8);
-            color: #fff;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .admin-button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 12px 24px rgba(2, 132, 199, 0.25);
-        }
-        .hero-gallery {
-            display: grid;
-            gap: 1.5rem;
-        }
-        .hero-gallery__grid {
-            display: grid;
-            gap: 1.25rem;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        }
-        .hero-gallery__item {
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            background: #0f172a;
-            color: #fff;
-            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.2);
-            border: 1px solid rgba(148, 163, 184, 0.28);
-            display: grid;
-        }
-        .hero-gallery__item:not(.hero-gallery__item--inactive) {
-            box-shadow: 0 24px 65px rgba(2, 132, 199, 0.24);
-            border-color: rgba(56, 189, 248, 0.45);
-        }
-        .hero-gallery__item--inactive {
-            opacity: 0.65;
-        }
-        .hero-gallery__item--inactive::after {
-            content: 'Oculta';
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: rgba(15, 23, 42, 0.75);
-            padding: 0.25rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-        .hero-gallery__select {
-            display: grid;
-            gap: 0.9rem;
-            color: inherit;
-            text-decoration: none;
-            padding: 1.1rem 1.15rem 1rem;
-            cursor: pointer;
-            position: relative;
-        }
-        .hero-gallery__checkbox {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            width: 22px;
-            height: 22px;
-            accent-color: #38bdf8;
-            cursor: pointer;
-        }
-        .hero-gallery__thumbnail {
-            border-radius: 16px;
-            overflow: hidden;
-            aspect-ratio: 16 / 9;
-            background: rgba(15, 23, 42, 0.45);
-        }
-        .hero-gallery__thumbnail img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-        .hero-gallery__meta {
-            display: grid;
-            gap: 0.4rem;
-        }
-        .hero-gallery__meta strong {
-            font-size: 0.95rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-        .hero-gallery__meta small {
-            font-size: 0.78rem;
-            color: rgba(226, 232, 240, 0.75);
-            word-break: break-word;
-        }
-        .hero-gallery__delete-form {
-            position: absolute;
-            right: 12px;
-            bottom: 12px;
-        }
-        .hero-gallery__edit {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            border: none;
-            background: rgba(15, 23, 42, 0.85);
-            color: #e2e8f0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: background 0.2s ease, transform 0.2s ease;
-        }
-        .hero-gallery__edit:hover {
-            background: rgba(56, 189, 248, 0.95);
-            color: #0f172a;
-            transform: translateY(-1px);
-        }
-        .hero-gallery__delete {
-            border: none;
-            background: rgba(239, 68, 68, 0.95);
-            color: #fff;
-            padding: 0.45rem 1.1rem;
-            border-radius: 999px;
-            cursor: pointer;
-            font-size: 0.82rem;
-            font-weight: 600;
-            letter-spacing: 0.04em;
-            transition: background 0.2s ease;
-        }
-        .hero-gallery__delete:hover {
-            background: rgba(220, 38, 38, 1);
-        }
-        .admin-alert {
-            border-radius: 20px;
-            padding: 1rem 1.5rem;
-            background: rgba(34, 197, 94, 0.12);
-            color: #15803d;
-            border: 1px solid rgba(34, 197, 94, 0.35);
-        }
-        .admin-alert.error {
-            background: rgba(248, 113, 113, 0.15);
-            border-color: rgba(239, 68, 68, 0.35);
-            color: #b91c1c;
-        }
-        .hero-gallery__dialog::backdrop {
-            background: rgba(15, 23, 42, 0.55);
-        }
-        .hero-gallery__dialog {
-            border: none;
-            border-radius: 20px;
-            padding: 0;
-            max-width: min(520px, 92vw);
-            width: 100%;
-            overflow: hidden;
-            background: #0f172a;
-            color: #e2e8f0;
-            box-shadow: 0 30px 80px rgba(15, 23, 42, 0.35);
-        }
-        .hero-gallery__dialog header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.1rem 1.4rem 0.6rem;
-            background: rgba(30, 41, 59, 0.65);
-        }
-        .hero-gallery__dialog header h3 {
-            margin: 0;
-            font-size: 1.05rem;
-        }
-        .hero-gallery__dialog form {
-            display: grid;
-            gap: 1rem;
-            padding: 1.4rem;
-        }
-        .hero-gallery__dialog .admin-field input,
-        .hero-gallery__dialog .admin-field textarea {
-            background: rgba(15, 23, 42, 0.65);
-            color: inherit;
-            border-color: rgba(148, 163, 184, 0.45);
-        }
-        .hero-gallery__dialog footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 0.75rem;
-            padding: 0 1.4rem 1.4rem;
-        }
-        .hero-gallery__dialog button {
-            font: inherit;
-        }
-        .hero-gallery__dialog-close {
-            background: transparent;
-            border: none;
-            color: inherit;
-            font-size: 1.4rem;
-            cursor: pointer;
-        }
-        .hero-gallery__dialog-cancel {
-            border: 1px solid rgba(148, 163, 184, 0.45);
-            background: transparent;
-            color: inherit;
-            border-radius: 999px;
-            padding: 0.55rem 1.3rem;
-            cursor: pointer;
-            transition: background 0.2s ease, color 0.2s ease;
-        }
-        .hero-gallery__dialog-cancel:hover {
-            background: rgba(148, 163, 184, 0.15);
-        }
-        .hero-gallery__dialog-submit {
-            border: none;
-            border-radius: 999px;
-            padding: 0.6rem 1.5rem;
-            background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-            color: #0f172a;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .hero-gallery__dialog-submit:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 30px rgba(14, 165, 233, 0.35);
-        }
-        .admin-header {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        .admin-header p {
-            margin: 0;
-            color: #64748b;
-        }
-    </style>
-</head>
-<body>
-    <main class="admin-wrapper">
-        <header class="admin-header">
-            <h1>Configuración del sitio</h1>
-            <p>Gestiona la identidad de marca, los fondos del hero y los datos de contacto visibles en la web pública.</p>
-        </header>
+<div class="admin-wrapper">
+    <header class="admin-header">
+        <h1>Configuración del sitio</h1>
+        <p>Gestiona la identidad de marca, los fondos del hero y los datos de contacto visibles en la web pública.</p>
+    </header>
 
-        <?php if (!empty($feedback)): ?>
-            <div class="admin-alert<?= $feedback['type'] === 'error' ? ' error' : ''; ?>">
-                <?= htmlspecialchars($feedback['message']); ?>
+    <?php if (!empty($feedback)): ?>
+        <div class="admin-alert<?= $feedback['type'] === 'error' ? ' error' : ''; ?>">
+            <?= htmlspecialchars($feedback['message']); ?>
+        </div>
+    <?php endif; ?>
+
+    <section class="admin-card">
+        <h2>Identidad y datos de contacto</h2>
+        <form method="post" class="admin-grid" enctype="multipart/form-data">
+            <input type="hidden" name="form_type" value="site_settings" />
+            <input type="hidden" name="current_site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" />
+            <input type="hidden" name="current_site_favicon" value="<?= htmlspecialchars((string) ($siteFavicon ?? ''), ENT_QUOTES); ?>" />
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="site_title">Título del sitio</label>
+                    <input type="text" id="site_title" name="site_title" value="<?= htmlspecialchars($siteTitle, ENT_QUOTES); ?>" required />
+                </div>
+                <div class="admin-field">
+                    <label for="site_tagline">Lema o tagline</label>
+                    <input type="text" id="site_tagline" name="site_tagline" value="<?= htmlspecialchars($siteTagline, ENT_QUOTES); ?>" placeholder="Explora la Selva Central" />
+                </div>
             </div>
-        <?php endif; ?>
-
-        <section class="admin-card">
-            <h2>Identidad y datos de contacto</h2>
-            <form method="post" class="admin-grid" enctype="multipart/form-data">
-                <input type="hidden" name="form_type" value="site_settings" />
-                <input type="hidden" name="current_site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" />
-                <input type="hidden" name="current_site_favicon" value="<?= htmlspecialchars((string) ($siteFavicon ?? ''), ENT_QUOTES); ?>" />
-                <div class="admin-grid two-columns">
-                    <div class="admin-field">
-                        <label for="site_title">Título del sitio</label>
-                        <input type="text" id="site_title" name="site_title" value="<?= htmlspecialchars($siteTitle, ENT_QUOTES); ?>" required />
-                    </div>
-                    <div class="admin-field">
-                        <label for="site_tagline">Lema o tagline</label>
-                        <input type="text" id="site_tagline" name="site_tagline" value="<?= htmlspecialchars($siteTagline, ENT_QUOTES); ?>" placeholder="Explora la Selva Central" />
-                    </div>
-                </div>
-                <div class="admin-field">
-                    <label for="site_logo_file">Logo del sitio</label>
-                    <input type="file" id="site_logo_file" name="site_logo_file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
-                    <p class="admin-help">Sube una imagen horizontal (recomendado 250x65 px). Se permiten formatos JPG, PNG, WEBP o SVG.</p>
-                    <?php if ($siteLogo): ?>
-                        <div class="admin-logo-preview">
-                            <div class="admin-logo-preview__image">
-                                <img src="<?= htmlspecialchars($siteLogo, ENT_QUOTES); ?>" alt="Logo actual del sitio" />
-                            </div>
-                            <div class="admin-logo-preview__meta">
-                                <span class="admin-logo-preview__label">Logo actual</span>
-                                <span class="admin-logo-preview__path"><?= htmlspecialchars($siteLogo, ENT_QUOTES); ?></span>
-                            </div>
+            <div class="admin-field">
+                <label for="site_logo_file">Logo del sitio</label>
+                <input type="file" id="site_logo_file" name="site_logo_file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+                <p class="admin-help">Sube una imagen horizontal (recomendado 250x65 px). Se permiten formatos JPG, PNG, WEBP o SVG.</p>
+                <?php if ($siteLogo): ?>
+                    <div class="admin-logo-preview">
+                        <div class="admin-logo-preview__image">
+                            <img src="<?= htmlspecialchars($siteLogo, ENT_QUOTES); ?>" alt="Logo actual del sitio" />
                         </div>
-                    <?php endif; ?>
-                </div>
-                <div class="admin-field">
-                    <label for="site_favicon_file">Icono de la página (favicon)</label>
-                    <input type="file" id="site_favicon_file" name="site_favicon_file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" />
-                    <p class="admin-help">Sube un ícono cuadrado (recomendado 512x512 px). Formatos permitidos: PNG, JPG, WEBP, SVG o ICO.</p>
-                    <?php if ($siteFavicon): ?>
-                        <div class="admin-logo-preview">
-                            <div class="admin-logo-preview__image admin-logo-preview__image--square">
-                                <img src="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" alt="Favicon actual del sitio" />
-                            </div>
-                            <div class="admin-logo-preview__meta">
-                                <span class="admin-logo-preview__label">Favicon actual</span>
-                                <span class="admin-logo-preview__path"><?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?></span>
-                            </div>
+                        <div class="admin-logo-preview__meta">
+                            <span class="admin-logo-preview__label">Logo actual</span>
+                            <span class="admin-logo-preview__path"><?= htmlspecialchars($siteLogo, ENT_QUOTES); ?></span>
                         </div>
-                    <?php endif; ?>
-                </div>
-                <div class="admin-grid two-columns">
-                    <div class="admin-field">
-                        <label for="contact_phones">Teléfonos</label>
-                        <textarea id="contact_phones" name="contact_phones" rows="4" placeholder="+51 999 999 999&#10;+51 988 888 888"><?= $renderTextarea($contactPhones); ?></textarea>
-                        <p class="admin-help">Ingresa un número por línea. Se usará el primero como principal.</p>
                     </div>
-                    <div class="admin-field">
-                        <label for="contact_emails">Correos electrónicos</label>
-                        <textarea id="contact_emails" name="contact_emails" rows="4" placeholder="hola@expediatravels.pe&#10;reservas@expediatravels.pe"><?= $renderTextarea($contactEmails); ?></textarea>
-                        <p class="admin-help">Ingresa un correo por línea. Se usará el primero en encabezado y pie.</p>
+                <?php endif; ?>
+            </div>
+            <div class="admin-field">
+                <label for="site_favicon_file">Icono de la página (favicon)</label>
+                <input type="file" id="site_favicon_file" name="site_favicon_file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" />
+                <p class="admin-help">Sube un ícono cuadrado (recomendado 512x512 px). Formatos permitidos: PNG, JPG, WEBP, SVG o ICO.</p>
+                <?php if ($siteFavicon): ?>
+                    <div class="admin-logo-preview">
+                        <div class="admin-logo-preview__image admin-logo-preview__image--square">
+                            <img src="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" alt="Favicon actual del sitio" />
+                        </div>
+                        <div class="admin-logo-preview__meta">
+                            <span class="admin-logo-preview__label">Favicon actual</span>
+                            <span class="admin-logo-preview__path"><?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?></span>
+                        </div>
                     </div>
-                </div>
-                <div class="admin-grid two-columns">
-                    <div class="admin-field">
-                        <label for="contact_addresses">Direcciones</label>
-                        <textarea id="contact_addresses" name="contact_addresses" rows="4" placeholder="Jr. San Martín 245, Oxapampa&#10;Centro empresarial Aurora, Lima"><?= $renderTextarea($contactAddresses); ?></textarea>
-                        <p class="admin-help">Coloca la dirección física o base de operaciones por línea.</p>
-                    </div>
-                    <div class="admin-field">
-                        <label for="contact_locations">Ubicaciones / Referencias</label>
-                        <textarea id="contact_locations" name="contact_locations" rows="4" placeholder="Oxapampa, Pasco — Perú&#10;Miraflores, Lima — Perú"><?= $renderTextarea($contactLocations); ?></textarea>
-                        <p class="admin-help">Opcional. Se mostrará debajo de cada dirección (mismo orden).</p>
-                    </div>
+                <?php endif; ?>
+            </div>
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="contact_emails">Correos de contacto</label>
+                    <textarea id="contact_emails" name="contact_emails" rows="4" placeholder="contacto@expediatravels.pe&#10;reservas@expediatravels.pe"><?= htmlspecialchars(implode(PHP_EOL, $contactEmails), ENT_QUOTES); ?></textarea>
+                    <p class="admin-help">Separa cada correo en una línea diferente.</p>
                 </div>
                 <div class="admin-field">
-                    <label for="social_links">Redes sociales</label>
-                    <textarea id="social_links" name="social_links" rows="4" placeholder="Instagram|https://instagram.com/expediatravels&#10;Facebook|https://facebook.com/expediatravels"><?= $renderTextarea(array_map(static fn (array $social): string => ($social['label'] ?? '') . '|' . ($social['url'] ?? ''), $socialLinks)); ?></textarea>
-                    <p class="admin-help">Formato: <strong>Nombre|URL</strong> por línea (por ejemplo <em>Instagram|https://instagram.com/expediatravels</em>).</p>
+                    <label for="contact_phones">Teléfonos</label>
+                    <textarea id="contact_phones" name="contact_phones" rows="4" placeholder="+51 999 888 777&#10;+51 01 555 1234"><?= htmlspecialchars(implode(PHP_EOL, $contactPhones), ENT_QUOTES); ?></textarea>
+                    <p class="admin-help">Incluye el código de país. Separa cada teléfono en una línea.</p>
                 </div>
-                <div class="admin-actions">
-                    <button class="admin-button" type="submit">Guardar cambios</button>
+            </div>
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="contact_addresses">Direcciones</label>
+                    <textarea id="contact_addresses" name="contact_addresses" rows="4" placeholder="Jr. Amazonas 123 - La Merced"><?= htmlspecialchars(implode(PHP_EOL, $contactAddresses), ENT_QUOTES); ?></textarea>
+                    <p class="admin-help">Direcciones físicas que se mostrarán en la web.</p>
                 </div>
-            </form>
-        </section>
+                <div class="admin-field">
+                    <label for="contact_locations">Ubicaciones</label>
+                    <textarea id="contact_locations" name="contact_locations" rows="4" placeholder="La Merced&#10;Oxapampa"><?= htmlspecialchars(implode(PHP_EOL, $contactLocations), ENT_QUOTES); ?></textarea>
+                    <p class="admin-help">Nombres de ciudades o zonas donde tienen cobertura.</p>
+                </div>
+            </div>
+            <div class="admin-field">
+                <label for="social_links">Enlaces sociales</label>
+                <textarea id="social_links" name="social_links" rows="4" placeholder="https://facebook.com/expediatravels&#10;https://instagram.com/expediatravels"><?= htmlspecialchars(implode(PHP_EOL, $socialLinks), ENT_QUOTES); ?></textarea>
+                <p class="admin-help">Un enlace por línea. Puedes incluir Facebook, Instagram, TikTok, YouTube, etc.</p>
+            </div>
+            <div class="admin-actions">
+                <button class="admin-button" type="submit">Guardar configuración</button>
+            </div>
+        </form>
+    </section>
 
-        <section class="admin-card">
-            <h2>Fondos del hero</h2>
-            <p class="admin-help">Las imágenes se muestran como slider de fondo en la página principal. Al subirlas se guardan en el hosting del sitio dentro de <code>web/cargas/hero</code>.</p>
-            <div class="hero-gallery">
-                <form method="post" id="hero-visibility-form" style="display: none;">
+    <section class="admin-card">
+        <h2>Galería del hero</h2>
+        <div class="hero-gallery">
+            <?php if (!empty($heroSlides)): ?>
+                <form method="post" id="hero-visibility-form">
                     <input type="hidden" name="form_type" value="update_visibility" />
-                </form>
-                <?php if (!empty($heroSlides)): ?>
                     <div class="hero-gallery__grid">
-                        <?php foreach ($heroSlides as $slide):
-                            $slideId = $slide['id'] ?? null;
-                            $slideLabel = $slide['label'] ?? '';
-                            $slideImage = $slide['image'] ?? '';
-                            $slideAlt = $slide['altText'] ?? '';
-                            $slideDescription = $slide['description'] ?? '';
-                            if (!$slideId || $slideImage === '') {
-                                continue;
-                            }
-                            $isVisible = isset($visibleHeroSlideIds[(int) $slideId]);
-                            $checkboxId = 'hero-slide-' . (int) $slideId;
-                        ?>
-                            <div class="hero-gallery__item<?= $isVisible ? '' : ' hero-gallery__item--inactive'; ?>">
-                                <button type="button" class="hero-gallery__edit" data-hero-edit-trigger aria-label="Editar metadatos de la imagen">
-                                    <span aria-hidden="true">✏️</span>
-                                </button>
-                                <label class="hero-gallery__select" for="<?= htmlspecialchars($checkboxId, ENT_QUOTES); ?>">
-                                    <input
-                                        type="checkbox"
-                                        class="hero-gallery__checkbox"
-                                        id="<?= htmlspecialchars($checkboxId, ENT_QUOTES); ?>"
-                                        name="visible_slides[]"
-                                        value="<?= (int) $slideId; ?>"
-                                        form="hero-visibility-form"
-                                        <?= $isVisible ? 'checked' : ''; ?>
-                                    />
-                                    <span class="hero-gallery__thumbnail">
-                                        <img src="<?= htmlspecialchars($slideImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideAlt !== '' ? $slideAlt : ($slideLabel !== '' ? $slideLabel : 'Imagen del hero'), ENT_QUOTES); ?>" loading="lazy" />
-                                    </span>
-                                    <span class="hero-gallery__meta">
-                                        <strong><?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Sin título'); ?></strong>
-                                        <small><?= htmlspecialchars($slideImage); ?></small>
-                                        <?php if ($slideAlt !== ''): ?>
-                                            <small>ALT: <?= htmlspecialchars($slideAlt); ?></small>
+                        <?php foreach ($heroSlides as $slideId => $slideData): ?>
+                            <?php
+                                $slideLabel = $slideData['label'] ?? '';
+                                $slidePath = $slideData['path'] ?? '';
+                                $slideActive = (bool) ($slideData['activo'] ?? false);
+                                $slideAlt = $slideData['alt_text'] ?? '';
+                                $slideDescription = $slideData['description'] ?? '';
+                            ?>
+                            <div class="hero-gallery__item<?= $slideActive ? '' : ' hero-gallery__item--inactive'; ?>">
+                                <label class="hero-gallery__select">
+                                    <input type="checkbox" class="hero-gallery__checkbox" name="slides_visible[]" value="<?= (int) $slideId; ?>" <?= $slideActive ? 'checked' : ''; ?> />
+                                    <div class="hero-gallery__thumbnail">
+                                        <?php if ($slidePath !== ''): ?>
+                                            <img src="<?= htmlspecialchars($slidePath, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Imagen del slider', ENT_QUOTES); ?>" />
                                         <?php endif; ?>
-                                        <?php if ($slideDescription !== ''): ?>
-                                            <small><?= htmlspecialchars($slideDescription); ?></small>
-                                        <?php endif; ?>
-                                    </span>
+                                    </div>
+                                    <div class="hero-gallery__meta">
+                                        <strong><?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Imagen sin título'); ?></strong>
+                                        <small><?= htmlspecialchars($slidePath, ENT_QUOTES); ?></small>
+                                    </div>
                                 </label>
+                                <button type="button" class="hero-gallery__edit" data-hero-edit-trigger aria-label="Editar imagen">✎</button>
                                 <form method="post" class="hero-gallery__delete-form" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
                                     <input type="hidden" name="form_type" value="delete_slide" />
                                     <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
@@ -555,75 +176,76 @@ extract($ajustes, EXTR_OVERWRITE);
                     <div class="admin-actions">
                         <button class="admin-button" type="submit" form="hero-visibility-form">Guardar selección</button>
                     </div>
-                <?php else: ?>
-                    <p class="admin-help">Aún no hay imágenes registradas. Agrega la primera para activar la galería del slider.</p>
-                <?php endif; ?>
+                </form>
+            <?php else: ?>
+                <p class="admin-help">Aún no hay imágenes registradas. Agrega la primera para activar la galería del slider.</p>
+            <?php endif; ?>
+        </div>
+
+        <form method="post" class="admin-grid" style="margin-top: 1.5rem;" enctype="multipart/form-data">
+            <input type="hidden" name="form_type" value="add_slide" />
+            <div class="admin-grid two-columns">
+                <div class="admin-field">
+                    <label for="slide_upload">Imagen del hero</label>
+                    <input type="file" id="slide_upload" name="slide_upload" accept="image/jpeg,image/png,image/webp" required />
+                    <p class="admin-help">Se admiten imágenes horizontales (1600x900 o superior). Formatos: JPG, PNG o WEBP.</p>
+                </div>
+                <div class="admin-field">
+                    <label for="slide_label">Título o descripción</label>
+                    <input type="text" id="slide_label" name="slide_label" placeholder="Bosques de Oxapampa" />
+                    <p class="admin-help">Opcional. Se muestra como etiqueta de contexto del slider.</p>
+                </div>
             </div>
+            <div class="admin-actions">
+                <button class="admin-button" type="submit">Agregar imagen</button>
+            </div>
+        </form>
+    </section>
+</div>
 
-            <form method="post" class="admin-grid" style="margin-top: 1.5rem;" enctype="multipart/form-data">
-                <input type="hidden" name="form_type" value="add_slide" />
-                <div class="admin-grid two-columns">
-                    <div class="admin-field">
-                        <label for="slide_upload">Imagen del hero</label>
-                        <input type="file" id="slide_upload" name="slide_upload" accept="image/jpeg,image/png,image/webp" required />
-                        <p class="admin-help">Se admiten imágenes horizontales (1600x900 o superior). Formatos: JPG, PNG o WEBP.</p>
-                    </div>
-                    <div class="admin-field">
-                        <label for="slide_label">Título o descripción</label>
-                        <input type="text" id="slide_label" name="slide_label" placeholder="Bosques de Oxapampa" />
-                        <p class="admin-help">Opcional. Se muestra como etiqueta de contexto del slider.</p>
-                    </div>
-                </div>
-                <div class="admin-actions">
-                    <button class="admin-button" type="submit">Agregar imagen</button>
-                </div>
-            </form>
-        </section>
-    </main>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const supportsDialog = typeof HTMLDialogElement !== 'undefined';
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const supportsDialog = typeof HTMLDialogElement !== 'undefined';
 
-            document.querySelectorAll('[data-hero-edit-trigger]').forEach((button) => {
-                const item = button.closest('.hero-gallery__item');
-                if (!item) {
-                    return;
+        document.querySelectorAll('[data-hero-edit-trigger]').forEach((button) => {
+            const item = button.closest('.hero-gallery__item');
+            if (!item) {
+                return;
+            }
+
+            const dialog = item.querySelector('[data-hero-edit-dialog]');
+            if (!dialog) {
+                return;
+            }
+
+            const closeDialog = () => {
+                if (supportsDialog && typeof dialog.close === 'function') {
+                    dialog.close();
+                } else {
+                    dialog.removeAttribute('open');
                 }
+            };
 
-                const dialog = item.querySelector('[data-hero-edit-dialog]');
-                if (!dialog) {
-                    return;
+            button.addEventListener('click', () => {
+                if (supportsDialog && typeof dialog.showModal === 'function') {
+                    dialog.showModal();
+                } else {
+                    dialog.setAttribute('open', '');
                 }
+            });
 
-                const closeDialog = () => {
-                    if (supportsDialog && typeof dialog.close === 'function') {
-                        dialog.close();
-                    } else {
-                        dialog.removeAttribute('open');
-                    }
-                };
-
-                button.addEventListener('click', () => {
-                    if (supportsDialog && typeof dialog.showModal === 'function') {
-                        dialog.showModal();
-                    } else {
-                        dialog.setAttribute('open', '');
-                    }
-                });
-
-                dialog.querySelectorAll('[data-hero-edit-close]').forEach((closeButton) => {
-                    closeButton.addEventListener('click', () => {
-                        closeDialog();
-                    });
-                });
-
-                dialog.addEventListener('click', (event) => {
-                    if (event.target === dialog) {
-                        closeDialog();
-                    }
+            dialog.querySelectorAll('[data-hero-edit-close]').forEach((closeButton) => {
+                closeButton.addEventListener('click', () => {
+                    closeDialog();
                 });
             });
+
+            dialog.addEventListener('click', (event) => {
+                if (event.target === dialog) {
+                    closeDialog();
+                }
+            });
         });
-    </script>
-</body>
-</html>
+    });
+</script>
+<?php require __DIR__ . '/plantilla/pie.php'; ?>
