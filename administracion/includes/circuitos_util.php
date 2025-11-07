@@ -60,6 +60,11 @@ function normalizarCircuito(array $circuito, array $destinos): array
         $destinoRegion = trim((string) ($destino['region'] ?? ''));
     }
 
+    $imagenPortada = trim((string) ($circuito['imagen_portada'] ?? ''));
+    $imagenDestacada = trim((string) ($circuito['imagen_destacada'] ?? ''));
+    $videoDestacado = trim((string) ($circuito['video_destacado_url'] ?? $circuito['video_destacado'] ?? ''));
+    $galeria = array_values(array_unique(array_filter(array_map('trim', (array) ($circuito['galeria'] ?? [])), static fn (string $valor): bool => $valor !== '')));
+
     return [
         'id' => (int) ($circuito['id'] ?? 0),
         'nombre' => trim((string) ($circuito['nombre'] ?? '')),
@@ -74,6 +79,10 @@ function normalizarCircuito(array $circuito, array $destinos): array
         'dificultad' => strtolower(trim((string) ($circuito['dificultad'] ?? 'relajado'))),
         'frecuencia' => trim((string) ($circuito['frecuencia'] ?? '')),
         'descripcion' => trim((string) ($circuito['descripcion'] ?? '')),
+        'imagen_portada' => $imagenPortada,
+        'imagen_destacada' => $imagenDestacada,
+        'galeria' => $galeria,
+        'video_destacado_url' => $videoDestacado,
         'puntos_interes' => array_values(array_filter(array_map('trim', (array) ($circuito['puntos_interes'] ?? [])), static fn (string $valor): bool => $valor !== '')),
         'servicios' => array_values(array_filter(array_map('trim', (array) ($circuito['servicios'] ?? [])), static fn (string $valor): bool => $valor !== '')),
         'estado' => strtolower(trim((string) ($circuito['estado'] ?? 'borrador'))),

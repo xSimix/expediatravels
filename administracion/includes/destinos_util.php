@@ -31,6 +31,11 @@ function normalizarDestino(array $destino): array
     $latitud = isset($destino['latitud']) && is_numeric((string) $destino['latitud']) ? (float) $destino['latitud'] : null;
     $longitud = isset($destino['longitud']) && is_numeric((string) $destino['longitud']) ? (float) $destino['longitud'] : null;
 
+    $imagenPortada = trim((string) ($destino['imagen_portada'] ?? $destino['imagen'] ?? ''));
+    $imagenDestacada = trim((string) ($destino['imagen_destacada'] ?? ''));
+    $videoDestacado = trim((string) ($destino['video_destacado_url'] ?? $destino['video_destacado'] ?? ''));
+    $galeria = array_values(array_unique(array_filter(array_map('trim', (array) ($destino['galeria'] ?? [])), static fn (string $valor): bool => $valor !== '')));
+
     return [
         'id' => (int) ($destino['id'] ?? 0),
         'nombre' => trim((string) ($destino['nombre'] ?? '')),
@@ -39,7 +44,11 @@ function normalizarDestino(array $destino): array
         'tagline' => trim((string) ($destino['tagline'] ?? '')),
         'latitud' => $latitud,
         'longitud' => $longitud,
-        'imagen' => trim((string) ($destino['imagen'] ?? '')),
+        'imagen_portada' => $imagenPortada,
+        'imagen' => $imagenPortada,
+        'imagen_destacada' => $imagenDestacada,
+        'galeria' => $galeria,
+        'video_destacado_url' => $videoDestacado,
         'tags' => array_values(array_filter(array_map('trim', (array) ($destino['tags'] ?? [])), static fn (string $valor): bool => $valor !== '')),
         'estado' => normalizarEstado($destino['estado'] ?? 'activo'),
         'actualizado_en' => $destino['actualizado_en'] ?? null,
