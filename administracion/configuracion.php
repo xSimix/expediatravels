@@ -24,9 +24,12 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $formType = $_POST['form_type'] ?? '';
 
+
         if ($formType === 'site_settings') {
             $logoPath = trim((string) ($_POST['current_site_logo'] ?? ''));
+            $faviconPath = trim((string) ($_POST['current_site_favicon'] ?? ''));
             $logoUpload = $_FILES['site_logo_file'] ?? null;
+            $faviconUpload = $_FILES['site_favicon_file'] ?? null;
             $uploadFailed = false;
 
             if (is_array($logoUpload) && ($logoUpload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
@@ -78,9 +81,61 @@ try {
                 }
             }
 
+            if (!$uploadFailed && is_array($faviconUpload) && ($faviconUpload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                if (($faviconUpload['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK || !isset($faviconUpload['tmp_name']) || !is_uploaded_file($faviconUpload['tmp_name'])) {
+                    $feedback = ['type' => 'error', 'message' => 'No se pudo subir el favicon. Inténtalo nuevamente.'];
+                    $uploadFailed = true;
+                } else {
+                    $finfo = new finfo(FILEINFO_MIME_TYPE);
+                    $mimeType = $finfo->file($faviconUpload['tmp_name']);
+                    $allowedMimeTypes = [
+                        'image/png' => 'png',
+                        'image/jpeg' => 'jpg',
+                        'image/webp' => 'webp',
+                        'image/svg+xml' => 'svg',
+                        'image/x-icon' => 'ico',
+                        'image/vnd.microsoft.icon' => 'ico',
+                    ];
+
+                    if (!isset($allowedMimeTypes[$mimeType])) {
+                        $feedback = ['type' => 'error', 'message' => 'Formato de favicon no permitido. Usa imágenes PNG, JPG, WEBP, SVG o ICO.'];
+                        $uploadFailed = true;
+                    } else {
+                        $uploadDirectory = __DIR__ . '/../web/cargas/favicons';
+
+                        if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
+                            $feedback = ['type' => 'error', 'message' => 'No se pudo preparar la carpeta de subida del favicon.'];
+                            $uploadFailed = true;
+                        } else {
+                            $extension = $allowedMimeTypes[$mimeType];
+                            $filename = 'favicon-' . date('Ymd-His') . '-' . bin2hex(random_bytes(6)) . '.' . $extension;
+                            $destination = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
+
+                            if (!move_uploaded_file($faviconUpload['tmp_name'], $destination)) {
+                                $feedback = ['type' => 'error', 'message' => 'No se pudo guardar el favicon en el servidor.'];
+                                $uploadFailed = true;
+                            } else {
+                                $publicPath = '/web/cargas/favicons/' . $filename;
+
+                                $normalizedCurrent = ltrim($faviconPath, '/');
+                                if ($normalizedCurrent !== '' && str_starts_with($normalizedCurrent, 'web/cargas/favicons/')) {
+                                    $absoluteCurrent = dirname(__DIR__) . '/' . $normalizedCurrent;
+                                    if (is_file($absoluteCurrent)) {
+                                        @unlink($absoluteCurrent);
+                                    }
+                                }
+
+                                $faviconPath = $publicPath;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (!$uploadFailed) {
                 $repository->update([
                     'siteLogo' => $logoPath,
+                    'siteFavicon' => $faviconPath,
                     'siteTitle' => $_POST['site_title'] ?? '',
                     'siteTagline' => $_POST['site_tagline'] ?? '',
                     'contactEmails' => $parseTextarea($_POST['contact_emails'] ?? null),
@@ -92,6 +147,8 @@ try {
 
                 $feedback = ['type' => 'success', 'message' => 'Configuración general guardada correctamente.'];
             }
+        } elseif ($formType === 'add_slide') {
+
         } elseif ($formType === 'add_slide') {
             $label = trim((string) ($_POST['slide_label'] ?? ''));
             $upload = $_FILES['slide_upload'] ?? null;
@@ -173,6 +230,7 @@ try {
 
 $siteSettings = $repository->get();
 $siteLogo = $siteSettings['siteLogo'] ?? null;
+$siteFavicon = $siteSettings['siteFavicon'] ?? null;
 $siteTitle = $siteSettings['siteTitle'] ?? 'Expediatravels';
 $siteTagline = $siteSettings['siteTagline'] ?? '';
 $heroSlides = $repository->getHeroSlides(false);
@@ -190,6 +248,14 @@ $contactLocations = $contact['locations'] ?? [];
 $socialLinks = $contact['social'] ?? [];
 
 $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("\n", $items), ENT_QUOTES);
+
+if (!is_string($siteLogo) || trim($siteLogo) === '') {
+    $siteLogo = null;
+}
+
+if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
+    $siteFavicon = null;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -278,6 +344,10 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             border-radius: 14px;
             border: 1px solid #e2e8f0;
             overflow: hidden;
+        }
+        .admin-logo-preview__image--square {
+            width: 70px;
+            height: 70px;
         }
         .admin-logo-preview__image img {
             max-width: 100%;
@@ -569,6 +639,7 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
             <form method="post" class="admin-grid" enctype="multipart/form-data">
                 <input type="hidden" name="form_type" value="site_settings" />
                 <input type="hidden" name="current_site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" />
+                <input type="hidden" name="current_site_favicon" value="<?= htmlspecialchars((string) ($siteFavicon ?? ''), ENT_QUOTES); ?>" />
                 <div class="admin-grid two-columns">
                     <div class="admin-field">
                         <label for="site_title">Título del sitio</label>
@@ -591,6 +662,22 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                             <div class="admin-logo-preview__meta">
                                 <span class="admin-logo-preview__label">Logo actual</span>
                                 <span class="admin-logo-preview__path"><?= htmlspecialchars($siteLogo, ENT_QUOTES); ?></span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                </div>
+                <div class="admin-field">
+                    <label for="site_favicon_file">Icono de la página (favicon)</label>
+                    <input type="file" id="site_favicon_file" name="site_favicon_file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" />
+                    <p class="admin-help">Sube un ícono cuadrado (recomendado 512x512 px). Formatos permitidos: PNG, JPG, WEBP, SVG o ICO.</p>
+                    <?php if ($siteFavicon): ?>
+                        <div class="admin-logo-preview">
+                            <div class="admin-logo-preview__image admin-logo-preview__image--square">
+                                <img src="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" alt="Favicon actual del sitio" />
+                            </div>
+                            <div class="admin-logo-preview__meta">
+                                <span class="admin-logo-preview__label">Favicon actual</span>
+                                <span class="admin-logo-preview__path"><?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?></span>
                             </div>
                         </div>
                     <?php endif; ?>

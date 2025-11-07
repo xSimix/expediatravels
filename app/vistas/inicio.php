@@ -1,20 +1,14 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?= htmlspecialchars($title ?? 'Expediatravels'); ?></title>
-    <link rel="stylesheet" href="estilos/aplicacion.css" />
-    <script src="scripts/modal-autenticacion.js" defer></script>
-</head>
-<body class="page">
 <?php
     $siteSettings = $siteSettings ?? [];
     $siteTitle = (string) ($siteSettings['siteTitle'] ?? 'Expediatravels');
     $siteTagline = $siteSettings['siteTagline'] ?? null;
     $siteLogo = $siteSettings['siteLogo'] ?? null;
+    $siteFavicon = $siteSettings['siteFavicon'] ?? null;
     if (!is_string($siteLogo) || trim($siteLogo) === '') {
         $siteLogo = null;
+    }
+    if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
+        $siteFavicon = null;
     }
     $heroSlides = $siteSettings['heroSlides'] ?? [];
     $visibleHeroSlides = array_values(array_filter($heroSlides, static function ($slide) {
@@ -54,13 +48,27 @@
     $displayName = $isAuthenticated ? trim((string) ($currentUser['nombre'] ?? '')) : '';
     $accountDeleted = !empty($accountDeleted);
 ?>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><?= htmlspecialchars($title ?? 'Expediatravels'); ?></title>
+    <link rel="stylesheet" href="estilos/aplicacion.css" />
+    <?php if ($siteFavicon): ?>
+        <link rel="icon" href="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" />
+    <?php endif; ?>
+    <script src="scripts/modal-autenticacion.js" defer></script>
+</head>
+<body class="page">
+
     <header class="site-header" data-site-header>
         <div class="site-header__inner">
             <a class="site-header__brand<?= $siteLogo ? ' site-header__brand--image' : ''; ?>" href="#inicio">
                 <?php if ($siteLogo): ?>
                     <img class="site-header__logo-image" src="<?= htmlspecialchars($siteLogo, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($siteTitle); ?>" width="250" height="65" />
                     <?php if (!empty($siteTagline)): ?>
-                        <span class="site-header__brand-tagline"><?= htmlspecialchars($siteTagline); ?></span>
+                        <span class="site-header__brand-tagline visually-hidden"><?= htmlspecialchars($siteTagline); ?></span>
                     <?php endif; ?>
                 <?php else: ?>
                     <span class="site-header__logo" aria-hidden="true">🧭</span>
