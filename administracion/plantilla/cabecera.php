@@ -103,6 +103,7 @@ $navActivo = static function (string $clave) use ($paginaActiva): string {
         <div class="topbar-inner">
           <div class="left">
             <button id="btnMenu" class="hamburger" aria-label="Abrir menú lateral" aria-controls="sidebar" aria-expanded="false">☰</button>
+            <a class="btn-volver" href="../index.php" aria-label="Volver a la web principal">← VOLVER</a>
             <div class="badge" id="today">—</div>
             <div class="badge" id="clock">—</div>
           </div>

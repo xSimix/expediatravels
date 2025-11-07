@@ -160,6 +160,41 @@ body {
   gap: 10px;
 }
 
+.btn-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand-2), var(--brand));
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.6px;
+  border: 1px solid rgba(100, 116, 139, 0.35);
+  box-shadow: var(--shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+
+.btn-volver:hover,
+.btn-volver:focus-visible {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(100, 116, 139, 0.28);
+}
+
+.btn-volver:focus-visible {
+  outline: 3px solid rgba(100, 116, 139, 0.45);
+  outline-offset: 2px;
+}
+
+.btn-volver:active {
+  transform: translateY(0);
+  filter: brightness(0.97);
+  box-shadow: 0 6px 16px rgba(100, 116, 139, 0.22);
+}
+
 .hamburger {
   display: none;
   background: #ffffff;
