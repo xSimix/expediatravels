@@ -4,6 +4,7 @@ namespace Aplicacion\Repositorios;
 
 use Aplicacion\BaseDatos\Conexion;
 use DateTimeInterface;
+use Exception;
 use PDO;
 
 class RepositorioUsuarios
@@ -145,6 +146,89 @@ SQL;
         $user = $statement->fetch(PDO::FETCH_ASSOC);
 
         return $user !== false ? $user : null;
+    }
+
+    public function setCurrentProfilePhoto(int $userId, string $path): void
+    {
+        $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        try {
+            $statement = $pdo->prepare('UPDATE usuario_fotos_perfil SET es_actual = 0 WHERE usuario_id = :id');
+            $statement->execute([':id' => $userId]);
+
+            $insert = $pdo->prepare(
+                'INSERT INTO usuario_fotos_perfil (usuario_id, ruta, es_actual) VALUES (:usuario_id, :ruta, 1)'
+            );
+            $insert->execute([
+                ':usuario_id' => $userId,
+                ':ruta' => $path,
+            ]);
+
+            $pdo->commit();
+        } catch (Exception $exception) {
+            $pdo->rollBack();
+            throw $exception;
+        }
+    }
+
+    public function setCurrentCoverPhoto(int $userId, string $path): void
+    {
+        $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        try {
+            $statement = $pdo->prepare('UPDATE usuario_fotos_portada SET es_actual = 0 WHERE usuario_id = :id');
+            $statement->execute([':id' => $userId]);
+
+            $insert = $pdo->prepare(
+                'INSERT INTO usuario_fotos_portada (usuario_id, ruta, es_actual) VALUES (:usuario_id, :ruta, 1)'
+            );
+            $insert->execute([
+                ':usuario_id' => $userId,
+                ':ruta' => $path,
+            ]);
+
+            $pdo->commit();
+        } catch (Exception $exception) {
+            $pdo->rollBack();
+            throw $exception;
+        }
+    }
+
+    public function reservationsForUser(int $userId): array
+    {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'SELECT r.id, r.fecha_reserva, r.estado, r.total, r.cantidad_personas, r.creado_en, '
+            . 'p.nombre AS paquete_nombre, p.duracion AS paquete_duracion, p.resumen AS paquete_resumen '
+            . 'FROM reservas r '
+            . 'INNER JOIN paquetes p ON p.id = r.paquete_id '
+            . 'WHERE r.usuario_id = :id '
+            . 'ORDER BY r.fecha_reserva DESC, r.id DESC'
+        );
+        $statement->execute([':id' => $userId]);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function reviewsForUser(int $userId, int $limit = 5): array
+    {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'SELECT r.id, r.rating, r.comentario, r.fecha, p.nombre AS paquete_nombre '
+            . 'FROM resenas r '
+            . 'INNER JOIN paquetes p ON p.id = r.paquete_id '
+            . 'WHERE r.usuario_id = :id '
+            . 'ORDER BY r.fecha DESC '
+            . 'LIMIT :limit'
+        );
+
+        $statement->bindValue(':id', $userId, PDO::PARAM_INT);
+        $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $statement->execute();
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function findById(int $userId): ?array

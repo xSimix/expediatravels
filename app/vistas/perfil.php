@@ -52,6 +52,7 @@ $normalizeList = static function ($value): array {
 $upcomingTrips = $normalizeList($user['proximos_viajes'] ?? []);
 $recentActivity = $normalizeList($user['actividad_reciente'] ?? []);
 $recentReviews = $normalizeList($user['ultimas_resenas'] ?? []);
+$reservations = $normalizeList($user['reservaciones'] ?? []);
 
 $emojis = [
     'document-text' => '📄',
@@ -96,20 +97,20 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #fff3e0;
-      --bg-secondary: #fef3c7;
-      --surface: rgba(255, 255, 255, 0.92);
+      --bg: #f3f4ff;
+      --bg-secondary: #e9edff;
+      --surface: rgba(255, 255, 255, 0.95);
       --surface-strong: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --brand: #f97316;
+      --brand: #6366f1;
       --brand-alt: #38bdf8;
       --highlight: #f43f5e;
       --success: #22c55e;
       --danger: #dc2626;
       --radius: 24px;
-      --shadow: 0 25px 60px rgba(244, 114, 182, 0.18);
-      --ring: 0 0 0 3px rgba(59, 130, 246, .25);
+      --shadow: 0 25px 60px rgba(99, 102, 241, 0.12);
+      --ring: 0 0 0 3px rgba(99, 102, 241, .2);
     }
 
     *, *::before, *::after { box-sizing: border-box; }
@@ -118,9 +119,7 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       margin: 0;
       font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
       color: var(--text);
-      background: radial-gradient(circle at top left, rgba(56, 189, 248, .18), transparent 45%),
-        radial-gradient(circle at bottom right, rgba(244, 114, 182, .18), transparent 40%),
-        linear-gradient(180deg, var(--bg) 0%, var(--bg-secondary) 100%);
+      background: var(--bg);
       min-height: 100vh;
     }
 
@@ -136,6 +135,10 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       flex-wrap: wrap;
       gap: 12px;
       margin-bottom: 18px;
+    }
+
+    .logout-form {
+      margin: 0;
     }
 
     .action-button {
@@ -265,13 +268,17 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      background: linear-gradient(135deg, rgba(34, 197, 94, .95), rgba(16, 185, 129, .95));
-      color: #f0fdf4;
-      box-shadow: 0 15px 30px rgba(34, 197, 94, .45);
-      font-size: 1.1rem;
+      background: #1877f2;
+      box-shadow: 0 8px 22px rgba(24, 119, 242, .35);
+    }
+
+    .name__check-icon {
+      width: 16px;
+      height: 16px;
+      fill: #fff;
     }
 
     .badge {
@@ -284,24 +291,6 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       text-transform: uppercase;
     }
 
-    .status-line {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      color: #fff1f2;
-      font-weight: 600;
-    }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(15, 23, 42, .35);
-      padding: 6px 16px;
-      border-radius: 999px;
-    }
-
-    .status-pill__icon,
     .contact-chip__icon { display: inline-flex; align-items: center; justify-content: center; }
 
     .contact-row {
@@ -622,6 +611,62 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
 
     .card--danger { border: 1px solid rgba(220, 38, 38, .25); }
 
+    .resumen-grid { display: grid; gap: 24px; }
+
+    .insights-grid {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: stretch;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border-radius: 999px;
+      font-size: .85rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      text-transform: capitalize;
+      background: rgba(99, 102, 241, .12);
+      color: #3730a3;
+    }
+
+    .status-badge--pendiente { background: rgba(245, 158, 11, .15); color: #b45309; }
+    .status-badge--confirmada { background: rgba(34, 197, 94, .18); color: #15803d; }
+    .status-badge--cancelada { background: rgba(239, 68, 68, .15); color: #b91c1c; }
+
+    .table-scroll { overflow-x: auto; }
+
+    .reservations-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+    }
+
+    .reservations-table th,
+    .reservations-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(15, 23, 42, .08);
+      vertical-align: top;
+    }
+
+    .reservations-table th {
+      font-size: .95rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .table-note {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .85rem;
+      line-height: 1.4;
+    }
+
     .footer { text-align: center; color: var(--muted); padding: 32px 0 24px; font-size: .9rem; }
 
     [hidden] { display: none !important; }
@@ -634,6 +679,8 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       .tab-layout { grid-template-columns: minmax(0, 1fr); }
       .tabs { flex-wrap: wrap; }
       .tab-button { flex: 1 1 calc(50% - 12px); }
+      .insights-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .reservations-table { min-width: 520px; }
     }
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
@@ -651,10 +698,13 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
           <span>Panel administrativo</span>
         </a>
       <?php endif; ?>
-      <button class="action-button action-button--secondary" type="button" data-auth-logout>
-        <span class="action-button__emoji"><?= $renderEmoji('logout', 'emoji--sm'); ?></span>
-        <span>Cerrar sesión</span>
-      </button>
+      <form class="logout-form" action="perfil.php" method="post">
+        <input type="hidden" name="action" value="logout" />
+        <button class="action-button action-button--secondary" type="submit">
+          <span class="action-button__emoji"><?= $renderEmoji('logout', 'emoji--sm'); ?></span>
+          <span>Cerrar sesión</span>
+        </button>
+      </form>
     </div>
     <div class="<?= htmlspecialchars($coverClass); ?>" role="img" aria-label="Portada del perfil de <?= htmlspecialchars($displayName); ?>"<?php if ($coverStyle !== ''): ?> style="<?= htmlspecialchars($coverStyle, ENT_QUOTES); ?>"<?php endif; ?>>
       <label class="edit-badge edit-badge--cover" for="foto_portada" role="button" tabindex="0" data-open-tab="ajustes" data-scroll-target="#foto_portada">
@@ -673,43 +723,20 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
                 <span><?= htmlspecialchars($displayName); ?></span>
                 <?php if ($verifiedAt): ?>
                   <span class="name__check" title="Cuenta verificada" aria-label="Cuenta verificada">
-                    <?= $renderEmoji('check-circle', 'emoji--sm'); ?>
+                    <svg class="name__check-icon" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                      <path d="M8.11 14.59a1 1 0 01-.7-.29l-2.4-2.38a1 1 0 111.4-1.43l1.66 1.63 4.24-4.22a1 1 0 111.41 1.42l-4.94 4.92a1 1 0 01-.67.35h-.01z" />
+                    </svg>
                   </span>
                 <?php endif; ?>
               </h1>
               <span class="badge" title="Rol del usuario"><?= htmlspecialchars($roleLabel); ?></span>
             </div>
             <p class="profile-intro">¡Hola <?= htmlspecialchars($displayName); ?>! Tu próxima aventura te espera. Mantén tu perfil al día para descubrir experiencias inolvidables.</p>
-            <div class="status-line">
-              <?php if ($createdAt !== null): ?>
-                <span class="status-pill">
-                  <span class="status-pill__icon"><?= $renderEmoji('calendar', 'emoji--sm'); ?></span>
-                  <span>Miembro desde <?= htmlspecialchars($createdAt); ?></span>
-                </span>
-              <?php endif; ?>
-              <?php if (!$verifiedAt): ?>
-                <span class="status-pill">
-                  <span class="status-pill__icon"><?= $renderEmoji('shield-exclamation', 'emoji--sm'); ?></span>
-                  <span>Verificación pendiente</span>
-                </span>
-              <?php else: ?>
-                <span class="status-pill">
-                  <span class="status-pill__icon"><?= $renderEmoji('shield-check', 'emoji--sm'); ?></span>
-                  <span>Cuenta verificada</span>
-                </span>
-              <?php endif; ?>
-            </div>
             <div class="contact-row">
               <a class="contact-chip" href="mailto:<?= htmlspecialchars($user['correo']); ?>">
                 <span class="contact-chip__icon"><?= $renderEmoji('mail', 'emoji--sm'); ?></span>
                 <span><?= htmlspecialchars($user['correo']); ?></span>
               </a>
-              <?php if ($phoneLink): ?>
-                <a class="contact-chip" href="tel:<?= htmlspecialchars($phoneLink); ?>">
-                  <span class="contact-chip__icon"><?= $renderEmoji('phone', 'emoji--sm'); ?></span>
-                  <span><?= htmlspecialchars($phone); ?></span>
-                </a>
-              <?php endif; ?>
             </div>
           </div>
         </div>
@@ -728,42 +755,41 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
     <nav class="tabs" aria-label="Secciones del perfil">
       <button class="tab-button active" type="button" data-tab-button="resumen">Resumen</button>
       <button class="tab-button" type="button" data-tab-button="viajes">Viajes</button>
+      <button class="tab-button" type="button" data-tab-button="reservaciones">Reservaciones</button>
       <button class="tab-button" type="button" data-tab-button="resenas">Reseñas</button>
       <button class="tab-button" type="button" data-tab-button="ajustes">Ajustes</button>
     </nav>
 
     <div class="tab-panels">
       <section class="tab-panel" data-tab-panel="resumen">
-        <div class="tab-layout">
-          <div class="tab-column">
-            <section class="card" aria-label="Resumen del perfil">
-              <h2><span class="card-icon" aria-hidden="true"><?= $renderEmoji('document-text', 'emoji--md'); ?></span> Información principal</h2>
-              <dl class="info-grid">
-                <div class="info-item">
-                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('user', 'emoji--sm'); ?></span> Nombre completo</dt>
-                  <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
-                </div>
-                <div class="info-item">
-                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('mail', 'emoji--sm'); ?></span> Correo</dt>
-                  <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
-                </div>
-                <div class="info-item">
-                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('shield-check', 'emoji--sm'); ?></span> Rol</dt>
-                  <dd><?= htmlspecialchars($roleLabel); ?></dd>
-                </div>
-                <div class="info-item">
-                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('calendar', 'emoji--sm'); ?></span> Miembro desde</dt>
-                  <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
-                </div>
-                <div class="info-item">
-                  <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('check-circle', 'emoji--sm'); ?></span> Estado</dt>
-                  <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
-                </div>
-              </dl>
-            </section>
-          </div>
+        <div class="resumen-grid">
+          <section class="card" aria-label="Resumen del perfil">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderEmoji('document-text', 'emoji--md'); ?></span> Información principal</h2>
+            <dl class="info-grid">
+              <div class="info-item">
+                <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('user', 'emoji--sm'); ?></span> Nombre completo</dt>
+                <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
+              </div>
+              <div class="info-item">
+                <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('mail', 'emoji--sm'); ?></span> Correo</dt>
+                <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
+              </div>
+              <div class="info-item">
+                <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('shield-check', 'emoji--sm'); ?></span> Rol</dt>
+                <dd><?= htmlspecialchars($roleLabel); ?></dd>
+              </div>
+              <div class="info-item">
+                <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('calendar', 'emoji--sm'); ?></span> Miembro desde</dt>
+                <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
+              </div>
+              <div class="info-item">
+                <dt><span class="info-item__icon" aria-hidden="true"><?= $renderEmoji('check-circle', 'emoji--sm'); ?></span> Estado</dt>
+                <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
+              </div>
+            </dl>
+          </section>
 
-          <aside class="tab-column">
+          <div class="insights-grid">
             <section class="card" aria-label="Próximos viajes">
               <h2><span class="card-icon" aria-hidden="true"><?= $renderEmoji('calendar', 'emoji--md'); ?></span> Próximos viajes</h2>
               <?php if ($upcomingTrips): ?>
@@ -848,7 +874,7 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
                 </div>
               <?php endif; ?>
             </section>
-          </aside>
+          </div>
         </div>
       </section>
 
@@ -879,6 +905,67 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
               <div class="empty-state">
                 <span aria-hidden="true"><?= $renderEmoji('compass', 'emoji--md'); ?></span>
                 <span>Aún no tienes viajes programados. ¡Explora nuevos destinos!</span>
+              </div>
+            <?php endif; ?>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-tab-panel="reservaciones" hidden>
+        <div class="tab-layout tab-layout--single">
+          <section class="card" aria-label="Reservaciones realizadas">
+            <h2><span class="card-icon" aria-hidden="true"><?= $renderEmoji('document-text', 'emoji--md'); ?></span> Tus reservaciones</h2>
+            <?php if ($reservations): ?>
+              <div class="table-scroll" role="region" aria-live="polite">
+                <table class="reservations-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Experiencia</th>
+                      <th scope="col">Fecha de viaje</th>
+                      <th scope="col">Estado</th>
+                      <th scope="col">Personas</th>
+                      <th scope="col">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <?php foreach ($reservations as $reservation): ?>
+                      <?php
+                        $packageTitle = is_array($reservation) ? ($reservation['paquete'] ?? 'Reserva') : (string) $reservation;
+                        $reservationDate = is_array($reservation) ? ($reservation['fecha'] ?? null) : null;
+                        $reservationStatus = is_array($reservation) ? ($reservation['estado'] ?? '') : '';
+                        $reservationSlug = preg_replace('/[^a-z0-9_-]/i', '-', (string) (is_array($reservation) ? ($reservation['estado_slug'] ?? $reservationStatus) : $reservationStatus));
+                        $reservationPeople = is_array($reservation) ? ($reservation['personas'] ?? null) : null;
+                        $reservationTotal = is_array($reservation) ? ($reservation['total'] ?? null) : null;
+                        $reservationSummary = is_array($reservation) ? ($reservation['resumen'] ?? null) : null;
+                        $reservationDuration = is_array($reservation) ? ($reservation['duracion'] ?? null) : null;
+                        $reservationCreated = is_array($reservation) ? ($reservation['creado_en'] ?? null) : null;
+                      ?>
+                      <tr>
+                        <td>
+                          <strong><?= htmlspecialchars($packageTitle); ?></strong>
+                          <?php if ($reservationSummary): ?><p class="table-note"><?= htmlspecialchars($reservationSummary); ?></p><?php endif; ?>
+                          <?php if ($reservationDuration): ?><p class="table-note">Duración: <?= htmlspecialchars($reservationDuration); ?></p><?php endif; ?>
+                          <?php if ($reservationCreated): ?><p class="table-note">Reservado el <?= htmlspecialchars($reservationCreated); ?></p><?php endif; ?>
+                        </td>
+                        <td><?= $reservationDate ? htmlspecialchars($reservationDate) : '—'; ?></td>
+                        <td>
+                          <?php if ($reservationStatus !== ''): ?>
+                            <span class="status-badge status-badge--<?= htmlspecialchars(strtolower($reservationSlug)); ?>"><?= htmlspecialchars($reservationStatus); ?></span>
+                          <?php else: ?>
+                            —
+                          <?php endif; ?>
+                        </td>
+                        <td><?= $reservationPeople !== null ? htmlspecialchars((string) $reservationPeople) : '—'; ?></td>
+                        <td><?= $reservationTotal !== null ? 'S/ ' . htmlspecialchars($reservationTotal) : '—'; ?></td>
+                      </tr>
+                    <?php endforeach; ?>
+                  </tbody>
+                </table>
+              </div>
+            <?php else: ?>
+              <div class="empty-state">
+                <span aria-hidden="true"><?= $renderEmoji('calendar', 'emoji--md'); ?></span>
+                <span>Todavía no registras reservaciones con nosotros.</span>
               </div>
             <?php endif; ?>
           </section>
