@@ -26,6 +26,7 @@ try {
 
         if ($formType === 'site_settings') {
             $repository->update([
+                'siteLogo' => $_POST['site_logo'] ?? '',
                 'siteTitle' => $_POST['site_title'] ?? '',
                 'siteTagline' => $_POST['site_tagline'] ?? '',
                 'contactEmails' => $parseTextarea($_POST['contact_emails'] ?? null),
@@ -116,6 +117,7 @@ try {
 }
 
 $siteSettings = $repository->get();
+$siteLogo = $siteSettings['siteLogo'] ?? null;
 $siteTitle = $siteSettings['siteTitle'] ?? 'Expediatravels';
 $siteTagline = $siteSettings['siteTagline'] ?? '';
 $heroSlides = $repository->getHeroSlides(false);
@@ -476,6 +478,11 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                         <label for="site_tagline">Lema o tagline</label>
                         <input type="text" id="site_tagline" name="site_tagline" value="<?= htmlspecialchars($siteTagline, ENT_QUOTES); ?>" placeholder="Explora la Selva Central" />
                     </div>
+                </div>
+                <div class="admin-field">
+                    <label for="site_logo">Logo del sitio</label>
+                    <input type="text" id="site_logo" name="site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" placeholder="/web/uploads/logo.png" />
+                    <p class="admin-help">Usa una imagen horizontal (recomendado 250x65 px). Puedes ingresar una URL absoluta o una ruta relativa alojada en el sitio.</p>
                 </div>
                 <div class="admin-grid two-columns">
                     <div class="admin-field">
