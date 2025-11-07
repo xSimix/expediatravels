@@ -50,6 +50,10 @@ $estilosProcesados = $procesarEstilos(is_array($estilosExtra) ? $estilosExtra : 
 $navActivo = static function (string $clave) use ($paginaActiva): string {
     return $paginaActiva === $clave ? 'active' : '';
 };
+
+$grupoActivo = static function (array $claves) use ($paginaActiva): string {
+    return in_array($paginaActiva, $claves, true) ? 'nav-group nav-group--open' : 'nav-group';
+};
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -85,14 +89,27 @@ $navActivo = static function (string $clave) use ($paginaActiva): string {
       <div class="section">Gestión</div>
       <nav class="nav" role="navigation">
         <a class="<?= $navActivo('inicio'); ?>" href="index.php"><span>🏠</span> Inicio</a>
-        <a class="<?= $navActivo('destinos'); ?>" href="destinos.php"><span>📍</span> Destinos</a>
-        <a class="<?= $navActivo('circuitos'); ?>" href="circuitos.php"><span>🧭</span> Circuitos</a>
-        <a class="<?= $navActivo('paquetes'); ?>" href="paquetes.php"><span>🎒</span> Paquetes</a>
+        <div class="<?= $grupoActivo(['destinos_registrados', 'destinos_crear', 'destinos_editar']); ?>">
+          <div class="nav-group__label"><span>📍</span> Destinos</div>
+          <a class="nav-sub <?= $navActivo('destinos_registrados'); ?>" href="destinos.php">Destinos registrados</a>
+          <a class="nav-sub <?= $navActivo('destinos_crear'); ?>" href="crear_destino.php">Crear destino</a>
+        </div>
+        <div class="<?= $grupoActivo(['circuitos_registrados', 'circuitos_crear', 'circuitos_editar']); ?>">
+          <div class="nav-group__label"><span>🧭</span> Circuitos</div>
+          <a class="nav-sub <?= $navActivo('circuitos_registrados'); ?>" href="circuitos.php">Circuitos registrados</a>
+          <a class="nav-sub <?= $navActivo('circuitos_crear'); ?>" href="crear_circuito.php">Crear circuito</a>
+        </div>
+        <div class="<?= $grupoActivo(['paquetes_registrados', 'paquetes_crear', 'paquetes_editar']); ?>">
+          <div class="nav-group__label"><span>🎒</span> Paquetes</div>
+          <a class="nav-sub <?= $navActivo('paquetes_registrados'); ?>" href="paquetes.php">Paquetes registrados</a>
+          <a class="nav-sub <?= $navActivo('paquetes_crear'); ?>" href="crear_paquete.php">Crear paquete</a>
+        </div>
         <a class="<?= $navActivo('usuarios'); ?>" href="usuarios.php"><span>🧑‍💼</span> Usuarios</a>
       </nav>
 
       <div class="section">Operación</div>
       <nav class="nav">
+        <a class="<?= $navActivo('reservas'); ?>" href="reservas.php"><span>🧾</span> Reservas</a>
         <a class="<?= $navActivo('reportes'); ?>" href="reportes.php"><span>📊</span> Reportes</a>
         <a class="<?= $navActivo('configuracion'); ?>" href="configuracion.php"><span>🛠️</span> Configuración</a>
         <a href="../web/autenticacion.php?logout=1"><span>⏻</span> Cerrar sesión</a>
