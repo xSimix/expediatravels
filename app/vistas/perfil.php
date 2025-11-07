@@ -65,11 +65,13 @@ $phone = $user['celular'] ?? null;
 
     /* Header / Cover */
     .cover{
-      position:relative; height:220px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
+      position:relative; min-height:220px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
       background:linear-gradient(135deg,#a5f3fc,#93c5fd 45%, #60a5fa);
+      padding:24px; display:flex; flex-direction:column;
     }
     .cover .actions{
-      position:absolute; right:16px; bottom:16px; display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+      margin-top:auto; display:flex; gap:10px; row-gap:12px; flex-wrap:wrap; justify-content:flex-end;
+      width:100%;
     }
     .btn{
       display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
@@ -85,16 +87,19 @@ $phone = $user['celular'] ?? null;
     .card.pad{ padding:18px; }
 
     /* Profile header block */
-    .profile-head{ display:grid; grid-template-columns:108px 1fr; gap:16px; align-items:end; transform:translateY(-64px); padding:0 16px; }
+    .profile-head{
+      display:grid; grid-template-columns:minmax(0,108px) minmax(0,1fr); gap:16px; align-items:flex-end;
+      transform:translateY(-64px); padding:0 16px; row-gap:18px;
+    }
     .avatar{
       width:108px; height:108px; border-radius:50%; border:4px solid var(--surface);
       background:#dbeafe url('https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=300&auto=format&fit=crop') center/cover no-repeat;
       box-shadow:var(--shadow);
     }
-    .ph-meta{ display:flex; flex-wrap:wrap; align-items:center; gap:14px; }
+    .ph-meta{ display:flex; flex-wrap:wrap; align-items:center; column-gap:14px; row-gap:10px; min-width:0; }
     .name{ font-size:clamp(20px, 3.2vw, 28px); font-weight:800; }
     .badge{ padding:6px 10px; border-radius:999px; background:#e0f2fe; color:#0369a1; font-weight:700; font-size:12px; }
-    .row{ display:flex; gap:18px; flex-wrap:wrap; color:var(--muted); font-weight:600; }
+    .row{ display:flex; column-gap:18px; row-gap:10px; flex-wrap:wrap; color:var(--muted); font-weight:600; }
     .ph-meta + .row{ margin-top:6px; }
     .stat{ background:#f1f5f9; color:#0f172a; padding:8px 12px; border-radius:12px; font-weight:700; }
 
@@ -176,11 +181,12 @@ $phone = $user['celular'] ?? null;
     /* Responsive */
     @media (max-width: 960px){
       .grid{ grid-template-columns:1fr; }
-      .profile-head{ grid-template-columns:84px 1fr; transform:translateY(-52px); }
+      .profile-head{ grid-template-columns:minmax(0,84px) minmax(0,1fr); transform:translateY(-52px); padding:0; }
       .avatar{ width:84px; height:84px; }
       .photos{ grid-template-columns:repeat(2, 1fr); }
       .row2{ grid-template-columns:1fr; }
-      .cover .actions{ right:10px; left:10px; justify-content:flex-start; }
+      .cover{ padding:18px; }
+      .cover .actions{ justify-content:flex-start; }
     }
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
