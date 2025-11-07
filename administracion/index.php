@@ -143,7 +143,7 @@
         <a href="#"><span>📨</span> Reservaciones</a>
         <a href="#"><span>📅</span> Calendario</a>
         <a href="#"><span>📊</span> Reportes</a>
-        <a href="#"><span>⚙️</span> Ajustes</a>
+        <a href="ajustes.php"><span>⚙️</span> Ajustes</a>
         <a href="#"><span>⏻</span> Cerrar sesión</a>
       </nav>
     </aside>
