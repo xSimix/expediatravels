@@ -589,7 +589,40 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       border-color: rgba(59, 130, 246, .5);
     }
 
+    .form-section {
+      display: grid;
+      gap: 16px;
+      padding: 20px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, .7);
+      border: 1px solid rgba(99, 102, 241, .14);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4);
+    }
+
+    .form-section__header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-section__title {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    .form-section__description {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
     .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .field--full { grid-column: 1 / -1; }
     .form-actions { display: flex; flex-wrap: wrap; gap: 12px; }
 
     .list { display: grid; gap: 14px; margin: 0; padding: 0; list-style: none; }
@@ -608,6 +641,50 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
     }
 
     .upload-helper { color: var(--muted); font-size: .85rem; }
+
+    .field--file { position: relative; }
+
+    .file-preview {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(99, 102, 241, .08);
+    }
+
+    .file-preview__thumb {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px;
+      object-fit: cover;
+      border: 2px solid rgba(255, 255, 255, .9);
+      box-shadow: 0 14px 32px rgba(99, 102, 241, .18);
+      background: #f8fafc;
+    }
+
+    .file-preview__meta { display: grid; gap: 6px; }
+    .file-preview__name { font-weight: 600; font-size: .95rem; color: var(--text); }
+    .file-preview__note { margin: 0; font-size: .85rem; color: var(--muted); }
+
+    .file-preview__remove {
+      border: none;
+      padding: 0;
+      background: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+      color: var(--danger);
+      cursor: pointer;
+    }
+
+    .file-preview__remove:hover,
+    .file-preview__remove:focus-visible {
+      text-decoration: underline;
+      outline: none;
+    }
 
     .card--danger { border: 1px solid rgba(220, 38, 38, .25); }
 
@@ -676,6 +753,7 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
       .top-actions { justify-content: center; }
       .cover { padding: 40px 24px 28px; }
       .avatar { width: 100px; height: 100px; }
+      .form-section { padding: 18px; }
       .tab-layout { grid-template-columns: minmax(0, 1fr); }
       .tabs { flex-wrap: wrap; }
       .tab-button { flex: 1 1 calc(50% - 12px); }
@@ -1011,40 +1089,110 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
             <h2><span class="card-icon" aria-hidden="true"><?= $renderEmoji('pencil-square', 'emoji--md'); ?></span> Editar información personal</h2>
             <form action="perfil.php" method="post" enctype="multipart/form-data" novalidate>
               <input type="hidden" name="action" value="update" />
-              <div class="form-grid">
-                <div class="field">
-                  <label for="nombres">Nombres</label>
-                  <input id="nombres" name="nombre" value="<?= htmlspecialchars($user['nombre']); ?>" required />
+              <div class="form-section">
+                <div class="form-section__header">
+                  <h3 class="form-section__title"><?= $renderEmoji('user', 'emoji--sm'); ?> Información básica</h3>
+                  <p class="form-section__description">Actualiza tu nombre y apellidos tal como deseas que aparezcan en tu perfil.</p>
                 </div>
-                <div class="field">
-                  <label for="apellidos">Apellidos</label>
-                  <input id="apellidos" name="apellidos" value="<?= htmlspecialchars($user['apellidos']); ?>" required />
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="nombres">Nombres</label>
+                    <input id="nombres" name="nombre" value="<?= htmlspecialchars($user['nombre']); ?>" required />
+                  </div>
+                  <div class="field">
+                    <label for="apellidos">Apellidos</label>
+                    <input id="apellidos" name="apellidos" value="<?= htmlspecialchars($user['apellidos']); ?>" required />
+                  </div>
                 </div>
-                <div class="field">
-                  <label for="correo">Correo</label>
-                  <input id="correo" name="correo" type="email" value="<?= htmlspecialchars($user['correo']); ?>" required />
+              </div>
+
+              <div class="form-section">
+                <div class="form-section__header">
+                  <h3 class="form-section__title"><?= $renderEmoji('mail', 'emoji--sm'); ?> Contacto</h3>
+                  <p class="form-section__description">Mantén tu correo y número de teléfono actualizados para recibir notificaciones importantes.</p>
                 </div>
-                <div class="field">
-                  <label for="telefono">Teléfono</label>
-                  <input id="telefono" name="celular" value="<?= $phone ? htmlspecialchars($phone) : ''; ?>" placeholder="Opcional" />
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="correo">Correo</label>
+                    <input id="correo" name="correo" type="email" value="<?= htmlspecialchars($user['correo']); ?>" required />
+                  </div>
+                  <div class="field">
+                    <label for="telefono">Teléfono</label>
+                    <input id="telefono" name="celular" value="<?= $phone ? htmlspecialchars($phone) : ''; ?>" placeholder="Opcional" />
+                  </div>
                 </div>
-                <div class="field">
-                  <label for="foto_portada">Foto de portada</label>
-                  <input id="foto_portada" name="foto_portada" type="file" accept="image/*" />
-                  <span class="upload-helper">Sube una imagen en formato JPG o PNG para personalizar la portada.</span>
+              </div>
+
+              <div class="form-section">
+                <div class="form-section__header">
+                  <h3 class="form-section__title"><?= $renderEmoji('photo', 'emoji--sm'); ?> Fotografías</h3>
+                  <p class="form-section__description">Elige imágenes que representen tu estilo. Obtendrás una vista previa antes de guardar los cambios.</p>
                 </div>
-                <div class="field">
-                  <label for="foto_perfil">Foto de perfil</label>
-                  <input id="foto_perfil" name="foto_perfil" type="file" accept="image/*" />
-                  <span class="upload-helper">Elige una imagen cuadrada para una mejor visualización.</span>
+                <div class="form-grid">
+                  <div class="field field--full field--file"
+                    data-file-field
+                    data-preview-alt="Vista previa de la foto de portada"
+                    data-selected-note="Se actualizará tu portada al guardar los cambios."
+                    data-current-note="Esta es la imagen que se muestra actualmente en tu portada."
+                    data-current-label="Imagen de portada actual"
+                    data-selected-label="Imagen seleccionada"
+                    <?php if ($coverPhoto): ?>data-current-image="<?= htmlspecialchars($coverPhoto, ENT_QUOTES); ?>"<?php endif; ?>>
+                    <label for="foto_portada">Foto de portada</label>
+                    <input id="foto_portada" name="foto_portada" type="file" accept="image/*" />
+                    <span class="upload-helper">Sube una imagen en formato JPG o PNG para personalizar la portada.</span>
+                    <div class="file-preview" data-file-preview hidden>
+                      <img class="file-preview__thumb" src="" alt="" data-file-preview-image />
+                      <div class="file-preview__meta">
+                        <span class="file-preview__name" data-file-preview-name></span>
+                        <p class="file-preview__note" data-file-preview-note></p>
+                        <button type="button" class="file-preview__remove" data-file-preview-remove hidden>
+                          <?= $renderEmoji('trash', 'emoji--sm'); ?>
+                          <span>Quitar imagen seleccionada</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field field--full field--file"
+                    data-file-field
+                    data-preview-alt="Vista previa de la foto de perfil"
+                    data-selected-note="Tu foto de perfil cambiará al guardar."
+                    data-current-note="Esta es tu foto de perfil actual."
+                    data-current-label="Foto de perfil actual"
+                    data-selected-label="Imagen seleccionada"
+                    <?php if ($profilePhoto): ?>data-current-image="<?= htmlspecialchars($profilePhoto, ENT_QUOTES); ?>"<?php endif; ?>>
+                    <label for="foto_perfil">Foto de perfil</label>
+                    <input id="foto_perfil" name="foto_perfil" type="file" accept="image/*" />
+                    <span class="upload-helper">Elige una imagen cuadrada para una mejor visualización.</span>
+                    <div class="file-preview" data-file-preview hidden>
+                      <img class="file-preview__thumb" src="" alt="" data-file-preview-image />
+                      <div class="file-preview__meta">
+                        <span class="file-preview__name" data-file-preview-name></span>
+                        <p class="file-preview__note" data-file-preview-note></p>
+                        <button type="button" class="file-preview__remove" data-file-preview-remove hidden>
+                          <?= $renderEmoji('trash', 'emoji--sm'); ?>
+                          <span>Quitar imagen seleccionada</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div class="field">
-                  <label for="password">Nueva contraseña</label>
-                  <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para mantener" />
+              </div>
+
+              <div class="form-section">
+                <div class="form-section__header">
+                  <h3 class="form-section__title"><?= $renderEmoji('shield-check', 'emoji--sm'); ?> Seguridad</h3>
+                  <p class="form-section__description">Cambia tu contraseña cuando lo necesites. Déjalo en blanco si deseas conservar la actual.</p>
                 </div>
-                <div class="field">
-                  <label for="password_confirmation">Confirmar contraseña</label>
-                  <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" placeholder="Repite tu nueva contraseña" />
+                <div class="form-grid">
+                  <div class="field">
+                    <label for="password">Nueva contraseña</label>
+                    <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para mantener" />
+                  </div>
+                  <div class="field">
+                    <label for="password_confirmation">Confirmar contraseña</label>
+                    <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" placeholder="Repite tu nueva contraseña" />
+                  </div>
                 </div>
               </div>
               <div class="form-actions">
@@ -1129,6 +1277,143 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
     if (defaultTabButton) {
       activateTab(defaultTabButton.dataset.tabButton);
     }
+
+    const fileFields = Array.from(document.querySelectorAll('[data-file-field]'));
+
+    fileFields.forEach((field) => {
+      const input = field.querySelector('input[type="file"]');
+      const preview = field.querySelector('[data-file-preview]');
+
+      if (!input || !preview) {
+        return;
+      }
+
+      const image = preview.querySelector('[data-file-preview-image]');
+      const name = preview.querySelector('[data-file-preview-name]');
+      const note = preview.querySelector('[data-file-preview-note]');
+      const removeButton = preview.querySelector('[data-file-preview-remove]');
+      const previewAlt = field.dataset.previewAlt || 'Vista previa de la imagen seleccionada';
+      const selectedNote = field.dataset.selectedNote || 'La imagen se actualizará al guardar los cambios.';
+      const currentNote = field.dataset.currentNote || 'Esta es la imagen que se muestra actualmente.';
+      const currentLabel = field.dataset.currentLabel || 'Imagen actual';
+      const selectedLabel = field.dataset.selectedLabel || 'Imagen seleccionada';
+      const currentImage = field.dataset.currentImage || '';
+      let objectUrl = null;
+
+      const setRemoveVisibility = (visible) => {
+        if (!removeButton) {
+          return;
+        }
+
+        removeButton.hidden = !visible;
+      };
+
+      const hidePreview = () => {
+        if (!preview.hidden) {
+          preview.hidden = true;
+        }
+
+        field.classList.remove('has-preview');
+        setRemoveVisibility(false);
+
+        if (name) {
+          name.textContent = '';
+        }
+
+        if (note) {
+          note.textContent = '';
+        }
+
+        if (image) {
+          image.removeAttribute('src');
+        }
+
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+        }
+      };
+
+      const showPreview = (src, label, noteText, { canRemove = false, isObjectUrl = false } = {}) => {
+        if (!image) {
+          return;
+        }
+
+        if (objectUrl && objectUrl !== src) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+        }
+
+        if (isObjectUrl) {
+          objectUrl = src;
+        }
+
+        image.src = src;
+        image.alt = previewAlt;
+
+        if (name) {
+          name.textContent = label;
+        }
+
+        if (note) {
+          note.textContent = noteText;
+        }
+
+        preview.hidden = false;
+        field.classList.add('has-preview');
+        setRemoveVisibility(canRemove);
+      };
+
+      const showExistingImage = () => {
+        if (!currentImage) {
+          hidePreview();
+          return;
+        }
+
+        showPreview(currentImage, currentLabel, currentNote, { canRemove: false, isObjectUrl: false });
+      };
+
+      const resetSelection = () => {
+        if (objectUrl) {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = null;
+        }
+
+        input.value = '';
+
+        if (currentImage) {
+          showExistingImage();
+        } else {
+          hidePreview();
+        }
+      };
+
+      input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+
+        if (file) {
+          const url = URL.createObjectURL(file);
+          const label = `${selectedLabel}: ${file.name}`;
+          showPreview(url, label, selectedNote, { canRemove: true, isObjectUrl: true });
+        } else if (currentImage) {
+          showExistingImage();
+        } else {
+          hidePreview();
+        }
+      });
+
+      if (removeButton) {
+        removeButton.addEventListener('click', () => {
+          resetSelection();
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+          input.focus();
+        });
+      }
+
+      if (currentImage) {
+        showExistingImage();
+      }
+    });
   </script>
 </body>
 </html>
