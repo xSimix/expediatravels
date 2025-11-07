@@ -25,18 +25,73 @@ try {
         $formType = $_POST['form_type'] ?? '';
 
         if ($formType === 'site_settings') {
-            $repository->update([
-                'siteLogo' => $_POST['site_logo'] ?? '',
-                'siteTitle' => $_POST['site_title'] ?? '',
-                'siteTagline' => $_POST['site_tagline'] ?? '',
-                'contactEmails' => $parseTextarea($_POST['contact_emails'] ?? null),
-                'contactPhones' => $parseTextarea($_POST['contact_phones'] ?? null),
-                'contactAddresses' => $parseTextarea($_POST['contact_addresses'] ?? null),
-                'contactLocations' => $parseTextarea($_POST['contact_locations'] ?? null),
-                'socialLinks' => $parseTextarea($_POST['social_links'] ?? null),
-            ]);
+            $logoPath = trim((string) ($_POST['current_site_logo'] ?? ''));
+            $logoUpload = $_FILES['site_logo_file'] ?? null;
+            $uploadFailed = false;
 
-            $feedback = ['type' => 'success', 'message' => 'Configuración general guardada correctamente.'];
+            if (is_array($logoUpload) && ($logoUpload['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                if (($logoUpload['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK || !isset($logoUpload['tmp_name']) || !is_uploaded_file($logoUpload['tmp_name'])) {
+                    $feedback = ['type' => 'error', 'message' => 'No se pudo subir el logo. Inténtalo nuevamente.'];
+                    $uploadFailed = true;
+                } else {
+                    $finfo = new finfo(FILEINFO_MIME_TYPE);
+                    $mimeType = $finfo->file($logoUpload['tmp_name']);
+                    $allowedMimeTypes = [
+                        'image/jpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/webp' => 'webp',
+                        'image/svg+xml' => 'svg',
+                    ];
+
+                    if (!isset($allowedMimeTypes[$mimeType])) {
+                        $feedback = ['type' => 'error', 'message' => 'Formato de logo no permitido. Usa imágenes JPG, PNG, WEBP o SVG.'];
+                        $uploadFailed = true;
+                    } else {
+                        $uploadDirectory = __DIR__ . '/../web/cargas/logos';
+
+                        if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0755, true) && !is_dir($uploadDirectory)) {
+                            $feedback = ['type' => 'error', 'message' => 'No se pudo preparar la carpeta de subida del logo.'];
+                            $uploadFailed = true;
+                        } else {
+                            $extension = $allowedMimeTypes[$mimeType];
+                            $filename = 'logo-' . date('Ymd-His') . '-' . bin2hex(random_bytes(6)) . '.' . $extension;
+                            $destination = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
+
+                            if (!move_uploaded_file($logoUpload['tmp_name'], $destination)) {
+                                $feedback = ['type' => 'error', 'message' => 'No se pudo guardar el logo en el servidor.'];
+                                $uploadFailed = true;
+                            } else {
+                                $publicPath = '/web/cargas/logos/' . $filename;
+
+                                $normalizedCurrent = ltrim($logoPath, '/');
+                                if ($normalizedCurrent !== '' && str_starts_with($normalizedCurrent, 'web/cargas/logos/')) {
+                                    $absoluteCurrent = dirname(__DIR__) . '/' . $normalizedCurrent;
+                                    if (is_file($absoluteCurrent)) {
+                                        @unlink($absoluteCurrent);
+                                    }
+                                }
+
+                                $logoPath = $publicPath;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!$uploadFailed) {
+                $repository->update([
+                    'siteLogo' => $logoPath,
+                    'siteTitle' => $_POST['site_title'] ?? '',
+                    'siteTagline' => $_POST['site_tagline'] ?? '',
+                    'contactEmails' => $parseTextarea($_POST['contact_emails'] ?? null),
+                    'contactPhones' => $parseTextarea($_POST['contact_phones'] ?? null),
+                    'contactAddresses' => $parseTextarea($_POST['contact_addresses'] ?? null),
+                    'contactLocations' => $parseTextarea($_POST['contact_locations'] ?? null),
+                    'socialLinks' => $parseTextarea($_POST['social_links'] ?? null),
+                ]);
+
+                $feedback = ['type' => 'success', 'message' => 'Configuración general guardada correctamente.'];
+            }
         } elseif ($formType === 'add_slide') {
             $label = trim((string) ($_POST['slide_label'] ?? ''));
             $upload = $_FILES['slide_upload'] ?? null;
@@ -203,6 +258,50 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
         .admin-help {
             font-size: 0.85rem;
             color: #64748b;
+        }
+        .admin-logo-preview {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            background: #f1f5f9;
+            border-radius: 18px;
+        }
+        .admin-logo-preview__image {
+            flex: 0 0 auto;
+            display: grid;
+            place-items: center;
+            width: 140px;
+            height: 70px;
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+        .admin-logo-preview__image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .admin-logo-preview__meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            font-size: 0.95rem;
+            color: #475569;
+        }
+        .admin-logo-preview__label {
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-size: 0.75rem;
+            color: #0f172a;
+        }
+        .admin-logo-preview__path {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
         }
         .admin-actions {
             display: flex;
@@ -467,8 +566,9 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
 
         <section class="admin-card">
             <h2>Identidad y datos de contacto</h2>
-            <form method="post" class="admin-grid">
+            <form method="post" class="admin-grid" enctype="multipart/form-data">
                 <input type="hidden" name="form_type" value="site_settings" />
+                <input type="hidden" name="current_site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" />
                 <div class="admin-grid two-columns">
                     <div class="admin-field">
                         <label for="site_title">Título del sitio</label>
@@ -480,9 +580,20 @@ $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("
                     </div>
                 </div>
                 <div class="admin-field">
-                    <label for="site_logo">Logo del sitio</label>
-                    <input type="text" id="site_logo" name="site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" placeholder="/web/uploads/logo.png" />
-                    <p class="admin-help">Usa una imagen horizontal (recomendado 250x65 px). Puedes ingresar una URL absoluta o una ruta relativa alojada en el sitio.</p>
+                    <label for="site_logo_file">Logo del sitio</label>
+                    <input type="file" id="site_logo_file" name="site_logo_file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
+                    <p class="admin-help">Sube una imagen horizontal (recomendado 250x65 px). Se permiten formatos JPG, PNG, WEBP o SVG.</p>
+                    <?php if ($siteLogo): ?>
+                        <div class="admin-logo-preview">
+                            <div class="admin-logo-preview__image">
+                                <img src="<?= htmlspecialchars($siteLogo, ENT_QUOTES); ?>" alt="Logo actual del sitio" />
+                            </div>
+                            <div class="admin-logo-preview__meta">
+                                <span class="admin-logo-preview__label">Logo actual</span>
+                                <span class="admin-logo-preview__path"><?= htmlspecialchars($siteLogo, ENT_QUOTES); ?></span>
+                            </div>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="admin-grid two-columns">
                     <div class="admin-field">
