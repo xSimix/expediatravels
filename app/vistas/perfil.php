@@ -40,153 +40,212 @@ $phone = $user['celular'] ?? null;
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    :root{
-      /* Paleta viva, minimalista y legible para 25–70 años */
-      --bg:#f6f7fb;
-      --surface:#ffffff;
-      --text:#1b1f24;
-      --muted:#6b7280;
-      --brand:#0ea5e9;       /* celeste vibrante */
-      --brand-2:#22c55e;     /* verde de acento */
-      --accent:#f59e0b;      /* amarillo suave */
-      --danger:#ef4444;
-      --radius:18px;
-      --shadow:0 8px 20px rgba(2,8,23,0.06);
-      --ring:0 0 0 3px rgba(14,165,233,.2);
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --brand: #0ea5e9;
+      --danger: #ef4444;
+      --radius: 18px;
+      --shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+      --ring: 0 0 0 3px rgba(14, 165, 233, .25);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      background:var(--bg); color:var(--text);
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
-    a{color:var(--brand); text-decoration:none}
-    .wrap{max-width:1100px; margin:auto; padding:20px;}
 
-    /* Header / Cover */
-    .cover{
-      position:relative; min-height:220px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow);
-      background:linear-gradient(135deg,#a5f3fc,#93c5fd 45%, #60a5fa);
-      padding:24px; display:flex; flex-direction:column;
+    a { color: var(--brand); text-decoration: none; }
+
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 20px; }
+
+    .cover {
+      position: relative;
+      border-radius: var(--radius);
+      padding: 28px;
+      background: linear-gradient(135deg, #7dd3fc 0%, #60a5fa 45%, #4f46e5 100%);
+      box-shadow: var(--shadow);
+      overflow: hidden;
     }
-    .cover .actions{
-      margin-top:auto; display:flex; gap:10px; row-gap:12px; flex-wrap:wrap; justify-content:flex-end;
-      width:100%;
+
+    .cover-actions {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .btn{
-      display:inline-flex; align-items:center; gap:8px; border:none; cursor:pointer;
-      padding:10px 14px; border-radius:14px; font-weight:600; background:var(--surface);
-      color:var(--text); box-shadow:var(--shadow);
+
+    .profile-head {
+      margin-top: 36px;
+      display: flex;
+      align-items: flex-end;
+      gap: 22px;
+      flex-wrap: wrap;
     }
-    .btn.primary{ background:var(--brand); color:white; }
-    .btn.ghost{ background:rgba(255,255,255,.85); backdrop-filter:blur(6px); }
-    .btn:focus{ outline:none; box-shadow:var(--ring); }
 
-    /* Card base */
-    .card{ background:var(--surface); border-radius:var(--radius); box-shadow:var(--shadow); }
-    .card.pad{ padding:18px; }
-
-    /* Profile header block */
-    .profile-head{
-      display:grid; grid-template-columns:minmax(0,108px) minmax(0,1fr); gap:16px; align-items:flex-end;
-      transform:translateY(-64px); padding:0 16px; row-gap:18px;
+    .avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      border: 4px solid rgba(255, 255, 255, .85);
+      background: #dbeafe url('https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=300&auto=format&fit=crop') center / cover no-repeat;
+      box-shadow: var(--shadow);
+      flex-shrink: 0;
     }
-    .avatar{
-      width:108px; height:108px; border-radius:50%; border:4px solid var(--surface);
-      background:#dbeafe url('https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=300&auto=format&fit=crop') center/cover no-repeat;
-      box-shadow:var(--shadow);
+
+    .profile-data { display: grid; gap: 12px; min-width: 0; }
+
+    .name-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .ph-meta{ display:flex; flex-wrap:wrap; align-items:center; column-gap:14px; row-gap:10px; min-width:0; }
-    .name{ font-size:clamp(20px, 3.2vw, 28px); font-weight:800; }
-    .badge{ padding:6px 10px; border-radius:999px; background:#e0f2fe; color:#0369a1; font-weight:700; font-size:12px; }
-    .row{ display:flex; column-gap:18px; row-gap:10px; flex-wrap:wrap; color:var(--muted); font-weight:600; }
-    .ph-meta + .row{ margin-top:6px; }
-    .stat{ background:#f1f5f9; color:#0f172a; padding:8px 12px; border-radius:12px; font-weight:700; }
 
-    /* Typography helpers */
-    .section-title{ margin:0; font-size:1.1rem; font-weight:700; }
-    .section-title--compact{ font-size:1.05rem; margin-bottom:8px; }
-    .section-title--spaced{ margin-bottom:12px; }
-    .section-title--danger{ color:var(--danger); }
-    .section-subheading{ margin:0; font-size:1rem; font-weight:700; }
-    .section-text{ margin:0; color:var(--muted); line-height:1.55; }
-    .section-text--note{ font-size:14px; }
-    .card-section{ display:grid; gap:12px; }
-    .card-section + .card-section{ margin-top:18px; }
-
-    /* Tabs */
-    .tabs{ margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
-    .tab{ background:transparent; border:none; padding:12px 14px; border-radius:12px; font-weight:700; color:var(--muted); cursor:pointer; }
-    .tab.active{ color:#0b1220; background:#eaf6ff; box-shadow:var(--shadow); }
-
-    /* Grid */
-    .grid{ display:grid; grid-template-columns: 1.05fr 1.5fr; gap:18px; }
-
-    /* Left column cards */
-    .chips{ display:flex; flex-wrap:wrap; gap:8px; }
-    .chip{ background:#eef2ff; color:#3730a3; padding:8px 12px; border-radius:999px; font-weight:700; }
-    .chip--info{ background:#e0f2fe; color:#0369a1; }
-    .chip--success{ background:#dcfce7; color:#14532d; }
-    .chip--warning{ background:#fff7ed; color:#9a3412; }
-    .chip--accent{ background:#fef9c3; color:#854d0e; }
-    .list{ display:grid; gap:10px; }
-    .list--stacked{ margin:16px 0; }
-    .list--spaced{ margin-bottom:18px; }
-    .list .item{ display:flex; align-items:center; gap:12px; }
-    .icon{ width:34px; height:34px; border-radius:10px; background:#f1f5f9; display:grid; place-items:center; font-weight:900; }
-
-    /* Right column cards */
-    .trip{ display:grid; grid-template-columns:72px 1fr auto; gap:12px; align-items:center; padding:12px; border-radius:14px; background:#f8fafc; }
-    .trip-content{ display:grid; gap:4px; }
-    .trip-title{ margin:0; font-weight:800; }
-    .trip-text{ margin:0; color:var(--muted); }
-    .thumb{ width:72px; height:72px; border-radius:12px; background:#ddd center/cover no-repeat; }
-    .pill{ padding:6px 10px; border-radius:999px; background:#dcfce7; color:#166534; font-weight:800; font-size:12px; }
-    .timeline{ border-left:3px solid #e5e7eb; padding-left:14px; display:grid; gap:16px; }
-    .timeline-item{ position:relative; padding-left:18px; }
-    .timeline-item::before{ content:""; position:absolute; left:-26px; top:6px; width:12px; height:12px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 4px #e0f2fe; }
-    .timeline-title{ margin:0; font-weight:700; }
-    .timeline-text{ margin:0; color:var(--muted); }
-
-    /* Forms */
-    .form{ display:grid; gap:12px; }
-    .form + .form{ margin-top:18px; }
-    .field{ display:grid; gap:6px; }
-    label{ font-weight:700; color:#0f172a; }
-    input,select,textarea{
-      width:100%; padding:12px 14px; border-radius:12px; border:1px solid #e5e7eb; background:#fff; font-size:16px;
+    .name {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2rem);
+      font-weight: 800;
+      color: #f8fafc;
     }
-    input:focus,select:focus,textarea:focus{ outline:none; box-shadow:var(--ring); border-color:#bae6fd; }
-    .row2{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .form-actions{ display:flex; gap:10px; flex-wrap:wrap; }
-    .form-actions--spaced{ margin-top:4px; }
 
-    /* Photo grid */
-    .photos{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
-    .photos div{ aspect-ratio:1/1; border-radius:12px; background:#ddd center/cover no-repeat; display:flex; align-items:center; justify-content:center; color:var(--muted); font-weight:700; }
+    .badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .15);
+      color: #e0f2fe;
+      font-weight: 600;
+      letter-spacing: .02em;
+    }
 
-    /* Footer */
-    .footer{ text-align:center; color:var(--muted); padding:28px 8px; }
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: rgba(241, 245, 249, .92);
+      font-weight: 600;
+    }
 
-    /* Alerts */
-    .alert{ margin:18px 0; padding:16px 18px; border-radius:16px; font-weight:600; box-shadow:var(--shadow); }
-    .alert--success{ background:#dcfce7; color:#14532d; }
-    .alert--error{ background:#fee2e2; color:#7f1d1d; }
-    .alert--info{ background:#e0f2fe; color:#0c4a6e; }
+    .status-line span { background: rgba(15, 23, 42, .35); padding: 4px 12px; border-radius: 999px; color: #e0f2fe; }
 
-    .btn.danger{ background:var(--danger); color:#fff; }
-    .danger-card{ border:2px dashed rgba(239,68,68,0.25); }
-    .danger-card .btn.primary{ background:var(--danger); color:#fff; }
+    .contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-weight: 600;
+      color: rgba(15, 23, 42, .92);
+    }
 
-    /* Responsive */
-    @media (max-width: 960px){
-      .grid{ grid-template-columns:1fr; }
-      .profile-head{ grid-template-columns:minmax(0,84px) minmax(0,1fr); transform:translateY(-52px); padding:0; }
-      .avatar{ width:84px; height:84px; }
-      .photos{ grid-template-columns:repeat(2, 1fr); }
-      .row2{ grid-template-columns:1fr; }
-      .cover{ padding:18px; }
-      .cover .actions{ justify-content:flex-start; }
+    .contact-row span { background: rgba(255, 255, 255, .85); padding: 6px 12px; border-radius: 12px; }
+
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .summary span {
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .15);
+      color: #e0f2fe;
+      font-weight: 600;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      border-radius: 14px;
+      padding: 10px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: rgba(255, 255, 255, .9);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+
+    .btn.primary { background: var(--brand); color: #fff; }
+    .btn.danger { background: var(--danger); color: #fff; }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:focus-visible { outline: none; box-shadow: var(--ring); }
+
+    main { display: grid; gap: 24px; margin-top: 32px; }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin: 0 0 16px;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .info-item { display: grid; gap: 4px; }
+    .info-item dt { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .info-item dd { margin: 0; font-weight: 600; font-size: 1.05rem; }
+
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .alert {
+      margin: 0;
+      padding: 16px 18px;
+      border-radius: 16px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .alert--success { background: #dcfce7; color: #14532d; }
+    .alert--error { background: #fee2e2; color: #7f1d1d; }
+    .alert--info { background: #e0f2fe; color: #0c4a6e; }
+
+    form { display: grid; gap: 16px; }
+    .field { display: grid; gap: 6px; }
+    label { font-weight: 600; color: var(--text); }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      background: #fff;
+      font-size: 16px;
+    }
+    input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; box-shadow: var(--ring); border-color: #bae6fd; }
+
+    .form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .card--danger { border: 1px solid rgba(239, 68, 68, .25); }
+
+    .footer { text-align: center; color: var(--muted); padding: 32px 0 24px; font-size: .9rem; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 768px) {
+      .wrap { padding: 16px; }
+      .cover { padding: 22px; }
+      .cover-actions { justify-content: flex-start; }
+      .avatar { width: 92px; height: 92px; }
+      .contact-row span { font-size: .95rem; }
     }
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
@@ -194,49 +253,36 @@ $phone = $user['celular'] ?? null;
 <body>
   <header class="wrap">
     <div class="cover" role="img" aria-label="Portada con degradado">
-      <div class="actions">
-        <button class="btn ghost" type="button" id="btn-cover">Cambiar portada</button>
-        <button class="btn ghost" type="button" data-tab-target="ajustes" id="btn-edit">Editar perfil</button>
-        <a class="btn ghost" href="index.php">Inicio</a>
+      <div class="cover-actions">
+        <button class="btn" type="button" id="btn-cover">Cambiar portada</button>
+        <button class="btn" type="button" data-action="toggle-settings">Editar perfil</button>
+        <a class="btn" href="index.php">Inicio</a>
         <?php if ($role === 'administrador'): ?>
-          <a class="btn ghost" href="../administracion/index.php">Panel administrativo</a>
+          <a class="btn" href="../administracion/index.php">Panel administrativo</a>
         <?php endif; ?>
         <button class="btn primary" type="button" data-auth-logout>Cerrar sesión</button>
       </div>
-    </div>
-
-    <section class="profile-head">
-      <div>
+      <div class="profile-head">
         <div class="avatar" id="avatar" aria-label="Foto de perfil"></div>
-      </div>
-      <div>
-        <div class="ph-meta">
-          <div class="name"><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></div>
-          <span class="badge" title="Rol del usuario"><?= htmlspecialchars($roleLabel); ?></span>
-          <?php if ($createdAt !== null): ?>
-            <span class="stat" title="Miembro desde">Miembro desde <?= htmlspecialchars($createdAt); ?></span>
-          <?php endif; ?>
-          <span class="stat" title="Estado de verificación">
-            <?= $verifiedAt ? 'Cuenta verificada' : 'Verificación pendiente'; ?>
-          </span>
+        <div class="profile-data">
+          <div class="name-row">
+            <h1 class="name"><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></h1>
+            <span class="badge" title="Rol del usuario"><?= htmlspecialchars($roleLabel); ?></span>
+          </div>
+          <div class="status-line">
+            <?php if ($createdAt !== null): ?>
+              <span>Miembro desde <?= htmlspecialchars($createdAt); ?></span>
+            <?php endif; ?>
+            <span><?= $verifiedAt ? 'Cuenta verificada' : 'Verificación pendiente'; ?></span>
+            <span>ID #<?= htmlspecialchars((string) $user['id']); ?></span>
+          </div>
+          <div class="contact-row">
+            <span>📧 <?= htmlspecialchars($user['correo']); ?></span>
+            <span>☎ <?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></span>
+          </div>
         </div>
-        <div class="row">
-          <span>📧 <?= htmlspecialchars($user['correo']); ?></span>
-          <?php if (!empty($phone)): ?>
-            <span>☎ <?= htmlspecialchars($phone); ?></span>
-          <?php else: ?>
-            <span>☎ Sin número registrado</span>
-          <?php endif; ?>
-          <span>🆔 Usuario #<?= htmlspecialchars((string) $user['id']); ?></span>
-        </div>
-        <nav class="tabs" role="tablist" aria-label="Secciones de perfil">
-          <button class="tab active" data-tab="resumen" role="tab" aria-selected="true">Resumen</button>
-          <button class="tab" data-tab="viajes" role="tab" aria-selected="false">Viajes</button>
-          <button class="tab" data-tab="resenas" role="tab" aria-selected="false">Reseñas</button>
-          <button class="tab" data-tab="ajustes" role="tab" aria-selected="false">Ajustes</button>
-        </nav>
       </div>
-    </section>
+    </div>
   </header>
 
   <main class="wrap" id="content">
@@ -247,125 +293,57 @@ $phone = $user['celular'] ?? null;
       </div>
     <?php endif; ?>
 
-    <!-- TAB: RESUMEN -->
-    <section class="tab-panel" id="tab-resumen" aria-labelledby="Resumen">
-      <div class="grid">
-        <aside class="card pad" aria-label="Información del usuario">
-          <div class="card-section">
-            <h2 class="section-title section-title--compact">Acerca de</h2>
-            <p class="section-text">
-              <?= htmlspecialchars($user['nombre']); ?> administra su experiencia de viaje desde esta cuenta de Expediatravels. Aquí puedes consultar tus datos principales y el estado general de tu cuenta.
-            </p>
+    <section class="card" aria-label="Resumen del perfil">
+      <h2>Información principal</h2>
+      <dl class="info-grid">
+        <div class="info-item">
+          <dt>Nombre completo</dt>
+          <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
+        </div>
+        <div class="info-item">
+          <dt>Correo</dt>
+          <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
+        </div>
+        <div class="info-item">
+          <dt>Teléfono</dt>
+          <dd><?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></dd>
+        </div>
+        <div class="info-item">
+          <dt>Rol</dt>
+          <dd><?= htmlspecialchars($roleLabel); ?></dd>
+        </div>
+        <div class="info-item">
+          <dt>ID de usuario</dt>
+          <dd>#<?= htmlspecialchars((string) $user['id']); ?></dd>
+        </div>
+        <div class="info-item">
+          <dt>Miembro desde</dt>
+          <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
+        </div>
+        <div class="info-item">
+          <dt>Estado</dt>
+          <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
+        </div>
+      </dl>
+    </section>
 
-            <div class="list list--stacked">
-              <div class="item"><span class="icon">✉</span> <a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></div>
-              <div class="item"><span class="icon">☎</span> <span><?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></span></div>
-              <div class="item"><span class="icon">🎟</span> <span><?= htmlspecialchars($roleLabel); ?></span></div>
-            </div>
-          </div>
-
-          <div class="card-section">
-            <h3 class="section-subheading">Estado de la cuenta</h3>
-            <div class="chips">
-              <span class="chip">ID <?= htmlspecialchars((string) $user['id']); ?></span>
-              <?php if ($createdAtFull !== null): ?>
-                <span class="chip">Creada <?= htmlspecialchars($createdAtFull); ?></span>
-              <?php endif; ?>
-              <span class="chip chip--info">
-                <?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?>
-              </span>
-            </div>
-          </div>
-
-          <div class="card-section">
-            <h3 class="section-subheading">Recomendaciones</h3>
-            <div class="chips">
-              <span class="chip chip--success">Mantén tus datos actualizados</span>
-              <span class="chip chip--warning">Activa la verificación</span>
-              <span class="chip chip--accent">Protege tu contraseña</span>
-            </div>
-          </div>
-        </aside>
-
-        <section class="card pad" aria-label="Actividad del perfil">
-          <div class="card-section">
-            <h2 class="section-title section-title--spaced">Próximos viajes</h2>
-            <div class="list list--spaced">
-              <article class="trip">
-                <div class="thumb" style="background-image:url('https://images.unsplash.com/photo-1544735716-392fe2489ffa?q=80&w=300&auto=format&fit=crop')"></div>
-                <div class="trip-content">
-                  <h3 class="trip-title">Personaliza tus planes</h3>
-                  <p class="trip-text">Agrega tus próximos viajes desde el panel principal.</p>
-                </div>
-                <span class="pill">Disponible</span>
-              </article>
-            </div>
-          </div>
-
-          <div class="card-section">
-            <h2 class="section-title section-title--spaced">Actividad reciente</h2>
-            <div class="timeline">
-              <?php if ($createdAtFull !== null): ?>
-                <article class="timeline-item">
-                  <h3 class="timeline-title">Cuenta creada</h3>
-                  <p class="timeline-text">El <?= htmlspecialchars($createdAtFull); ?></p>
-                </article>
-              <?php endif; ?>
-              <?php if ($verifiedAt !== null): ?>
-                <article class="timeline-item">
-                  <h3 class="timeline-title">Verificación completada</h3>
-                  <p class="timeline-text">El <?= htmlspecialchars($verifiedAt); ?></p>
-                </article>
-              <?php else: ?>
-                <article class="timeline-item">
-                  <h3 class="timeline-title">Verificación pendiente</h3>
-                  <p class="timeline-text">Confirma tu correo para proteger tu cuenta.</p>
-                </article>
-              <?php endif; ?>
-              <article class="timeline-item">
-                <h3 class="timeline-title">Última actualización</h3>
-                <p class="timeline-text">Gestiona tus datos en la pestaña Ajustes.</p>
-              </article>
-            </div>
-          </div>
-
-          <div class="card-section">
-            <h2 class="section-title section-title--spaced">Fotos</h2>
-            <div class="photos">
-              <div>Sube tus recuerdos</div>
-              <div>Mantén tu perfil vivo</div>
-              <div>Comparte tu historia</div>
-              <div>Explora destinos</div>
-              <div>Inspira a otros</div>
-              <div>Expediatravels</div>
-            </div>
-          </div>
-        </section>
+    <section class="card" aria-label="Acciones rápidas">
+      <h2>Acciones rápidas</h2>
+      <div class="quick-actions">
+        <button class="btn" type="button" data-action="toggle-settings">Editar información</button>
+        <button class="btn" type="button" data-action="toggle-delete">Eliminar cuenta</button>
+        <a class="btn" href="index.php">Volver al inicio</a>
+        <?php if ($role === 'administrador'): ?>
+          <a class="btn" href="../administracion/index.php">Ir al panel administrativo</a>
+        <?php endif; ?>
       </div>
     </section>
 
-    <!-- TAB: VIAJES -->
-    <section class="tab-panel" id="tab-viajes" hidden>
-      <div class="card pad">
-        <h2 class="section-title section-title--spaced">Historial de viajes</h2>
-        <p class="section-text">Aún no registras viajes en tu perfil. Cuando participes en actividades, aparecerán aquí para que puedas revisarlas.</p>
-      </div>
-    </section>
-
-    <!-- TAB: RESEÑAS -->
-    <section class="tab-panel" id="tab-resenas" hidden>
-      <div class="card pad">
-        <h2 class="section-title section-title--spaced">Reseñas</h2>
-        <p class="section-text">Comparte tus experiencias sobre destinos y servicios turísticos desde la plataforma principal para verlas en tu perfil.</p>
-      </div>
-    </section>
-
-    <!-- TAB: AJUSTES -->
-    <section class="tab-panel" id="tab-ajustes" hidden>
-      <form class="card pad form" action="perfil.php" method="post" novalidate>
-        <h2 class="section-title section-title--spaced">Actualizar datos personales</h2>
+    <section class="card" id="settings-panel" aria-label="Editar perfil" hidden>
+      <h2>Editar información personal</h2>
+      <form action="perfil.php" method="post" novalidate>
         <input type="hidden" name="action" value="update" />
-        <div class="row2">
+        <div class="form-grid">
           <div class="field">
             <label for="nombres">Nombres</label>
             <input id="nombres" name="nombre" value="<?= htmlspecialchars($user['nombre']); ?>" required />
@@ -374,8 +352,6 @@ $phone = $user['celular'] ?? null;
             <label for="apellidos">Apellidos</label>
             <input id="apellidos" name="apellidos" value="<?= htmlspecialchars($user['apellidos']); ?>" required />
           </div>
-        </div>
-        <div class="row2">
           <div class="field">
             <label for="correo">Correo</label>
             <input id="correo" name="correo" type="email" value="<?= htmlspecialchars($user['correo']); ?>" required />
@@ -384,8 +360,6 @@ $phone = $user['celular'] ?? null;
             <label for="telefono">Teléfono</label>
             <input id="telefono" name="celular" value="<?= $phone ? htmlspecialchars($phone) : ''; ?>" placeholder="Opcional" />
           </div>
-        </div>
-        <div class="row2">
           <div class="field">
             <label for="password">Nueva contraseña</label>
             <input id="password" name="password" type="password" minlength="8" autocomplete="new-password" placeholder="Dejar en blanco para mantener" />
@@ -395,43 +369,24 @@ $phone = $user['celular'] ?? null;
             <input id="password_confirmation" name="password_confirmation" type="password" minlength="8" autocomplete="new-password" placeholder="Repite tu nueva contraseña" />
           </div>
         </div>
-        <div class="row2">
-          <div class="field">
-            <label for="avatarInput">Foto de perfil</label>
-            <input id="avatarInput" type="file" accept="image/*" />
-          </div>
-          <div class="field">
-            <label for="coverInput">Portada</label>
-            <input id="coverInput" type="file" accept="image/*" />
-          </div>
-        </div>
-        <p class="section-text section-text--note">Las imágenes seleccionadas se muestran como vista previa y no se almacenan de forma permanente.</p>
-        <div class="row2">
-          <div class="field">
-            <label for="rol">Rol asignado</label>
-            <input id="rol" value="<?= htmlspecialchars($roleLabel); ?>" disabled />
-          </div>
-          <div class="field">
-            <label for="creado">Miembro desde</label>
-            <input id="creado" value="<?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?>" disabled />
-          </div>
-        </div>
-        <div class="form-actions form-actions--spaced">
-          <button class="btn" type="reset">Restablecer</button>
+        <div class="form-actions">
+          <button class="btn" type="button" data-action="close-settings">Cancelar</button>
           <button class="btn primary" type="submit">Guardar cambios</button>
         </div>
       </form>
+    </section>
 
-      <form class="card pad form danger-card" action="perfil.php" method="post">
-        <h2 class="section-title section-title--spaced section-title--danger">Eliminar cuenta</h2>
-        <p class="section-text">Esta acción no se puede deshacer. Para confirmar, escribe <strong>ELIMINAR</strong> en el campo y envía el formulario.</p>
+    <section class="card card--danger" id="delete-panel" aria-label="Eliminar cuenta" hidden>
+      <h2>Eliminar cuenta</h2>
+      <form action="perfil.php" method="post">
+        <p>Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
         <input type="hidden" name="action" value="delete" />
         <div class="field">
           <label for="confirmacion">Confirmación</label>
           <input id="confirmacion" name="confirmacion" placeholder="Escribe ELIMINAR" required />
         </div>
         <div class="form-actions">
-          <button class="btn" type="reset">Cancelar</button>
+          <button class="btn" type="button" data-action="close-delete">Cancelar</button>
           <button class="btn danger" type="submit">Cerrar mi cuenta</button>
         </div>
       </form>
@@ -444,61 +399,52 @@ $phone = $user['celular'] ?? null;
   <input type="file" id="coverHidden" accept="image/*" hidden />
 
   <script>
-    // Tabs handler
-    const tabs = document.querySelectorAll('.tab');
-    const panels = {
-      resumen: document.getElementById('tab-resumen'),
-      viajes: document.getElementById('tab-viajes'),
-      resenas: document.getElementById('tab-resenas'),
-      ajustes: document.getElementById('tab-ajustes')
-    };
-    tabs.forEach(t => t.addEventListener('click', () => {
-      tabs.forEach(x => {
-        x.classList.remove('active');
-        x.setAttribute('aria-selected', 'false');
-      });
-      t.classList.add('active');
-      t.setAttribute('aria-selected', 'true');
-      Object.values(panels).forEach(p => p.hidden = true);
-      panels[t.dataset.tab].hidden = false;
-      window.scrollTo({ top: document.querySelector('.wrap').offsetTop, behavior: 'smooth' });
-    }));
-
-    // Switch to ajustes when pressing Editar perfil
-    const editButton = document.getElementById('btn-edit');
-    editButton?.addEventListener('click', () => {
-      const ajustesTab = document.querySelector('.tab[data-tab="ajustes"]');
-      ajustesTab?.dispatchEvent(new Event('click'));
-    });
-
-    // Avatar preview
-    const avatarInput = document.getElementById('avatarInput');
-    const avatar = document.getElementById('avatar');
-    avatarInput?.addEventListener('change', e => {
-      const f = e.target.files?.[0];
-      if(!f) return;
-      const url = URL.createObjectURL(f);
-      avatar.style.backgroundImage = `url('${url}')`;
-    });
-
-    // Cover upload
-    const btnCover = document.getElementById('btn-cover');
+    const coverButton = document.getElementById('btn-cover');
     const coverHidden = document.getElementById('coverHidden');
     const cover = document.querySelector('.cover');
-    const coverInput = document.getElementById('coverInput');
 
-    btnCover?.addEventListener('click', () => coverHidden.click());
-    coverHidden?.addEventListener('change', e => {
-      const f = e.target.files?.[0];
-      if(!f) return;
-      const url = URL.createObjectURL(f);
+    coverButton?.addEventListener('click', () => coverHidden?.click());
+    coverHidden?.addEventListener('change', event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const url = URL.createObjectURL(file);
       cover.style.background = `url('${url}') center/cover no-repeat`;
     });
-    coverInput?.addEventListener('change', e => {
-      const f = e.target.files?.[0];
-      if(!f) return;
-      const url = URL.createObjectURL(f);
-      cover.style.background = `url('${url}') center/cover no-repeat`;
+
+    const settingsPanel = document.getElementById('settings-panel');
+    const deletePanel = document.getElementById('delete-panel');
+
+    const toggleVisibility = (panel, force) => {
+      if (!panel) return;
+      const show = typeof force === 'boolean' ? force : panel.hasAttribute('hidden');
+      if (show) {
+        panel.removeAttribute('hidden');
+        panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        panel.setAttribute('hidden', '');
+      }
+    };
+
+    document.querySelectorAll('[data-action="toggle-settings"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toggleVisibility(deletePanel, false);
+        toggleVisibility(settingsPanel, true);
+      });
+    });
+
+    document.querySelectorAll('[data-action="close-settings"]').forEach(btn => {
+      btn.addEventListener('click', () => toggleVisibility(settingsPanel, false));
+    });
+
+    document.querySelectorAll('[data-action="toggle-delete"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        toggleVisibility(settingsPanel, false);
+        toggleVisibility(deletePanel, true);
+      });
+    });
+
+    document.querySelectorAll('[data-action="close-delete"]').forEach(btn => {
+      btn.addEventListener('click', () => toggleVisibility(deletePanel, false));
     });
   </script>
 </body>
