@@ -128,7 +128,6 @@
 
 .media-grid-layout {
     display: grid;
-    grid-template-columns: 360px 1fr;
     gap: 18px;
 }
 
