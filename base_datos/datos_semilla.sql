@@ -10,6 +10,12 @@ VALUES (
     'administrador'
 );
 
+INSERT INTO usuario_fotos_perfil (usuario_id, ruta, es_actual)
+VALUES (1, 'https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=400&auto=format&fit=crop', 1);
+
+INSERT INTO usuario_fotos_portada (usuario_id, ruta, es_actual)
+VALUES (1, 'https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80', 1);
+
 INSERT INTO destinos (nombre, descripcion, lat, lon, imagen, region) VALUES
 ('Oxapampa', 'Capital cafetalera y puerta de entrada a la Reserva de Biosfera Oxapampa-Ashaninka-Yanesha.', -10.5833333, -75.4, 'oxapampa.jpg', 'Pasco'),
 ('Villa Rica', 'Tierra del café de altura y de la Laguna El Oconal.', -10.7333333, -75.2666667, 'villa-rica.jpg', 'Pasco'),

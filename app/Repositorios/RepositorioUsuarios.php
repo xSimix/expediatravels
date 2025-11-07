@@ -8,10 +8,20 @@ use PDO;
 
 class RepositorioUsuarios
 {
+    private function baseSelect(): string
+    {
+        return <<<SQL
+SELECT u.*, fp.ruta AS foto_perfil, fc.ruta AS foto_portada
+FROM usuarios u
+LEFT JOIN usuario_fotos_perfil fp ON fp.usuario_id = u.id AND fp.es_actual = 1
+LEFT JOIN usuario_fotos_portada fc ON fc.usuario_id = u.id AND fc.es_actual = 1
+SQL;
+    }
+
     public function findByEmail(string $email): ?array
     {
         $pdo = Conexion::obtener();
-        $statement = $pdo->prepare('SELECT * FROM usuarios WHERE correo = :correo LIMIT 1');
+        $statement = $pdo->prepare($this->baseSelect() . ' WHERE u.correo = :correo LIMIT 1');
         $statement->execute([':correo' => mb_strtolower($email)]);
 
         $user = $statement->fetch(PDO::FETCH_ASSOC);
@@ -22,7 +32,7 @@ class RepositorioUsuarios
     public function all(): array
     {
         $pdo = Conexion::obtener();
-        $statement = $pdo->query('SELECT * FROM usuarios ORDER BY creado_en DESC, id DESC');
+        $statement = $pdo->query($this->baseSelect() . ' ORDER BY u.creado_en DESC, u.id DESC');
 
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -123,7 +133,8 @@ class RepositorioUsuarios
     {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'SELECT * FROM usuarios WHERE id = :id AND remember_token = :token AND remember_token_expira_en > NOW() LIMIT 1'
+            $this->baseSelect() .
+            ' WHERE u.id = :id AND u.remember_token = :token AND u.remember_token_expira_en > NOW() LIMIT 1'
         );
 
         $statement->execute([
@@ -139,7 +150,7 @@ class RepositorioUsuarios
     public function findById(int $userId): ?array
     {
         $pdo = Conexion::obtener();
-        $statement = $pdo->prepare('SELECT * FROM usuarios WHERE id = :id LIMIT 1');
+        $statement = $pdo->prepare($this->baseSelect() . ' WHERE u.id = :id LIMIT 1');
         $statement->execute([':id' => $userId]);
 
         $user = $statement->fetch(PDO::FETCH_ASSOC);

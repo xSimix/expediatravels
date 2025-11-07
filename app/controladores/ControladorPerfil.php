@@ -193,6 +193,8 @@ class ControladorPerfil
             'rol' => $user['rol'] ?? 'suscriptor',
             'creado_en' => $user['creado_en'] ?? null,
             'verificado_en' => $user['verificado_en'] ?? null,
+            'foto_perfil' => $user['foto_perfil'] ?? null,
+            'foto_portada' => $user['foto_portada'] ?? null,
         ];
     }
 }

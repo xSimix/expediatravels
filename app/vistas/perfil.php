@@ -29,6 +29,12 @@ $createdAtFull = $formatDate($user['creado_en'] ?? null, 'd/m/Y H:i');
 $verifiedAt = $formatDate($user['verificado_en'] ?? null, 'd/m/Y H:i');
 $fullName = trim(($user['nombre'] ?? '') . ' ' . ($user['apellidos'] ?? ''));
 $phone = $user['celular'] ?? null;
+$displayName = $fullName !== '' ? $fullName : ($user['nombre'] ?? '');
+$profilePhoto = $user['foto_perfil'] ?? null;
+$coverPhoto = $user['foto_portada'] ?? null;
+$coverStyle = $coverPhoto ? '--cover-image: url(' . json_encode($coverPhoto) . ');' : '';
+$avatarStyle = $profilePhoto ? '--avatar-image: url(' . json_encode($profilePhoto) . ');' : '';
+$coverClass = 'cover' . ($coverPhoto ? ' has-cover' : '');
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -69,9 +75,19 @@ $phone = $user['celular'] ?? null;
       position: relative;
       border-radius: var(--radius);
       padding: 28px;
-      background: linear-gradient(135deg, #7dd3fc 0%, #60a5fa 45%, #4f46e5 100%);
+      background-color: #60a5fa;
+      background-image: linear-gradient(135deg, rgba(125, 211, 252, 0.92) 0%, rgba(96, 165, 250, 0.95) 45%, rgba(79, 70, 229, 0.9) 100%);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       box-shadow: var(--shadow);
       overflow: hidden;
+    }
+
+    .cover.has-cover {
+      background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.45) 45%, rgba(15, 23, 42, 0.6) 100%), var(--cover-image);
+      background-size: cover, cover;
+      background-position: center, center;
     }
 
     .cover-actions {
@@ -94,7 +110,11 @@ $phone = $user['celular'] ?? null;
       height: 110px;
       border-radius: 50%;
       border: 4px solid rgba(255, 255, 255, .85);
-      background: #dbeafe url('https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=300&auto=format&fit=crop') center / cover no-repeat;
+      background-color: #dbeafe;
+      background-image: var(--avatar-image, url('https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=300&auto=format&fit=crop'));
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
       box-shadow: var(--shadow);
       flex-shrink: 0;
     }
@@ -124,6 +144,23 @@ $phone = $user['celular'] ?? null;
       letter-spacing: .02em;
     }
 
+    .status-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      background: #22c55e;
+      color: #f0fdf4;
+      box-shadow: 0 10px 25px rgba(34, 197, 94, .45);
+    }
+
+    .status-check svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .status-line {
       display: flex;
       flex-wrap: wrap;
@@ -132,7 +169,12 @@ $phone = $user['celular'] ?? null;
       font-weight: 600;
     }
 
-    .status-line span { background: rgba(15, 23, 42, .35); padding: 4px 12px; border-radius: 999px; color: #e0f2fe; }
+    .status-pill {
+      background: rgba(15, 23, 42, .35);
+      padding: 4px 12px;
+      border-radius: 999px;
+      color: #e0f2fe;
+    }
 
     .contact-row {
       display: flex;
@@ -142,7 +184,28 @@ $phone = $user['celular'] ?? null;
       color: rgba(15, 23, 42, .92);
     }
 
-    .contact-row span { background: rgba(255, 255, 255, .85); padding: 6px 12px; border-radius: 12px; }
+    .contact-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, .85);
+      padding: 6px 14px;
+      border-radius: 12px;
+      color: inherit;
+      text-decoration: none;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, .12);
+    }
+
+    .contact-chip:hover {
+      background: rgba(255, 255, 255, .95);
+    }
+
+    .contact-chip__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
 
     .summary {
       display: flex;
@@ -176,6 +239,7 @@ $phone = $user['celular'] ?? null;
 
     .btn.primary { background: var(--brand); color: #fff; }
     .btn.danger { background: var(--danger); color: #fff; }
+    .btn__icon { display: inline-flex; align-items: center; justify-content: center; }
     .btn:hover { transform: translateY(-1px); }
     .btn:focus-visible { outline: none; box-shadow: var(--ring); }
 
@@ -192,6 +256,21 @@ $phone = $user['celular'] ?? null;
       margin: 0 0 16px;
       font-size: 1.1rem;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      background: rgba(14, 165, 233, .15);
+      color: var(--brand);
+      font-size: 1.1rem;
     }
 
     .info-grid {
@@ -201,7 +280,27 @@ $phone = $user['celular'] ?? null;
     }
 
     .info-item { display: grid; gap: 4px; }
-    .info-item dt { font-size: .85rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+    .info-item dt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+    }
+
+    .info-item__icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 8px;
+      background: rgba(14, 165, 233, .15);
+      color: var(--brand);
+      font-size: .85rem;
+    }
     .info-item dd { margin: 0; font-weight: 600; font-size: 1.05rem; }
 
     .quick-actions { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -245,40 +344,47 @@ $phone = $user['celular'] ?? null;
       .cover { padding: 22px; }
       .cover-actions { justify-content: flex-start; }
       .avatar { width: 92px; height: 92px; }
-      .contact-row span { font-size: .95rem; }
+      .contact-chip { font-size: .95rem; }
     }
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
 </head>
 <body>
   <header class="wrap">
-    <div class="cover" role="img" aria-label="Portada con degradado">
+    <div class="<?= htmlspecialchars($coverClass); ?>" role="img" aria-label="Portada del perfil de <?= htmlspecialchars($displayName); ?>"<?php if ($coverStyle !== ''): ?> style="<?= htmlspecialchars($coverStyle, ENT_QUOTES); ?>"<?php endif; ?>>
       <div class="cover-actions">
-        <button class="btn" type="button" id="btn-cover">Cambiar portada</button>
-        <button class="btn" type="button" data-action="toggle-settings">Editar perfil</button>
-        <a class="btn" href="index.php">Inicio</a>
-        <?php if ($role === 'administrador'): ?>
-          <a class="btn" href="../administracion/index.php">Panel administrativo</a>
-        <?php endif; ?>
-        <button class="btn primary" type="button" data-auth-logout>Cerrar sesión</button>
+        <button class="btn primary" type="button" data-auth-logout>
+          <span class="btn__icon" aria-hidden="true">⎋</span>
+          <span>Cerrar sesión</span>
+        </button>
       </div>
       <div class="profile-head">
-        <div class="avatar" id="avatar" aria-label="Foto de perfil"></div>
+        <div class="avatar" id="avatar" aria-label="Foto de perfil de <?= htmlspecialchars($displayName); ?>"<?php if ($avatarStyle !== ''): ?> style="<?= htmlspecialchars($avatarStyle, ENT_QUOTES); ?>"<?php endif; ?>></div>
         <div class="profile-data">
           <div class="name-row">
-            <h1 class="name"><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></h1>
+            <h1 class="name"><?= htmlspecialchars($displayName); ?></h1>
             <span class="badge" title="Rol del usuario"><?= htmlspecialchars($roleLabel); ?></span>
+            <?php if ($verifiedAt): ?>
+              <span class="status-check" title="Cuenta verificada" aria-label="Cuenta verificada">
+                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <path d="M13.78 4.72a.75.75 0 0 1 0 1.06l-6.5 6.5a.75.75 0 0 1-1.06 0l-3-3a.75.75 0 1 1 1.06-1.06L6.75 10.19l5.97-5.97a.75.75 0 0 1 1.06 0Z" fill="currentColor" />
+                </svg>
+              </span>
+            <?php endif; ?>
           </div>
           <div class="status-line">
             <?php if ($createdAt !== null): ?>
-              <span>Miembro desde <?= htmlspecialchars($createdAt); ?></span>
+              <span class="status-pill">Miembro desde <?= htmlspecialchars($createdAt); ?></span>
             <?php endif; ?>
-            <span><?= $verifiedAt ? 'Cuenta verificada' : 'Verificación pendiente'; ?></span>
-            <span>ID #<?= htmlspecialchars((string) $user['id']); ?></span>
+            <?php if (!$verifiedAt): ?>
+              <span class="status-pill">Verificación pendiente</span>
+            <?php endif; ?>
           </div>
           <div class="contact-row">
-            <span>📧 <?= htmlspecialchars($user['correo']); ?></span>
-            <span>☎ <?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></span>
+            <a class="contact-chip" href="mailto:<?= htmlspecialchars($user['correo']); ?>">
+              <span class="contact-chip__icon" aria-hidden="true">✉️</span>
+              <span><?= htmlspecialchars($user['correo']); ?></span>
+            </a>
           </div>
         </div>
       </div>
@@ -294,53 +400,65 @@ $phone = $user['celular'] ?? null;
     <?php endif; ?>
 
     <section class="card" aria-label="Resumen del perfil">
-      <h2>Información principal</h2>
+      <h2><span class="card-icon" aria-hidden="true">📋</span> Información principal</h2>
       <dl class="info-grid">
         <div class="info-item">
-          <dt>Nombre completo</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">👤</span> Nombre completo</dt>
           <dd><?= htmlspecialchars($fullName !== '' ? $fullName : $user['nombre']); ?></dd>
         </div>
         <div class="info-item">
-          <dt>Correo</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">✉️</span> Correo</dt>
           <dd><a href="mailto:<?= htmlspecialchars($user['correo']); ?>"><?= htmlspecialchars($user['correo']); ?></a></dd>
         </div>
         <div class="info-item">
-          <dt>Teléfono</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">📱</span> Teléfono</dt>
           <dd><?= $phone ? htmlspecialchars($phone) : 'Sin número registrado'; ?></dd>
         </div>
         <div class="info-item">
-          <dt>Rol</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">🛡️</span> Rol</dt>
           <dd><?= htmlspecialchars($roleLabel); ?></dd>
         </div>
         <div class="info-item">
-          <dt>ID de usuario</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">🆔</span> ID de usuario</dt>
           <dd>#<?= htmlspecialchars((string) $user['id']); ?></dd>
         </div>
         <div class="info-item">
-          <dt>Miembro desde</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">📅</span> Miembro desde</dt>
           <dd><?= $createdAtFull ? htmlspecialchars($createdAtFull) : 'Sin registro'; ?></dd>
         </div>
         <div class="info-item">
-          <dt>Estado</dt>
+          <dt><span class="info-item__icon" aria-hidden="true">✅</span> Estado</dt>
           <dd><?= $verifiedAt ? 'Verificada ' . htmlspecialchars($verifiedAt) : 'Verificación pendiente'; ?></dd>
         </div>
       </dl>
     </section>
 
     <section class="card" aria-label="Acciones rápidas">
-      <h2>Acciones rápidas</h2>
+      <h2><span class="card-icon" aria-hidden="true">⚡</span> Acciones rápidas</h2>
       <div class="quick-actions">
-        <button class="btn" type="button" data-action="toggle-settings">Editar información</button>
-        <button class="btn" type="button" data-action="toggle-delete">Eliminar cuenta</button>
-        <a class="btn" href="index.php">Volver al inicio</a>
+        <button class="btn" type="button" data-action="toggle-settings">
+          <span class="btn__icon" aria-hidden="true">✏️</span>
+          <span>Editar información</span>
+        </button>
+        <button class="btn" type="button" data-action="toggle-delete">
+          <span class="btn__icon" aria-hidden="true">🗑️</span>
+          <span>Eliminar cuenta</span>
+        </button>
+        <a class="btn" href="index.php">
+          <span class="btn__icon" aria-hidden="true">🏠</span>
+          <span>Volver al inicio</span>
+        </a>
         <?php if ($role === 'administrador'): ?>
-          <a class="btn" href="../administracion/index.php">Ir al panel administrativo</a>
+          <a class="btn" href="../administracion/index.php">
+            <span class="btn__icon" aria-hidden="true">🧭</span>
+            <span>Ir al panel administrativo</span>
+          </a>
         <?php endif; ?>
       </div>
     </section>
 
     <section class="card" id="settings-panel" aria-label="Editar perfil" hidden>
-      <h2>Editar información personal</h2>
+      <h2><span class="card-icon" aria-hidden="true">🛠️</span> Editar información personal</h2>
       <form action="perfil.php" method="post" novalidate>
         <input type="hidden" name="action" value="update" />
         <div class="form-grid">
@@ -370,14 +488,20 @@ $phone = $user['celular'] ?? null;
           </div>
         </div>
         <div class="form-actions">
-          <button class="btn" type="button" data-action="close-settings">Cancelar</button>
-          <button class="btn primary" type="submit">Guardar cambios</button>
+          <button class="btn" type="button" data-action="close-settings">
+            <span class="btn__icon" aria-hidden="true">↩️</span>
+            <span>Cancelar</span>
+          </button>
+          <button class="btn primary" type="submit">
+            <span class="btn__icon" aria-hidden="true">💾</span>
+            <span>Guardar cambios</span>
+          </button>
         </div>
       </form>
     </section>
 
     <section class="card card--danger" id="delete-panel" aria-label="Eliminar cuenta" hidden>
-      <h2>Eliminar cuenta</h2>
+      <h2><span class="card-icon" aria-hidden="true">🗑️</span> Eliminar cuenta</h2>
       <form action="perfil.php" method="post">
         <p>Esta acción no se puede deshacer. Escribe <strong>ELIMINAR</strong> para confirmar.</p>
         <input type="hidden" name="action" value="delete" />
@@ -386,8 +510,14 @@ $phone = $user['celular'] ?? null;
           <input id="confirmacion" name="confirmacion" placeholder="Escribe ELIMINAR" required />
         </div>
         <div class="form-actions">
-          <button class="btn" type="button" data-action="close-delete">Cancelar</button>
-          <button class="btn danger" type="submit">Cerrar mi cuenta</button>
+          <button class="btn" type="button" data-action="close-delete">
+            <span class="btn__icon" aria-hidden="true">↩️</span>
+            <span>Cancelar</span>
+          </button>
+          <button class="btn danger" type="submit">
+            <span class="btn__icon" aria-hidden="true">🚪</span>
+            <span>Cerrar mi cuenta</span>
+          </button>
         </div>
       </form>
     </section>
@@ -396,21 +526,7 @@ $phone = $user['celular'] ?? null;
 
   <footer class="footer wrap">© <?= date('Y'); ?> Expediatravels — Perfil de usuario</footer>
 
-  <input type="file" id="coverHidden" accept="image/*" hidden />
-
   <script>
-    const coverButton = document.getElementById('btn-cover');
-    const coverHidden = document.getElementById('coverHidden');
-    const cover = document.querySelector('.cover');
-
-    coverButton?.addEventListener('click', () => coverHidden?.click());
-    coverHidden?.addEventListener('change', event => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      const url = URL.createObjectURL(file);
-      cover.style.background = `url('${url}') center/cover no-repeat`;
-    });
-
     const settingsPanel = document.getElementById('settings-panel');
     const deletePanel = document.getElementById('delete-panel');
 
