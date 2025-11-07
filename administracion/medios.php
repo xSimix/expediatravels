@@ -133,7 +133,8 @@ $medios = $repositorio->listar();
 
 $paginaActiva = 'medios';
 $tituloPagina = 'Medios — Panel de Control';
-$estilosExtra = ['recursos/panel-admin.css', 'recursos/medios.css'];
+$estilosExtra = ['recursos/medios.css'];
+$scriptsExtra = ['recursos/medios.js'];
 
 require __DIR__ . '/plantilla/cabecera.php';
 
@@ -193,17 +194,59 @@ function formatearFecha(?string $marcaTiempo): string
 
     return $fecha->format('d/m/Y H:i');
 }
+
+function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
+{
+    if ($marcaTiempo === null || $marcaTiempo === '') {
+        return time();
+    }
+
+    try {
+        $fecha = new DateTimeImmutable($marcaTiempo, new DateTimeZone('America/Lima'));
+    } catch (Exception $exception) {
+        try {
+            $fecha = new DateTimeImmutable($marcaTiempo);
+        } catch (Exception $exception) {
+            return time();
+        }
+    }
+
+    return (int) $fecha->format('U');
+}
 ?>
-<div class="admin-wrapper">
-    <header class="admin-header">
-        <div>
-            <h1>Biblioteca de medios</h1>
-            <p>Centraliza las imágenes subidas para reutilizarlas en distintos contenidos sin duplicados innecesarios.</p>
+<div class="media-app">
+    <div class="media-app__header">
+        <div class="media-title">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v13A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-13Z" stroke="#2563eb" stroke-width="1.2"/><path d="M4 15.5 8.5 11l4 4 3-3L20 16" stroke="#2563eb" stroke-width="1.2"/><circle cx="9.2" cy="7.8" r="1.3" fill="#2563eb"/></svg>
+            <div>
+                <h1>Biblioteca de medios</h1>
+                <p>Administra las imágenes y videos disponibles para todo el contenido de Expediatravels.</p>
+            </div>
         </div>
-    </header>
+        <div class="media-toolbar">
+            <div class="media-toolbar__filters">
+                <input class="media-input" id="q" type="search" placeholder="Buscar por título, alt, créditos… ( / )" autocomplete="off" />
+                <select id="type" class="media-input">
+                    <option value="">Todos los tipos</option>
+                    <option value="foto">Fotos</option>
+                    <option value="video">Videos</option>
+                    <option value="otro">Otros</option>
+                </select>
+                <select id="sort" class="media-input">
+                    <option value="new">Recientes primero</option>
+                    <option value="old">Antiguos primero</option>
+                    <option value="az">A → Z (título)</option>
+                </select>
+            </div>
+            <button class="media-btn ghost" id="bulkSelectBtn" type="button">
+                <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path fill="#2563eb" d="M3 7h18v2H3zm0 4h18v2H3zm0 4h18v2H3z"/></svg>
+                Selección múltiple
+            </button>
+        </div>
+    </div>
 
     <?php if (!empty($errores)): ?>
-        <div class="admin-alert error">
+        <div class="media-alert error" role="alert">
             <p><strong>Encontramos algunos inconvenientes:</strong></p>
             <ul>
                 <?php foreach ($errores as $error): ?>
@@ -214,7 +257,7 @@ function formatearFecha(?string $marcaTiempo): string
     <?php endif; ?>
 
     <?php if (!empty($mensajes) && empty($errores)): ?>
-        <div class="admin-alert">
+        <div class="media-alert" role="status">
             <ul>
                 <?php foreach ($mensajes as $mensaje): ?>
                     <li><?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8'); ?></li>
@@ -223,96 +266,161 @@ function formatearFecha(?string $marcaTiempo): string
         </div>
     <?php endif; ?>
 
-    <section class="media-library">
-        <div class="media-toolbar">
-            <form class="media-toolbar__form" method="post" enctype="multipart/form-data">
-                <input type="hidden" name="action" value="upload" />
-                <div>
-                    <label for="archivo">Selecciona una imagen</label>
-                    <input type="file" name="archivo" id="archivo" accept="image/*" required />
-                </div>
-                <div>
-                    <label for="titulo">Título</label>
-                    <input type="text" name="titulo" id="titulo" placeholder="Nombre amigable para identificar la imagen" />
-                </div>
-                <div>
-                    <label for="texto_alternativo">Texto alternativo</label>
-                    <input type="text" name="texto_alternativo" id="texto_alternativo" placeholder="Describe el contenido visual" />
-                </div>
-                <div>
-                    <label for="descripcion">Descripción</label>
-                    <textarea name="descripcion" id="descripcion" placeholder="Notas o contexto adicional"></textarea>
-                </div>
-                <div>
-                    <label for="creditos">Créditos</label>
-                    <input type="text" name="creditos" id="creditos" placeholder="Autor o fuente" />
-                </div>
-                <button type="submit">Agregar a la biblioteca</button>
-            </form>
-            <div class="media-toolbar__info">
-                <strong>Consejos para mantener tu biblioteca ordenada:</strong>
-                <ul>
-                    <li>Reutiliza imágenes existentes antes de subir una nueva.</li>
-                    <li>Completa el texto alternativo para mejorar la accesibilidad.</li>
-                    <li>Guarda créditos y descripciones para facilitar su búsqueda futura.</li>
-                </ul>
-            </div>
-        </div>
+    <div class="media-grid-layout">
+        <section class="media-panel">
+            <div class="media-panel__body">
+                <h2>Nueva imagen / video</h2>
+                <p class="media-panel__sub">Arrastra y suelta o selecciona desde tu equipo. Los metadatos se completan en una ventana emergente.</p>
 
-        <?php if (empty($medios)): ?>
-            <div class="media-empty">
-                Aún no has agregado imágenes. Sube la primera para comenzar a construir tu biblioteca.
+                <form id="uploadForm" method="post" enctype="multipart/form-data" class="media-upload-form">
+                    <input type="hidden" name="action" value="upload" />
+                    <input type="hidden" name="titulo" id="uploadTitulo" />
+                    <input type="hidden" name="descripcion" id="uploadDescripcion" />
+                    <input type="hidden" name="texto_alternativo" id="uploadAlt" />
+                    <input type="hidden" name="creditos" id="uploadCreditos" />
+
+                    <div id="drop" class="media-drop" tabindex="0" role="button" aria-label="Abrir selector de archivos para subir">
+                        <input id="file" name="archivo" type="file" accept="image/*,video/*" />
+                        <div>
+                            <div class="media-drop__title">Suelta archivos aquí</div>
+                            <div class="media-drop__hint">PNG, JPG, WEBP, MP4. Máx. 25MB</div>
+                            <div class="media-drop__actions"><button class="media-btn ghost" id="browseBtn" type="button">Seleccionar archivo</button></div>
+                            <div id="filename" class="media-drop__filename"></div>
+                        </div>
+                    </div>
+
+                    <div class="media-upload-actions">
+                        <button id="addBtn" type="button" class="media-btn primary">Agregar a la biblioteca</button>
+                        <button id="clearFile" type="button" class="media-btn ghost">Limpiar</button>
+                    </div>
+                </form>
+
+                <div class="media-tips">
+                    <div><strong>Consejos rápidos</strong></div>
+                    <ul>
+                        <li>Reutiliza medios existentes antes de subir uno nuevo.</li>
+                        <li>Completa <strong>texto alternativo</strong> y <strong>créditos</strong> en el editor modal.</li>
+                        <li>Usa descripciones detalladas para búsquedas rápidas.</li>
+                    </ul>
+                </div>
             </div>
-        <?php else: ?>
-            <div class="media-grid">
+        </section>
+
+        <section class="media-panel media-library" aria-live="polite">
+            <div class="media-library__toolbar">
+                <div class="media-library__summary">
+                    <span class="media-meta">Mostrando <strong id="count"><?= count($medios); ?></strong> elementos</span>
+                </div>
+                <div class="media-library__summary">
+                    <button class="media-btn ghost" id="clearFilters" type="button">Limpiar filtros</button>
+                </div>
+            </div>
+            <div id="lib" class="media-library__grid" role="list">
                 <?php foreach ($medios as $medio): ?>
-                    <article class="media-card">
-                        <figure>
-                            <img src="../<?= htmlspecialchars($medio['ruta'], ENT_QUOTES, 'UTF-8'); ?>" alt="<?= htmlspecialchars($medio['texto_alternativo'] ?? $medio['titulo'], ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" />
-                        </figure>
+                    <?php
+                        $idMedio = (int) $medio['id'];
+                        $titulo = (string) $medio['titulo'];
+                        $textoAlternativo = (string) ($medio['texto_alternativo'] ?? '');
+                        $descripcion = (string) ($medio['descripcion'] ?? '');
+                        $creditos = (string) ($medio['creditos'] ?? '');
+                        $tipoMime = (string) ($medio['tipo_mime'] ?? '');
+                        $rutaRelativa = (string) $medio['ruta'];
+                        $rutaCompleta = '../' . ltrim($rutaRelativa, '/');
+                        $dimensiones = formatearDimensiones($medio['ancho'], $medio['alto']);
+                        $tamanoHumano = formatearTamano((int) $medio['tamano_bytes']);
+                        $fechaCreacion = formatearFecha($medio['creado_en'] ?? null);
+                        $marcaTiempo = obtenerMarcaTiempoUnix($medio['creado_en'] ?? null);
+                        $tipoEtiqueta = str_starts_with($tipoMime, 'video/') ? 'video' : (str_starts_with($tipoMime, 'image/') ? 'foto' : 'otro');
+                        $busquedaComponentes = [$titulo, $textoAlternativo, $descripcion, $creditos, $rutaRelativa, $tipoMime, $fechaCreacion];
+                        $cadenaBusqueda = strtolower(trim(implode(' ', array_filter($busquedaComponentes, static fn ($valor) => is_string($valor) && $valor !== ''))));
+                    ?>
+                    <article class="media-card" role="listitem"
+                        data-id="<?= $idMedio; ?>"
+                        data-title="<?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-alt="<?= htmlspecialchars($textoAlternativo, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-desc="<?= htmlspecialchars($descripcion, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-credits="<?= htmlspecialchars($creditos, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-src="<?= htmlspecialchars($rutaCompleta, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-kind="<?= htmlspecialchars($tipoEtiqueta, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-created="<?= (int) $marcaTiempo; ?>"
+                        data-created-label="<?= htmlspecialchars($fechaCreacion, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-dimensions="<?= htmlspecialchars($dimensiones, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-size="<?= htmlspecialchars($tamanoHumano, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-mime="<?= htmlspecialchars($tipoMime, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-search="<?= htmlspecialchars($cadenaBusqueda, ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="media-card__thumb">
+                            <img src="<?= htmlspecialchars($rutaCompleta, ENT_QUOTES, 'UTF-8'); ?>" alt="<?= htmlspecialchars($textoAlternativo !== '' ? $textoAlternativo : $titulo, ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" />
+                            <span class="media-badge"><?= strtoupper(htmlspecialchars($tipoEtiqueta, ENT_QUOTES, 'UTF-8')); ?></span>
+                        </div>
                         <div class="media-card__body">
-                            <div>
-                                <strong><?= htmlspecialchars($medio['titulo'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                            </div>
                             <div class="media-card__meta">
-                                <span><?= htmlspecialchars(formatearDimensiones($medio['ancho'], $medio['alto']), ENT_QUOTES, 'UTF-8'); ?></span>
-                                <span><?= htmlspecialchars(formatearTamano((int) $medio['tamano_bytes']), ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars($medio['tipo_mime'], ENT_QUOTES, 'UTF-8'); ?></span>
-                                <span>Archivo: <code><?= htmlspecialchars($medio['ruta'], ENT_QUOTES, 'UTF-8'); ?></code></span>
-                                <span>Agregada el <?= htmlspecialchars(formatearFecha($medio['creado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
+                                <span class="media-card__date"><?= htmlspecialchars($fechaCreacion, ENT_QUOTES, 'UTF-8'); ?></span>
+                                <strong class="media-card__title"><?= htmlspecialchars($titulo, ENT_QUOTES, 'UTF-8'); ?></strong>
                             </div>
-                            <form method="post" class="media-card__form" id="media-form-<?= (int) $medio['id']; ?>">
-                                <input type="hidden" name="action" value="update" />
-                                <input type="hidden" name="media_id" value="<?= (int) $medio['id']; ?>" />
-                                <div>
-                                    <label for="titulo-<?= (int) $medio['id']; ?>">Título</label>
-                                    <input type="text" id="titulo-<?= (int) $medio['id']; ?>" name="titulo" value="<?= htmlspecialchars($medio['titulo'], ENT_QUOTES, 'UTF-8'); ?>" required />
-                                </div>
-                                <div>
-                                    <label for="alt-<?= (int) $medio['id']; ?>">Texto alternativo</label>
-                                    <input type="text" id="alt-<?= (int) $medio['id']; ?>" name="texto_alternativo" value="<?= htmlspecialchars((string) ($medio['texto_alternativo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-                                </div>
-                                <div>
-                                    <label for="desc-<?= (int) $medio['id']; ?>">Descripción</label>
-                                    <textarea id="desc-<?= (int) $medio['id']; ?>" name="descripcion"><?= htmlspecialchars((string) ($medio['descripcion'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
-                                </div>
-                                <div>
-                                    <label for="creditos-<?= (int) $medio['id']; ?>">Créditos</label>
-                                    <input type="text" id="creditos-<?= (int) $medio['id']; ?>" name="creditos" value="<?= htmlspecialchars((string) ($medio['creditos'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-                                </div>
-                                <div class="media-card__actions">
-                                    <button type="submit">Guardar cambios</button>
-                                    <button type="submit" class="media-delete" form="delete-media-<?= (int) $medio['id']; ?>" onclick="return confirm('¿Eliminar este medio de forma permanente?');">🗑️ Eliminar</button>
-                                </div>
-                            </form>
-                            <form method="post" id="delete-media-<?= (int) $medio['id']; ?>" style="display:none">
-                                <input type="hidden" name="action" value="delete" />
-                                <input type="hidden" name="media_id" value="<?= (int) $medio['id']; ?>" />
-                            </form>
+                            <ul class="media-card__details">
+                                <li><?= htmlspecialchars($dimensiones, ENT_QUOTES, 'UTF-8'); ?></li>
+                                <li><?= htmlspecialchars($tamanoHumano, ENT_QUOTES, 'UTF-8'); ?> · <?= htmlspecialchars($tipoMime, ENT_QUOTES, 'UTF-8'); ?></li>
+                                <li><code><?= htmlspecialchars($rutaRelativa, ENT_QUOTES, 'UTF-8'); ?></code></li>
+                            </ul>
+                            <div class="media-card__actions">
+                                <button class="media-btn ghost" type="button" data-action="edit">Editar</button>
+                                <button class="media-btn primary" type="button" data-action="preview">Vista previa</button>
+                                <button class="media-btn danger" type="button" data-action="remove">Eliminar</button>
+                            </div>
                         </div>
                     </article>
                 <?php endforeach; ?>
             </div>
-        <?php endif; ?>
-    </section>
+            <div id="empty" class="media-empty"<?= empty($medios) ? '' : ' style="display:none"'; ?>>La biblioteca está vacía. ¡Sube tu primer medio!</div>
+        </section>
+    </div>
+
+    <form id="mediaUpdateForm" method="post" class="sr">
+        <input type="hidden" name="action" value="update" />
+        <input type="hidden" name="media_id" id="updateMediaId" />
+        <input type="hidden" name="titulo" id="updateTitulo" />
+        <input type="hidden" name="texto_alternativo" id="updateAlt" />
+        <input type="hidden" name="descripcion" id="updateDescripcion" />
+        <input type="hidden" name="creditos" id="updateCreditos" />
+    </form>
+
+    <form id="mediaDeleteForm" method="post" class="sr">
+        <input type="hidden" name="action" value="delete" />
+        <input type="hidden" name="media_id" id="deleteMediaId" />
+    </form>
 </div>
+
+<dialog id="modal" class="media-modal">
+    <div class="media-modal__header">
+        <strong id="modalTitle">Editar metadatos</strong>
+        <button class="media-btn ghost" id="closeModal" type="button">Cerrar</button>
+    </div>
+    <div class="media-modal__body">
+        <div class="media-modal__preview" id="modalPreview">Vista previa</div>
+        <div class="media-modal__meta" id="modalMeta"></div>
+        <form id="modalForm" class="media-modal__form" method="dialog">
+            <div class="media-field full">
+                <label for="m_title">Título</label>
+                <input id="m_title" class="media-input" placeholder="Nombre amigable" autocomplete="off" />
+            </div>
+            <div class="media-field full">
+                <label for="m_alt">Texto alternativo</label>
+                <input id="m_alt" class="media-input" placeholder="Describe el contenido visual (accesibilidad)" autocomplete="off" />
+            </div>
+            <div class="media-field full">
+                <label for="m_desc">Descripción</label>
+                <textarea id="m_desc" class="media-input" placeholder="Notas o contexto"></textarea>
+            </div>
+            <div class="media-field full">
+                <label for="m_credits">Créditos</label>
+                <input id="m_credits" class="media-input" placeholder="Autor o fuente" autocomplete="off" />
+            </div>
+        </form>
+        <div class="media-modal__actions">
+            <button class="media-btn primary" id="saveCard" type="button">Guardar cambios</button>
+            <button class="media-btn danger" id="deleteCard" type="button">Eliminar</button>
+        </div>
+    </div>
+</dialog>
+
 <?php require __DIR__ . '/plantilla/pie.php'; ?>
