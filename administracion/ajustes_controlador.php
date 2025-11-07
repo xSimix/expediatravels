@@ -247,7 +247,32 @@ return (static function (): array {
     $contactPhones = $contact['phones'] ?? [];
     $contactAddresses = $contact['addresses'] ?? [];
     $contactLocations = $contact['locations'] ?? [];
-    $socialLinks = $contact['social'] ?? [];
+    $socialLinks = [];
+
+    if (!empty($contact['social']) && is_array($contact['social'])) {
+        foreach ($contact['social'] as $entry) {
+            if (is_array($entry)) {
+                $label = isset($entry['label']) ? trim((string) $entry['label']) : '';
+                $url = isset($entry['url']) ? trim((string) $entry['url']) : '';
+
+                if ($label === '' && $url === '') {
+                    continue;
+                }
+
+                if ($label === '' || $label === $url) {
+                    $socialLinks[] = $url;
+                } else {
+                    $socialLinks[] = sprintf('%s | %s', $label, $url);
+                }
+            } elseif (is_string($entry)) {
+                $trimmed = trim($entry);
+
+                if ($trimmed !== '') {
+                    $socialLinks[] = $trimmed;
+                }
+            }
+        }
+    }
 
     $renderTextarea = static fn (array $items): string => htmlspecialchars(implode("\n", $items), ENT_QUOTES);
 
