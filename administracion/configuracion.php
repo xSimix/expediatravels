@@ -114,17 +114,20 @@ require __DIR__ . '/plantilla/cabecera.php';
                 <form method="post" id="hero-visibility-form">
                     <input type="hidden" name="form_type" value="update_visibility" />
                     <div class="hero-gallery__grid">
-                        <?php foreach ($heroSlides as $slideId => $slideData): ?>
+                        <?php foreach ($heroSlides as $index => $slideData): ?>
                             <?php
+                                $slideId = isset($slideData['id']) ? (int) $slideData['id'] : (int) $index;
                                 $slideLabel = $slideData['label'] ?? '';
-                                $slidePath = $slideData['path'] ?? '';
-                                $slideActive = (bool) ($slideData['activo'] ?? false);
-                                $slideAlt = $slideData['alt_text'] ?? '';
+                                $slidePath = $slideData['path'] ?? ($slideData['image'] ?? '');
+                                $slideActive = array_key_exists('activo', $slideData)
+                                    ? (bool) $slideData['activo']
+                                    : (bool) ($slideData['isVisible'] ?? false);
+                                $slideAlt = $slideData['alt_text'] ?? ($slideData['altText'] ?? '');
                                 $slideDescription = $slideData['description'] ?? '';
                             ?>
                             <div class="hero-gallery__item<?= $slideActive ? '' : ' hero-gallery__item--inactive'; ?>">
                                 <label class="hero-gallery__select">
-                                    <input type="checkbox" class="hero-gallery__checkbox" name="slides_visible[]" value="<?= (int) $slideId; ?>" <?= $slideActive ? 'checked' : ''; ?> />
+                                    <input type="checkbox" class="hero-gallery__checkbox" name="visible_slides[]" value="<?= (int) $slideId; ?>" <?= $slideActive ? 'checked' : ''; ?> />
                                     <div class="hero-gallery__thumbnail">
                                         <?php if ($slidePath !== ''): ?>
                                             <img src="<?= htmlspecialchars($slidePath, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slideLabel !== '' ? $slideLabel : 'Imagen del slider', ENT_QUOTES); ?>" />
@@ -135,41 +138,43 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <small><?= htmlspecialchars($slidePath, ENT_QUOTES); ?></small>
                                     </div>
                                 </label>
-                                <button type="button" class="hero-gallery__edit" data-hero-edit-trigger aria-label="Editar imagen">✎</button>
-                                <form method="post" class="hero-gallery__delete-form" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
-                                    <input type="hidden" name="form_type" value="delete_slide" />
-                                    <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
-                                    <button type="submit" class="hero-gallery__delete">Eliminar</button>
-                                </form>
-                                <dialog class="hero-gallery__dialog" data-hero-edit-dialog>
-                                    <header>
-                                        <h3>Editar imagen del hero</h3>
-                                        <button type="button" class="hero-gallery__dialog-close" data-hero-edit-close aria-label="Cerrar editor">&times;</button>
-                                    </header>
-                                    <form method="post">
-                                        <input type="hidden" name="form_type" value="update_slide" />
+                                <?php if ($slideId > 0): ?>
+                                    <button type="button" class="hero-gallery__edit" data-hero-edit-trigger aria-label="Editar imagen">✎</button>
+                                    <form method="post" class="hero-gallery__delete-form" onsubmit="return confirm('¿Eliminar esta imagen del slider?');">
+                                        <input type="hidden" name="form_type" value="delete_slide" />
                                         <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
-                                        <div class="admin-field">
-                                            <label for="slide-label-<?= (int) $slideId; ?>">Título de la imagen</label>
-                                            <input type="text" id="slide-label-<?= (int) $slideId; ?>" name="slide_label" value="<?= htmlspecialchars($slideLabel, ENT_QUOTES); ?>" placeholder="Bosques de Oxapampa" />
-                                            <p class="admin-help">Se muestra como título del slider y texto principal.</p>
-                                        </div>
-                                        <div class="admin-field">
-                                            <label for="slide-alt-<?= (int) $slideId; ?>">Texto alternativo (ALT)</label>
-                                            <input type="text" id="slide-alt-<?= (int) $slideId; ?>" name="slide_alt_text" value="<?= htmlspecialchars($slideAlt, ENT_QUOTES); ?>" placeholder="Paisaje de los bosques de Oxapampa al amanecer" />
-                                            <p class="admin-help">Úsalo para accesibilidad y SEO. Describe la imagen en una frase.</p>
-                                        </div>
-                                        <div class="admin-field">
-                                            <label for="slide-description-<?= (int) $slideId; ?>">Descripción SEO</label>
-                                            <textarea id="slide-description-<?= (int) $slideId; ?>" name="slide_description" rows="3" placeholder="Describe el contexto de la imagen, ubicación o experiencia que representa."><?= htmlspecialchars($slideDescription, ENT_QUOTES); ?></textarea>
-                                            <p class="admin-help">Opcional. Profundiza en los detalles para motores de búsqueda.</p>
-                                        </div>
-                                        <footer>
-                                            <button type="button" class="hero-gallery__dialog-cancel" data-hero-edit-close>Cancelar</button>
-                                            <button type="submit" class="hero-gallery__dialog-submit">Guardar</button>
-                                        </footer>
+                                        <button type="submit" class="hero-gallery__delete">Eliminar</button>
                                     </form>
-                                </dialog>
+                                    <dialog class="hero-gallery__dialog" data-hero-edit-dialog>
+                                        <header>
+                                            <h3>Editar imagen del hero</h3>
+                                            <button type="button" class="hero-gallery__dialog-close" data-hero-edit-close aria-label="Cerrar editor">&times;</button>
+                                        </header>
+                                        <form method="post">
+                                            <input type="hidden" name="form_type" value="update_slide" />
+                                            <input type="hidden" name="slide_id" value="<?= (int) $slideId; ?>" />
+                                            <div class="admin-field">
+                                                <label for="slide-label-<?= (int) $slideId; ?>">Título de la imagen</label>
+                                                <input type="text" id="slide-label-<?= (int) $slideId; ?>" name="slide_label" value="<?= htmlspecialchars($slideLabel, ENT_QUOTES); ?>" placeholder="Bosques de Oxapampa" />
+                                                <p class="admin-help">Se muestra como título del slider y texto principal.</p>
+                                            </div>
+                                            <div class="admin-field">
+                                                <label for="slide-alt-<?= (int) $slideId; ?>">Texto alternativo (ALT)</label>
+                                                <input type="text" id="slide-alt-<?= (int) $slideId; ?>" name="slide_alt_text" value="<?= htmlspecialchars($slideAlt, ENT_QUOTES); ?>" placeholder="Paisaje de los bosques de Oxapampa al amanecer" />
+                                                <p class="admin-help">Úsalo para accesibilidad y SEO. Describe la imagen en una frase.</p>
+                                            </div>
+                                            <div class="admin-field">
+                                                <label for="slide-description-<?= (int) $slideId; ?>">Descripción SEO</label>
+                                                <textarea id="slide-description-<?= (int) $slideId; ?>" name="slide_description" rows="3" placeholder="Describe el contexto de la imagen, ubicación o experiencia que representa."><?= htmlspecialchars($slideDescription, ENT_QUOTES); ?></textarea>
+                                                <p class="admin-help">Opcional. Profundiza en los detalles para motores de búsqueda.</p>
+                                            </div>
+                                            <footer>
+                                                <button type="button" class="hero-gallery__dialog-cancel" data-hero-edit-close>Cancelar</button>
+                                                <button type="submit" class="hero-gallery__dialog-submit">Guardar</button>
+                                            </footer>
+                                        </form>
+                                    </dialog>
+                                <?php endif; ?>
                             </div>
                         <?php endforeach; ?>
                     </div>
