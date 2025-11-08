@@ -51,6 +51,54 @@
     gap: 1.75rem;
 }
 
+.admin-form {
+    display: grid;
+    gap: 2rem;
+}
+
+.admin-section {
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.8), rgba(255, 255, 255, 0.95));
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    display: grid;
+    gap: 1.25rem;
+}
+
+.admin-section__title {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+    color: #0f172a;
+}
+
+.admin-section__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #0284c7, #38bdf8);
+    color: #fff;
+    font-size: 1.35rem;
+    box-shadow: 0 12px 24px rgba(2, 132, 199, 0.18);
+}
+
+.admin-section__description {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.admin-section__content {
+    display: grid;
+    gap: 1.25rem;
+}
+
 .admin-card--flush {
     padding: 0;
 }
