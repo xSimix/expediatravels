@@ -93,7 +93,7 @@ require __DIR__ . '/plantilla/cabecera.php';
         </div>
     <?php endif; ?>
 
-    <section class="admin-card">
+    <section class="admin-card admin-card--flush">
         <h2>Usuarios registrados</h2>
         <?php if (empty($users)) : ?>
             <p class="admin-empty">No hay usuarios registrados todavía.</p>

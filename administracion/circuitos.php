@@ -101,7 +101,7 @@ require __DIR__ . '/plantilla/cabecera.php';
         </div>
     <?php endif; ?>
 
-    <section class="admin-card">
+    <section class="admin-card admin-card--flush">
         <?php if (empty($circuitos)): ?>
             <p class="admin-empty">Aún no hay circuitos personalizados. Registra el primero para combinarlo en paquetes.</p>
         <?php else: ?>

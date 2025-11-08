@@ -97,7 +97,7 @@ require __DIR__ . '/plantilla/cabecera.php';
         </div>
     <?php endif; ?>
 
-    <section class="admin-card">
+    <section class="admin-card admin-card--flush">
         <?php if (empty($destinos)): ?>
             <p class="admin-empty">Aún no hay destinos guardados. Crea el primero para comenzar a construir tus circuitos.</p>
         <?php else: ?>
