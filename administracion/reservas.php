@@ -79,7 +79,7 @@ require __DIR__ . '/plantilla/cabecera.php';
         </div>
     <?php endif; ?>
 
-    <section class="admin-card">
+    <section class="admin-card admin-card--flush">
         <?php if (empty($reservas)): ?>
             <p class="admin-empty">Aún no hay reservas registradas en el sistema.</p>
         <?php else: ?>

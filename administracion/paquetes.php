@@ -116,7 +116,7 @@ require __DIR__ . '/plantilla/cabecera.php';
         </div>
     <?php endif; ?>
 
-    <section class="admin-card">
+    <section class="admin-card admin-card--flush">
         <?php if (empty($paquetes)): ?>
             <p class="admin-empty">Aún no hay paquetes disponibles. Combina circuitos y servicios para crear tu primer producto.</p>
         <?php else: ?>
