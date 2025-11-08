@@ -1910,7 +1910,7 @@ main {
 }
 
 .destinations-showcase {
-    --dest-bg: linear-gradient(135deg, #f8fafc 0%, #eef2ff 45%, #fdf2f8 100%);
+    --dest-bg: #ffffff;
     --dest-card: #ffffff;
     --dest-muted: #6b7280;
     --dest-text: #1f2937;
@@ -1921,14 +1921,12 @@ main {
     --dest-dot-active: #2563eb;
     --dest-ring: rgba(37, 99, 235, 0.25);
     --dest-radius: 16px;
-    margin: clamp(2rem, 6vw, 4rem) auto;
-    padding: clamp(3.5rem, 7vw, 5.5rem) clamp(1.5rem, 6vw, 4.5rem);
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    padding: clamp(3rem, 6vw, 4.5rem) clamp(1.5rem, 6vw, 3.75rem);
     background: var(--dest-bg);
-    border-radius: clamp(18px, 4vw, 28px);
     color: var(--dest-text);
     font-family: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    position: relative;
-    overflow: hidden;
 }
 
 .destinations-showcase__container {
@@ -1939,7 +1937,7 @@ main {
 .destinations-showcase h1 {
     font-size: clamp(28px, 4vw, 44px);
     text-align: center;
-    margin: 0 0 28px;
+    margin: 8px 0 20px;
     letter-spacing: 0.3px;
 }
 
@@ -1948,7 +1946,7 @@ main {
     flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
-    margin: 0 0 32px;
+    margin: 6px 0 26px;
     padding: 0;
 }
 
@@ -1979,7 +1977,7 @@ main {
 .destinations-showcase .cards {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: clamp(18px, 3vw, 28px);
+    gap: 22px;
 }
 
 .destinations-showcase .card {
@@ -1997,19 +1995,6 @@ main {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-.destinations-showcase .card__link {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    color: inherit;
-    text-decoration: none;
-}
-
-.destinations-showcase .card__link:focus-visible {
-    outline: 3px solid var(--dest-brand);
-    outline-offset: 4px;
-}
-
 .destinations-showcase .media {
     aspect-ratio: 16 / 9;
     width: 100%;
@@ -2018,7 +2003,7 @@ main {
 }
 
 .destinations-showcase .body {
-    padding: 18px 20px 22px;
+    padding: 16px 18px 18px;
 }
 
 .destinations-showcase .title {
@@ -2032,7 +2017,7 @@ main {
 
 .destinations-showcase .meta {
     color: var(--dest-muted);
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .destinations-showcase .dots {
@@ -2040,7 +2025,7 @@ main {
     gap: 10px;
     justify-content: center;
     align-items: center;
-    margin: 28px 0 0;
+    margin: 22px 0 8px;
 }
 
 .destinations-showcase .dot {
