@@ -169,9 +169,9 @@
             </button>
             <nav class="site-header__nav" aria-label="Menú principal" data-site-nav>
                 <a class="site-header__link site-header__link--active" href="#inicio">Inicio</a>
-                <a class="site-header__link" href="#paquetes">Paquetes</a>
                 <a class="site-header__link" href="#destinos">Destinos</a>
-                <a class="site-header__link" href="#experiencias">Experiencias</a>
+                <a class="site-header__link" href="#circuitos">Circuitos Turisticos</a>
+                <a class="site-header__link" href="#paquetes">Paquetes Turisticos</a>
                 <a class="site-header__link" href="#contacto">Contacto</a>
             </nav>
             <div class="site-header__cta">
@@ -471,9 +471,83 @@
             </div>
         </section>
 
+        <section class="section section--experiences" id="circuitos">
+            <div class="section__header">
+                <h2>Circuitos Turisticos</h2>
+                <p>Aventuras que combinan cultura viva, sostenibilidad y confort en cada detalle.</p>
+            </div>
+            <div class="cards-grid cards-grid--experiences">
+                <?php foreach ($featuredCircuits as $experience): ?>
+                    <?php
+                        $circuitName = (string) ($experience['nombre'] ?? ($experience['title'] ?? 'Circuito destacado'));
+                        $circuitSlug = $experience['slug'] ?? $slugify($circuitName);
+                        $circuitHref = 'circuito.php?slug=' . urlencode($circuitSlug);
+                        $circuitCurrency = $experience['moneda'] ?? 'PEN';
+                        $circuitPrice = $parsePriceFromString($experience['precio'] ?? $experience['priceFrom'] ?? null);
+                        if ($circuitPrice === null && isset($experience['priceFrom'])) {
+                            $circuitPrice = $parsePriceFromString($experience['priceFrom']);
+                        }
+                        $circuitOriginal = $circuitPrice !== null ? $circuitPrice * 1.12 : null;
+                        $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
+                        $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
+                        $circuitSummary = $experience['resumen'] ?? ($experience['summary'] ?? 'Pronto sumaremos más detalles.');
+                    ?>
+                    <article class="travel-card" data-theme="experience">
+                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true"></div>
+                        <div class="travel-card__pill-group">
+                            <span class="travel-card__status">Nuevo recorrido</span>
+                            <?php if (trim((string) $circuitDestination) !== ''): ?>
+                                <span class="travel-card__tag"><?= htmlspecialchars($circuitDestination); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="travel-card__content">
+                            <header class="travel-card__header">
+                                <span class="travel-card__category">Experiencia guiada</span>
+                                <span class="travel-card__badge">Circuito exclusivo</span>
+                            </header>
+                            <h3 class="travel-card__title">
+                                <a href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"><?= htmlspecialchars($circuitName); ?></a>
+                            </h3>
+                            <p class="travel-card__excerpt"><?= htmlspecialchars($circuitSummary); ?></p>
+                            <dl class="travel-card__meta">
+                                <div>
+                                    <dt>Duración</dt>
+                                    <dd><?= htmlspecialchars($experience['duracion'] ?? ($experience['duration'] ?? 'Pronto')); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Destino</dt>
+                                    <dd><?= htmlspecialchars($circuitDestination); ?></dd>
+                                </div>
+                                <div>
+                                    <dt>Experiencia</dt>
+                                    <dd><?= htmlspecialchars($experience['dificultad'] ?? 'Grupos reducidos'); ?></dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <footer class="travel-card__footer">
+                            <div class="travel-card__pricing">
+                                <?php $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency); ?>
+                                <?php $circuitOriginalText = $formatCurrency($circuitOriginal, $circuitCurrency); ?>
+                                <?php if ($circuitPriceText !== null): ?>
+                                    <span class="travel-card__price"><?= htmlspecialchars($circuitPriceText); ?></span>
+                                    <?php if ($circuitOriginalText !== null): ?>
+                                        <span class="travel-card__price-original"><?= htmlspecialchars($circuitOriginalText); ?></span>
+                                    <?php endif; ?>
+                                    <span class="travel-card__price-note">por persona</span>
+                                <?php else: ?>
+                                    <span class="travel-card__price">Pronto</span>
+                                <?php endif; ?>
+                            </div>
+                            <a class="travel-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">VER CIRCUITO</a>
+                        </footer>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+
         <section id="paquetes" class="section section--packages">
             <div class="section__header">
-                <h2>Paquetes destacados</h2>
+                <h2>Paquetes Turisticos</h2>
                 <p>Itinerarios listos para desconectar, descubrir la biodiversidad y compartir con comunidades locales.</p>
             </div>
             <div class="cards-grid">
@@ -567,80 +641,6 @@
                     <strong><?= htmlspecialchars(number_format((float) ($metrics['satisfaccion'] ?? 4.9), 1)); ?>/5</strong>
                     <span>satisfacción promedio</span>
                 </div>
-            </div>
-        </section>
-
-        <section class="section section--experiences" id="experiencias">
-            <div class="section__header">
-                <h2>Circuitos exclusivos</h2>
-                <p>Aventuras que combinan cultura viva, sostenibilidad y confort en cada detalle.</p>
-            </div>
-            <div class="cards-grid cards-grid--experiences">
-                <?php foreach ($featuredCircuits as $experience): ?>
-                    <?php
-                        $circuitName = (string) ($experience['nombre'] ?? ($experience['title'] ?? 'Circuito destacado'));
-                        $circuitSlug = $experience['slug'] ?? $slugify($circuitName);
-                        $circuitHref = 'circuito.php?slug=' . urlencode($circuitSlug);
-                        $circuitCurrency = $experience['moneda'] ?? 'PEN';
-                        $circuitPrice = $parsePriceFromString($experience['precio'] ?? $experience['priceFrom'] ?? null);
-                        if ($circuitPrice === null && isset($experience['priceFrom'])) {
-                            $circuitPrice = $parsePriceFromString($experience['priceFrom']);
-                        }
-                        $circuitOriginal = $circuitPrice !== null ? $circuitPrice * 1.12 : null;
-                        $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
-                        $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
-                        $circuitSummary = $experience['resumen'] ?? ($experience['summary'] ?? 'Pronto sumaremos más detalles.');
-                    ?>
-                    <article class="travel-card" data-theme="experience">
-                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true"></div>
-                        <div class="travel-card__pill-group">
-                            <span class="travel-card__status">Nuevo recorrido</span>
-                            <?php if (trim((string) $circuitDestination) !== ''): ?>
-                                <span class="travel-card__tag"><?= htmlspecialchars($circuitDestination); ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <div class="travel-card__content">
-                            <header class="travel-card__header">
-                                <span class="travel-card__category">Experiencia guiada</span>
-                                <span class="travel-card__badge">Circuito exclusivo</span>
-                            </header>
-                            <h3 class="travel-card__title">
-                                <a href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"><?= htmlspecialchars($circuitName); ?></a>
-                            </h3>
-                            <p class="travel-card__excerpt"><?= htmlspecialchars($circuitSummary); ?></p>
-                            <dl class="travel-card__meta">
-                                <div>
-                                    <dt>Duración</dt>
-                                    <dd><?= htmlspecialchars($experience['duracion'] ?? ($experience['duration'] ?? 'Pronto')); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Destino</dt>
-                                    <dd><?= htmlspecialchars($circuitDestination); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Experiencia</dt>
-                                    <dd><?= htmlspecialchars($experience['dificultad'] ?? 'Grupos reducidos'); ?></dd>
-                                </div>
-                            </dl>
-                        </div>
-                        <footer class="travel-card__footer">
-                            <div class="travel-card__pricing">
-                                <?php $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency); ?>
-                                <?php $circuitOriginalText = $formatCurrency($circuitOriginal, $circuitCurrency); ?>
-                                <?php if ($circuitPriceText !== null): ?>
-                                    <span class="travel-card__price"><?= htmlspecialchars($circuitPriceText); ?></span>
-                                    <?php if ($circuitOriginalText !== null): ?>
-                                        <span class="travel-card__price-original"><?= htmlspecialchars($circuitOriginalText); ?></span>
-                                    <?php endif; ?>
-                                    <span class="travel-card__price-note">por persona</span>
-                                <?php else: ?>
-                                    <span class="travel-card__price">Pronto</span>
-                                <?php endif; ?>
-                            </div>
-                            <a class="travel-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">VER CIRCUITO</a>
-                        </footer>
-                    </article>
-                <?php endforeach; ?>
             </div>
         </section>
 
