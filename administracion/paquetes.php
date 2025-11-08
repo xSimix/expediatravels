@@ -192,6 +192,12 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($paquete['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <div class="admin-table__actions">
+                                        <a
+                                            class="admin-chip"
+                                            href="../web/paquete.php?id=<?= urlencode((string) $paquete['id']); ?>"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >Ver</a>
                                         <a class="admin-chip" href="editar_paquete.php?id=<?= (int) $paquete['id']; ?>">Editar</a>
                                         <form method="post" onsubmit="return confirm('¿Eliminar el paquete seleccionado?');">
                                             <input type="hidden" name="action" value="delete" />
