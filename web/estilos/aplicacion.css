@@ -2268,7 +2268,7 @@ main {
 
 .site-footer {
     position: relative;
-    background: radial-gradient(135% 140% at 10% 5%, rgba(59, 130, 246, 0.35) 0%, rgba(15, 23, 42, 0.95) 40%, #020817 100%);
+    background: linear-gradient(140deg, #0b1120 0%, #1d4ed8 55%, #0f172a 100%);
     color: rgba(248, 250, 252, 0.92);
     padding: clamp(3rem, 5vw, 4.5rem) clamp(1.5rem, 5vw, 6rem) clamp(2.5rem, 6vw, 3.5rem);
     overflow: hidden;
@@ -2278,7 +2278,7 @@ main {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(160deg, rgba(148, 163, 184, 0.08), transparent 45%);
+    background: linear-gradient(160deg, rgba(30, 64, 175, 0.35), transparent 50%);
     pointer-events: none;
 }
 
@@ -2289,7 +2289,7 @@ main {
     right: -120px;
     width: 360px;
     height: 360px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.45) 0%, rgba(15, 23, 42, 0) 70%);
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.45) 0%, rgba(15, 23, 42, 0) 70%);
     pointer-events: none;
 }
 
@@ -2297,7 +2297,7 @@ main {
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: minmax(280px, 1.3fr) repeat(2, minmax(170px, 1fr)) minmax(260px, 1.1fr);
+    grid-template-columns: minmax(280px, 1.35fr) minmax(200px, 1fr) minmax(260px, 1.15fr);
     gap: clamp(2rem, 4vw, 3rem);
 }
 
@@ -2405,7 +2405,7 @@ main {
 .site-footer__nav {
     display: grid;
     gap: 1.5rem;
-    grid-template-columns: repeat(2, minmax(160px, 1fr));
+    grid-template-columns: minmax(160px, 1fr);
 }
 
 .site-footer__nav-group h4,
@@ -2541,11 +2541,7 @@ main {
 
 @media (max-width: 1200px) {
     .site-footer__content {
-        grid-template-columns: minmax(260px, 1.2fr) minmax(200px, 1fr) minmax(200px, 1fr);
-    }
-
-    .site-footer__nav {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
+        grid-template-columns: minmax(260px, 1.2fr) minmax(200px, 1fr) minmax(240px, 1.1fr);
     }
 }
 
@@ -2559,16 +2555,9 @@ main {
     .site-footer__content {
         grid-template-columns: minmax(220px, 1fr);
     }
-
-    .site-footer__nav {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
-    }
 }
 
 @media (max-width: 520px) {
-    .site-footer__nav {
-        grid-template-columns: minmax(160px, 1fr);
-    }
 
     .site-footer__subscribe-field {
         flex-direction: column;
