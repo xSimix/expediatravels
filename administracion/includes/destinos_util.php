@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Aplicacion\BaseDatos\Conexion;
 
+require_once __DIR__ . '/slug_util.php';
+
 /**
  * @return array<int, array<string, mixed>>
  */
@@ -83,6 +85,15 @@ function normalizarDestino(array $destino): array
         'estado' => normalizarEstado($destino['estado'] ?? 'activo'),
         'actualizado_en' => $destino['actualizado_en'] ?? null,
     ];
+
+    $slugFuente = trim((string) ($destino['slug'] ?? ''));
+    if ($slugFuente === '') {
+        $slugFuente = $resultado['nombre'] !== ''
+            ? $resultado['nombre']
+            : (string) $resultado['id'];
+    }
+
+    $resultado['slug'] = adminGenerarSlug($slugFuente);
 
     if (array_key_exists('es_predeterminado', $destino)) {
         $resultado['es_predeterminado'] = (bool) $destino['es_predeterminado'];

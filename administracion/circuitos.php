@@ -158,7 +158,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <div class="admin-table__actions">
                                         <a
                                             class="admin-chip"
-                                            href="../web/index.php?circuito=<?= urlencode((string) $circuito['id']); ?>#experiencias"
+                                            href="../web/circuito.php?slug=<?= urlencode((string) ($circuito['slug'] ?? '')); ?>"
                                             target="_blank"
                                             rel="noopener"
                                         >Ver</a>

@@ -153,7 +153,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <div class="admin-table__actions">
                                         <a
                                             class="admin-chip"
-                                            href="../web/index.php?destino=<?= urlencode((string) $destino['id']); ?>#destinos"
+                                            href="../web/destino.php?slug=<?= urlencode((string) ($destino['slug'] ?? '')); ?>"
                                             target="_blank"
                                             rel="noopener"
                                         >Ver</a>
