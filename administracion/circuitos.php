@@ -156,6 +156,12 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($circuito['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <div class="admin-table__actions">
+                                        <a
+                                            class="admin-chip"
+                                            href="../web/index.php?circuito=<?= urlencode((string) $circuito['id']); ?>#experiencias"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >Ver</a>
                                         <a class="admin-chip" href="editar_circuito.php?id=<?= (int) $circuito['id']; ?>">Editar</a>
                                         <form method="post" onsubmit="return confirm('¿Eliminar el circuito seleccionado?');">
                                             <input type="hidden" name="action" value="delete" />

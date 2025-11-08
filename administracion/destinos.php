@@ -151,6 +151,12 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($destino['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <div class="admin-table__actions">
+                                        <a
+                                            class="admin-chip"
+                                            href="../web/index.php?destino=<?= urlencode((string) $destino['id']); ?>#destinos"
+                                            target="_blank"
+                                            rel="noopener"
+                                        >Ver</a>
                                         <a class="admin-chip" href="editar_destino.php?id=<?= (int) $destino['id']; ?>">Editar</a>
                                         <form method="post" onsubmit="return confirm('¿Eliminar el destino seleccionado?');">
                                             <input type="hidden" name="action" value="delete" />
