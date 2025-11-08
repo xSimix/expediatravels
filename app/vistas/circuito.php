@@ -6,7 +6,7 @@ $siteFavicon = $siteSettings['siteFavicon'] ?? null;
 if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
     $siteFavicon = null;
 }
-$pageTitle = $title ?? ($detail['title'] ?? ($detail['nombre'] ?? $siteTitle));
+$pageTitle = $title ?? ($detail['title'] ?? $siteTitle);
 $currentUser = $currentUser ?? null;
 ?>
 <!DOCTYPE html>
@@ -21,7 +21,7 @@ $currentUser = $currentUser ?? null;
     <?php endif; ?>
 </head>
 <body class="page page--detail">
-    <?php $activeNav = 'paquetes'; include __DIR__ . '/partials/site-header.php'; ?>
+    <?php $activeNav = 'experiencias'; include __DIR__ . '/partials/site-header.php'; ?>
     <?php include __DIR__ . '/partials/detail-page.php'; ?>
     <?php include __DIR__ . '/partials/site-footer.php'; ?>
     <?php include __DIR__ . '/partials/auth-modal.php'; ?>

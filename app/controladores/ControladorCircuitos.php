@@ -2,36 +2,36 @@
 
 namespace Aplicacion\Controladores;
 
+use Aplicacion\Repositorios\RepositorioCircuitos;
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
-use Aplicacion\Repositorios\RepositorioPaquetes;
 use Aplicacion\Servicios\ServicioAutenticacion;
 use Aplicacion\Vistas\Vista;
 
-class ControladorPaquetes
+class ControladorCircuitos
 {
     public function show(): void
     {
         $slug = (string) ($_GET['slug'] ?? '');
 
-        $packagesRepository = new RepositorioPaquetes();
-        $package = $packagesRepository->findBySlug($slug);
+        $circuitRepository = new RepositorioCircuitos();
+        $circuit = $circuitRepository->findBySlug($slug);
 
         $settingsRepository = new RepositorioConfiguracionSitio();
         $siteSettings = $settingsRepository->get();
 
         $authService = new ServicioAutenticacion();
 
-        $pageTitle = 'Paquete — Expediatravels';
-        if (!empty($package['title'] ?? $package['nombre'] ?? null)) {
-            $pageTitle = ($package['title'] ?? $package['nombre']) . ' — Expediatravels';
+        $pageTitle = 'Circuito — Expediatravels';
+        if (!empty($circuit['title'] ?? null)) {
+            $pageTitle = $circuit['title'] . ' — Expediatravels';
         }
 
-        $view = new Vista('paquete');
+        $view = new Vista('circuito');
         $view->render([
             'title' => $pageTitle,
             'siteSettings' => $siteSettings,
             'currentUser' => $authService->currentUser(),
-            'detail' => $package,
+            'detail' => $circuit,
         ]);
     }
 }

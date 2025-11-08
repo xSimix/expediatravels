@@ -1,0 +1,296 @@
+<?php
+
+namespace Aplicacion\Repositorios;
+
+class RepositorioCircuitos
+{
+    public function findBySlug(string $slug): ?array
+    {
+        $slug = strtolower(trim($slug));
+        $circuits = $this->fallbackCircuits();
+
+        if ($slug === '') {
+            return $circuits[0] ?? null;
+        }
+
+        foreach ($circuits as $circuit) {
+            if (($circuit['slug'] ?? '') === $slug) {
+                return $circuit;
+            }
+        }
+
+        return $circuits[0] ?? null;
+    }
+
+    private function fallbackCircuits(): array
+    {
+        return [
+            [
+                'slug' => 'selva-central-signature',
+                'type' => 'Circuito',
+                'title' => 'Circuito Esencia Selva Central',
+                'tagline' => 'De Oxapampa a Perené entre bosques nubosos, cataratas y pueblos cafeteros.',
+                'summary' => "Conecta los imprescindibles de la Selva Central peruana en un circuito que combina aventura, cultura y gastronomía local. Inicia en Oxapampa con sus casonas austroalemanas y su reserva de biosfera, continúa hacia Villa Rica para descubrir sus fincas cafetaleras y culmina en los cañones y cataratas del valle del Perené.\n\nCada jornada equilibra actividades al aire libre con encuentros auténticos con comunidades asháninkas y yaneshas, degustaciones de café de especialidad y espacios para relajarse entre paisajes cubiertos de neblina.",
+                'location' => 'Oxapampa, Villa Rica y Perené — Selva Central, Perú',
+                'region' => 'Pasco y Junín',
+                'duration' => '4 días / 3 noches',
+                'priceFrom' => 'Desde S/ 1,450 por viajero',
+                'heroImage' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80',
+                'mapImage' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
+                'mapLabel' => 'Ruta Selva Central',
+                'chips' => ['Aventura suave', 'Café de especialidad', 'Cultura viva'],
+                'stats' => [
+                    ['label' => 'Dificultad', 'value' => 'Moderada'],
+                    ['label' => 'Altitud máxima', 'value' => '1,950 m s. n. m.'],
+                    ['label' => 'Temporada ideal', 'value' => 'Abril a octubre'],
+                ],
+                'highlights' => [
+                    [
+                        'title' => 'Bosques nubosos de Oxapampa',
+                        'description' => 'Senderos interpretativos en Yanachaga-Chemillén acompañados de guardaparques locales.',
+                        'icon' => '🌿',
+                        'accent' => 'jungle',
+                    ],
+                    [
+                        'title' => 'Ruta del café en Villa Rica',
+                        'description' => 'Catación de microlotes, tostado artesanal y maridaje con chocolates amazónicos.',
+                        'icon' => '☕',
+                        'accent' => 'sunrise',
+                    ],
+                    [
+                        'title' => 'Cataratas del Perené',
+                        'description' => 'Salto Bayoz y Velo de la Novia con baños turquesa y picnic de productos regionales.',
+                        'icon' => '💦',
+                        'accent' => 'lagoon',
+                    ],
+                ],
+                'itinerary' => [
+                    [
+                        'title' => 'Día 1 · Oxapampa inmersiva',
+                        'summary' => 'Llegada, city tour patrimonial y degustación de lácteos artesanales.',
+                        'activities' => [
+                            'Recepción en el aeropuerto de Oxapampa y traslado boutique.',
+                            'City tour entre casonas austroalemanas y mirador La Florida.',
+                            'Degustación de quesos madurados y cerveza artesanal local.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Día 2 · Reserva Yanachaga y Villa Rica',
+                        'summary' => 'Observación de aves, navegacion en Laguna El Oconal y cata de cafés.',
+                        'activities' => [
+                            'Trekking ligero en el sector San Alberto guiado por especialistas.',
+                            'Visita a finca cafetalera con experiencia de cosecha y beneficio húmedo.',
+                            'Atardecer en el mirador La Cumbre con degustación de café filtrado.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Día 3 · Valles del Perené',
+                        'summary' => 'Cataratas, comunidades asháninkas y paseos en bote.',
+                        'activities' => [
+                            'Caminata y baño refrescante en Bayoz y Velo de la Novia.',
+                            'Almuerzo tradicional en comunidad asháninka y presentación de danzas.',
+                            'Paseo en bote por el río Perené con interpretación cultural.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Día 4 · Despedida y relax',
+                        'summary' => 'Mañana libre y traslado a la ciudad de origen.',
+                        'activities' => [
+                            'Sesión de bienestar con infusiones amazónicas y masajes con aceites nativos.',
+                            'Tiempo libre para compras en ferias de productores y artesanos.',
+                            'Traslado privado al aeropuerto de Oxapampa o terminal de buses.',
+                        ],
+                    ],
+                ],
+                'experiences' => [
+                    [
+                        'title' => 'Picnic de sabores amazónicos',
+                        'description' => 'Degusta snacks saludables, frutas exóticas y chocolates bean-to-bar frente a una cascada.',
+                        'icon' => '🍃',
+                    ],
+                    [
+                        'title' => 'Taller de cestería yanesha',
+                        'description' => 'Aprende a tejer con fibras naturales junto a maestras artesanas.',
+                        'icon' => '🧺',
+                    ],
+                    [
+                        'title' => 'Atardecer en la Laguna El Oconal',
+                        'description' => 'Avistamiento de aves en kayak y sesión fotográfica dorada.',
+                        'icon' => '🛶',
+                    ],
+                ],
+                'essentials' => [
+                    [
+                        'title' => 'Incluye',
+                        'items' => [
+                            'Traslados privados durante todo el circuito.',
+                            'Alojamiento boutique con desayuno local.',
+                            'Guías bilingües especializados en naturaleza y cultura.',
+                            'Entradas a reservas, cataratas y experiencias comunitarias.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Recomendaciones',
+                        'items' => [
+                            'Empacar ropa ligera de secado rápido y casaca impermeable.',
+                            'Llevar repelente ecológico y protector solar biodegradable.',
+                            'Respetar los protocolos de visita a comunidades originarias.',
+                        ],
+                    ],
+                ],
+                'cta' => [
+                    'primaryLabel' => 'Reservar circuito',
+                    'primaryHref' => 'explorar.php?categoria=circuitos&slug=selva-central-signature',
+                    'secondaryLabel' => 'Consultar asesor experto',
+                    'secondaryHref' => 'mailto:viajes@expediatravels.com',
+                ],
+                'gallery' => [
+                    ['src' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80', 'alt' => 'Carretera selvática con neblina'],
+                    ['src' => 'https://images.unsplash.com/photo-1529270291606-d01266d631de?auto=format&fit=crop&w=800&q=80', 'alt' => 'Barista preparando café filtrado'],
+                    ['src' => 'https://images.unsplash.com/photo-1503249023995-51b0f3778ccf?auto=format&fit=crop&w=800&q=80', 'alt' => 'Viajera observando cascada tropical'],
+                ],
+                'related' => [
+                    [
+                        'badge' => 'Destino',
+                        'title' => 'Oxapampa Esencial',
+                        'summary' => 'Tres días entre casonas, cataratas y reservas de biosfera.',
+                        'href' => 'destino.php?slug=oxapampa',
+                        'image' => 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80',
+                    ],
+                    [
+                        'badge' => 'Paquete',
+                        'title' => 'Escapada Pozuzo Boutique',
+                        'summary' => 'Experiencia de fin de semana con hospedaje histórico y gastronomía fusión.',
+                        'href' => 'paquete.php?slug=pozuzo-boutique',
+                        'image' => 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&w=600&q=80',
+                    ],
+                    [
+                        'badge' => 'Circuito',
+                        'title' => 'Aventura Cataratas Perené',
+                        'summary' => 'Recorrido lleno de adrenalina y contacto comunitario.',
+                        'href' => 'circuito.php?slug=aventura-perene',
+                        'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
+                    ],
+                ],
+            ],
+            [
+                'slug' => 'aventura-perene',
+                'type' => 'Circuito',
+                'title' => 'Aventura Cataratas del Perené',
+                'tagline' => 'Rafting, caminatas y cultura asháninka en dos días vibrantes.',
+                'summary' => "Explora el valle del Perené en un circuito exprés pensado para viajeros activos. Combina rápidos clase II en el río, caminatas a imponentes cataratas y experiencias vivas con comunidades originarias.",
+                'location' => 'Valle del Perené — Junín, Perú',
+                'region' => 'Junín',
+                'duration' => '2 días / 1 noche',
+                'priceFrom' => 'Desde S/ 680 por viajero',
+                'heroImage' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
+                'mapImage' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80',
+                'mapLabel' => 'Valle del Perené',
+                'chips' => ['Rafting', 'Cataratas', 'Cultura'],
+                'stats' => [
+                    ['label' => 'Dificultad', 'value' => 'Activa'],
+                    ['label' => 'Altitud', 'value' => '720 m s. n. m.'],
+                    ['label' => 'Salidas', 'value' => 'Martes, jueves y sábados'],
+                ],
+                'highlights' => [
+                    [
+                        'title' => 'Rafting río Perené',
+                        'description' => 'Descenso guiado con seguridad integral y rescate especializado.',
+                        'icon' => '🚣',
+                        'accent' => 'lagoon',
+                    ],
+                    [
+                        'title' => 'Catarata Velo de la Novia',
+                        'description' => 'Cascada icónica con pozas naturales para nadar y fotografiar.',
+                        'icon' => '💧',
+                        'accent' => 'aurora',
+                    ],
+                    [
+                        'title' => 'Noche en eco-lodge',
+                        'description' => 'Hospédate en bungalows rodeados de jardines tropicales.',
+                        'icon' => '🏡',
+                        'accent' => 'sunrise',
+                    ],
+                ],
+                'itinerary' => [
+                    [
+                        'title' => 'Día 1 · Agua y adrenalina',
+                        'summary' => 'Rafting, caminata y atardecer en mirador comunitario.',
+                        'activities' => [
+                            'Briefing de seguridad y equipamiento profesional incluido.',
+                            'Rafting nivel intermedio (2.5 horas) con fotografías digitales.',
+                            'Caminata a la catarata Velo de la Novia y picnic saludable.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Día 2 · Cultura y bienestar',
+                        'summary' => 'Experiencia asháninka y sesión de hidroterapia natural.',
+                        'activities' => [
+                            'Ceremonia de bienvenida y taller de pintura facial tradicional.',
+                            'Recorrido por vivero de plantas medicinales y huertos comunitarios.',
+                            'Tiempo libre en pozas termales naturales antes del retorno.',
+                        ],
+                    ],
+                ],
+                'experiences' => [
+                    [
+                        'title' => 'Yoga tropical al amanecer',
+                        'description' => 'Sesión guiada en deck de madera con sonidos del bosque.',
+                        'icon' => '🧘',
+                    ],
+                    [
+                        'title' => 'Degustación de chocolates nativos',
+                        'description' => 'Cacao chuncho y frutas deshidratadas con maridaje de infusiones.',
+                        'icon' => '🍫',
+                    ],
+                ],
+                'essentials' => [
+                    [
+                        'title' => 'Incluye',
+                        'items' => [
+                            'Transporte turístico desde La Merced.',
+                            'Equipamiento técnico para rafting.',
+                            'Guías certificados en rescate acuático.',
+                            'Una noche de alojamiento con desayuno.',
+                        ],
+                    ],
+                    [
+                        'title' => 'Que llevar',
+                        'items' => [
+                            'Sandalias de río o zapatillas de agua.',
+                            'Bolsa estanca para pertenencias personales.',
+                            'Cambio de ropa ligera y toalla de secado rápido.',
+                        ],
+                    ],
+                ],
+                'cta' => [
+                    'primaryLabel' => 'Elegir fecha',
+                    'primaryHref' => 'explorar.php?categoria=circuitos&slug=aventura-perene',
+                    'secondaryLabel' => 'Ver más circuitos',
+                    'secondaryHref' => 'explorar.php?categoria=circuitos',
+                ],
+                'gallery' => [
+                    ['src' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=800&q=80', 'alt' => 'Rafting en río tropical'],
+                    ['src' => 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80', 'alt' => 'Catarata entre la vegetación'],
+                    ['src' => 'https://images.unsplash.com/photo-1499696010181-2cb40af7859d?auto=format&fit=crop&w=800&q=80', 'alt' => 'Comunidad asháninka compartiendo artesanías'],
+                ],
+                'related' => [
+                    [
+                        'badge' => 'Paquete',
+                        'title' => 'Full Day Selva Mágica',
+                        'summary' => 'Un día para visitar Bayoz, Velo de la Novia y mariposario.',
+                        'href' => 'paquete.php?slug=selva-magica',
+                        'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
+                    ],
+                    [
+                        'badge' => 'Destino',
+                        'title' => 'Perené',
+                        'summary' => 'Puerta a cataratas y comunidades vibrantes.',
+                        'href' => 'destino.php?slug=perene',
+                        'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
+                    ],
+                ],
+            ],
+        ];
+    }
+}
