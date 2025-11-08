@@ -4,13 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/paquetes_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
-$archivoCircuitos = __DIR__ . '/../almacenamiento/circuitos.json';
-$archivoPaquetes = __DIR__ . '/../almacenamiento/paquetes.json';
 
 $errores = [];
 $mensajeExito = null;
@@ -20,9 +14,9 @@ $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_pre
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
 $paquetesPredeterminados = require __DIR__ . '/../app/configuracion/paquetes_predeterminados.php';
 
-$destinosDisponibles = paquetesCargarDestinos($archivoDestinos, $destinosPredeterminados, $errores);
-$circuitosDisponibles = paquetesCargarCircuitos($archivoCircuitos, $circuitosPredeterminados, $destinosDisponibles, $errores);
-$paquetes = paquetesCargarPaquetes($archivoPaquetes, $paquetesPredeterminados, $errores);
+$destinosDisponibles = paquetesCargarDestinos($destinosPredeterminados, $errores);
+$circuitosDisponibles = paquetesCargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
+$paquetes = paquetesCargarPaquetes($paquetesPredeterminados, $errores);
 
 $estadosPermitidos = [
     'publicado' => 'Publicado',
@@ -44,22 +38,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($paqueteId <= 0) {
             $errores[] = 'No se pudo identificar el paquete a eliminar.';
         } else {
-            $cantidadInicial = count($paquetes);
-            $paquetes = array_values(array_filter(
-                $paquetes,
-                static fn (array $paquete): bool => $paquete['id'] !== $paqueteId
-            ));
-
-            if ($cantidadInicial === count($paquetes)) {
+            $eliminado = paquetesEliminarPaquete($paqueteId, $errores);
+            if ($eliminado) {
+                $mensajeExito = 'Paquete eliminado correctamente.';
+            } elseif (empty($errores)) {
                 $errores[] = 'El paquete indicado ya no existe.';
-            } else {
-                try {
-                    ServicioAlmacenamientoJson::guardar($archivoPaquetes, $paquetes);
-                    $mensajeExito = 'Paquete eliminado correctamente.';
-                } catch (RuntimeException $exception) {
-                    $errores[] = 'El paquete se eliminó, pero no se pudo actualizar el almacenamiento.';
-                }
             }
+
+            $paquetes = paquetesCargarPaquetes($paquetesPredeterminados, $errores);
         }
     } else {
         $errores[] = 'Acción no reconocida.';
@@ -74,8 +60,17 @@ if (isset($_GET['actualizado'])) {
     $mensajeExito = 'Paquete actualizado correctamente.';
 }
 
-if ($mensajeExito === null && empty($errores) && !is_file($archivoPaquetes)) {
-    $mensajeInfo = 'Aún no tienes paquetes personalizados. Usa los circuitos y destinos creados para construir uno nuevo.';
+if ($mensajeExito === null && empty($errores)) {
+    $usaPredeterminados = !empty($paquetes)
+        && array_reduce(
+            $paquetes,
+            static fn (bool $carry, array $paquete): bool => $carry && ($paquete['es_predeterminado'] ?? false),
+            true
+        );
+
+    if ($usaPredeterminados) {
+        $mensajeInfo = 'Aún no tienes paquetes personalizados. Usa los circuitos y destinos creados para construir uno nuevo.';
+    }
 }
 
 $paginaActiva = 'paquetes_registrados';

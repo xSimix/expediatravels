@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/circuitos_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
-$archivoCircuitos = __DIR__ . '/../almacenamiento/circuitos.json';
 
 $errores = [];
 $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_predeterminados.php';
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
 
-$destinosDisponibles = cargarDestinosDisponibles($archivoDestinos, $destinosPredeterminados, $errores);
-$circuitos = cargarCircuitos($archivoCircuitos, $circuitosPredeterminados, $destinosDisponibles, $errores);
+$destinosDisponibles = cargarDestinosDisponibles($destinosPredeterminados, $errores);
+$circuitos = cargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
 
 $categoriasPermitidas = [
     'naturaleza' => 'Naturaleza y aire libre',
@@ -43,13 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $circuitoId = isset($_POST['circuito_id']) ? (int) $_POST['circuito_id'] : $circuitoId;
 }
 
-$circuitoSeleccionado = null;
-foreach ($circuitos as $circuito) {
-    if ($circuito['id'] === $circuitoId) {
-        $circuitoSeleccionado = $circuito;
-        break;
-    }
-}
+$circuitoSeleccionado = obtenerCircuitoPorId($circuitoId, $destinosDisponibles, $circuitosPredeterminados, $errores);
 
 if ($circuitoSeleccionado === null) {
     http_response_code(404);
@@ -143,41 +132,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     }
 
     if (empty($errores)) {
-        foreach ($circuitos as &$circuito) {
-            if ($circuito['id'] === $circuitoId) {
-                $circuito['nombre'] = $datos['nombre'];
-                $circuito['destino'] = [
-                    'id' => $datos['destino_id'] > 0 ? $datos['destino_id'] : null,
-                    'nombre' => $destinoNombre,
-                    'personalizado' => $datos['destino_personalizado'],
-                    'region' => $destinoRegion,
-                ];
-                $circuito['duracion'] = $datos['duracion'];
-                $circuito['categoria'] = $datos['categoria'];
-                $circuito['dificultad'] = $datos['dificultad'];
-                $circuito['frecuencia'] = $datos['frecuencia'];
-                $circuito['descripcion'] = $datos['descripcion'];
-                $circuito['imagen_portada'] = $datos['imagen_portada'];
-                $circuito['imagen_destacada'] = $datos['imagen_destacada'];
-                $circuito['galeria'] = $datos['galeria'];
-                $circuito['video_destacado_url'] = $datos['video_destacado_url'];
-                $circuito['puntos_interes'] = $puntosInteres;
-                $circuito['servicios'] = $serviciosIncluidos;
-                $circuito['estado'] = $datos['estado'];
-                $circuito['actualizado_en'] = date('c');
-                break;
+        $circuitoActualizado = [
+            'nombre' => $datos['nombre'],
+            'destino_id' => $datos['destino_id'],
+            'destino_personalizado' => $datos['destino_personalizado'],
+            'duracion' => $datos['duracion'],
+            'categoria' => $datos['categoria'],
+            'dificultad' => $datos['dificultad'],
+            'frecuencia' => $datos['frecuencia'],
+            'estado' => $datos['estado'],
+            'descripcion' => $datos['descripcion'],
+            'imagen_portada' => $datos['imagen_portada'],
+            'imagen_destacada' => $datos['imagen_destacada'],
+            'galeria' => $datos['galeria'],
+            'video_destacado_url' => $datos['video_destacado_url'],
+            'puntos_interes' => $puntosInteres,
+            'servicios' => $serviciosIncluidos,
+        ];
+
+        $esPredeterminado = (bool) ($circuitoSeleccionado['es_predeterminado'] ?? false);
+
+        if ($esPredeterminado) {
+            $nuevoId = crearCircuitoCatalogo($circuitoActualizado, $errores);
+            if ($nuevoId !== null) {
+                header('Location: circuitos.php?actualizado=1');
+                exit;
             }
-        }
-        unset($circuito);
-
-        $circuitos = ordenarCircuitos($circuitos);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoCircuitos, $circuitos);
-            header('Location: circuitos.php?actualizado=1');
-            exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'Los cambios se aplicaron, pero no se pudieron guardar.';
+        } else {
+            $actualizado = actualizarCircuitoCatalogo($circuitoId, $circuitoActualizado, $errores);
+            if ($actualizado) {
+                header('Location: circuitos.php?actualizado=1');
+                exit;
+            }
         }
     }
 }

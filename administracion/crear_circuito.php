@@ -4,19 +4,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/circuitos_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
-$archivoCircuitos = __DIR__ . '/../almacenamiento/circuitos.json';
 
 $errores = [];
 $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_predeterminados.php';
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
 
-$destinosDisponibles = cargarDestinosDisponibles($archivoDestinos, $destinosPredeterminados, $errores);
-$circuitos = cargarCircuitos($archivoCircuitos, $circuitosPredeterminados, $destinosDisponibles, $errores);
+$destinosDisponibles = cargarDestinosDisponibles($destinosPredeterminados, $errores);
+$circuitos = cargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
 
 $categoriasPermitidas = [
     'naturaleza' => 'Naturaleza y aire libre',
@@ -109,18 +104,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errores)) {
         $nuevoCircuito = [
-            'id' => obtenerSiguienteId($circuitos),
             'nombre' => $datos['nombre'],
-            'destino' => [
-                'id' => $datos['destino_id'] > 0 ? $datos['destino_id'] : null,
-                'nombre' => $destinoNombre,
-                'personalizado' => $datos['destino_personalizado'],
-                'region' => $destinoRegion,
-            ],
+            'destino_id' => $datos['destino_id'],
+            'destino_personalizado' => $datos['destino_personalizado'],
             'duracion' => $datos['duracion'],
             'categoria' => $datos['categoria'],
             'dificultad' => $datos['dificultad'],
             'frecuencia' => $datos['frecuencia'],
+            'estado' => $datos['estado'],
             'descripcion' => $datos['descripcion'],
             'imagen_portada' => $datos['imagen_portada'],
             'imagen_destacada' => $datos['imagen_destacada'],
@@ -128,19 +119,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'video_destacado_url' => $datos['video_destacado_url'],
             'puntos_interes' => $puntosInteres,
             'servicios' => $serviciosIncluidos,
-            'estado' => $datos['estado'],
-            'actualizado_en' => date('c'),
         ];
 
-        $circuitos[] = normalizarCircuito($nuevoCircuito, $destinosDisponibles);
-        $circuitos = ordenarCircuitos($circuitos);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoCircuitos, $circuitos);
+        $nuevoId = crearCircuitoCatalogo($nuevoCircuito, $errores);
+        if ($nuevoId !== null) {
             header('Location: circuitos.php?creado=1');
             exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'El circuito se creó, pero no se pudo guardar en almacenamiento.';
         }
     }
 }

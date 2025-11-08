@@ -4,28 +4,17 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/destinos_util.php';
 
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
 $destinosPredeterminados = obtenerDestinosPredeterminados();
 $errores = [];
-
-$destinos = cargarDestinosCatalogo($archivoDestinos, $destinosPredeterminados, $errores);
 
 $destinoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $destinoId = isset($_POST['destino_id']) ? (int) $_POST['destino_id'] : $destinoId;
 }
 
-$destinoSeleccionado = null;
-foreach ($destinos as $destino) {
-    if ($destino['id'] === $destinoId) {
-        $destinoSeleccionado = $destino;
-        break;
-    }
-}
+$destinoSeleccionado = obtenerDestinoPorId($destinoId, $destinosPredeterminados, $errores);
 
 if ($destinoSeleccionado === null) {
     http_response_code(404);
@@ -89,35 +78,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $etiquetas = convertirEtiquetas($datos['etiquetas']);
 
     if (empty($errores)) {
-        foreach ($destinos as &$destino) {
-            if ($destino['id'] === $destinoId) {
-                $destino['nombre'] = $datos['nombre'];
-                $destino['region'] = $datos['region'];
-                $destino['descripcion'] = $datos['descripcion'];
-                $destino['tagline'] = $datos['tagline'];
-                $destino['latitud'] = $latitud;
-                $destino['longitud'] = $longitud;
-                $destino['imagen'] = $datos['imagen'];
-                $destino['imagen_portada'] = $datos['imagen'];
-                $destino['imagen_destacada'] = $datos['imagen_destacada'];
-                $destino['galeria'] = $datos['galeria'];
-                $destino['video_destacado_url'] = $datos['video_destacado_url'];
-                $destino['tags'] = $etiquetas;
-                $destino['estado'] = $datos['estado'];
-                $destino['actualizado_en'] = date('c');
-                break;
+        $destinoActualizado = [
+            'nombre' => $datos['nombre'],
+            'region' => $datos['region'],
+            'descripcion' => $datos['descripcion'],
+            'tagline' => $datos['tagline'],
+            'latitud' => $latitud,
+            'longitud' => $longitud,
+            'imagen' => $datos['imagen'],
+            'imagen_destacada' => $datos['imagen_destacada'],
+            'galeria' => $datos['galeria'],
+            'video_destacado_url' => $datos['video_destacado_url'],
+            'tags' => $etiquetas,
+            'estado' => $datos['estado'],
+        ];
+
+        $esPredeterminado = (bool) ($destinoSeleccionado['es_predeterminado'] ?? false);
+
+        if ($esPredeterminado) {
+            $nuevoId = crearDestinoCatalogo($destinoActualizado, $errores);
+            if ($nuevoId !== null) {
+                header('Location: destinos.php?actualizado=1');
+                exit;
             }
-        }
-        unset($destino);
-
-        $destinos = ordenarDestinos($destinos);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoDestinos, $destinos);
-            header('Location: destinos.php?actualizado=1');
-            exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'Los cambios se aplicaron, pero no se pudieron guardar.';
+        } else {
+            $actualizado = actualizarDestinoCatalogo($destinoId, $destinoActualizado, $errores);
+            if ($actualizado) {
+                header('Location: destinos.php?actualizado=1');
+                exit;
+            }
         }
     }
 }
