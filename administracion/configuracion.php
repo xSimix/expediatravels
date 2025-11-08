@@ -9,6 +9,7 @@ extract($ajustes, EXTR_OVERWRITE);
 $paginaActiva = 'configuracion';
 $tituloPagina = 'Configuración del sitio — Expediatravels';
 $estilosExtra = ['recursos/panel-admin.css'];
+$scriptsExtra = ['recursos/media-picker.js'];
 
 require __DIR__ . '/plantilla/cabecera.php';
 ?>
@@ -26,10 +27,8 @@ require __DIR__ . '/plantilla/cabecera.php';
 
     <section class="admin-card">
         <h2>Identidad y datos de contacto</h2>
-        <form method="post" class="admin-grid" enctype="multipart/form-data">
+        <form method="post" class="admin-grid">
             <input type="hidden" name="form_type" value="site_settings" />
-            <input type="hidden" name="current_site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" />
-            <input type="hidden" name="current_site_favicon" value="<?= htmlspecialchars((string) ($siteFavicon ?? ''), ENT_QUOTES); ?>" />
             <div class="admin-grid two-columns">
                 <div class="admin-field">
                     <label for="site_title">Título del sitio</label>
@@ -40,37 +39,43 @@ require __DIR__ . '/plantilla/cabecera.php';
                     <input type="text" id="site_tagline" name="site_tagline" value="<?= htmlspecialchars($siteTagline, ENT_QUOTES); ?>" placeholder="Explora la Selva Central" />
                 </div>
             </div>
-            <div class="admin-field">
-                <label for="site_logo_file">Logo del sitio</label>
-                <input type="file" id="site_logo_file" name="site_logo_file" accept="image/png,image/jpeg,image/webp,image/svg+xml" />
-                <p class="admin-help">Sube una imagen horizontal (recomendado 250x65 px). Se permiten formatos JPG, PNG, WEBP o SVG.</p>
-                <?php if ($siteLogo): ?>
-                    <div class="admin-logo-preview">
-                        <div class="admin-logo-preview__image">
-                            <img src="<?= htmlspecialchars($siteLogo, ENT_QUOTES); ?>" alt="Logo actual del sitio" />
-                        </div>
-                        <div class="admin-logo-preview__meta">
-                            <span class="admin-logo-preview__label">Logo actual</span>
-                            <span class="admin-logo-preview__path"><?= htmlspecialchars($siteLogo, ENT_QUOTES); ?></span>
-                        </div>
-                    </div>
-                <?php endif; ?>
+            <div class="admin-field media-picker" data-media-picker data-multiple="false">
+                <label for="site_logo">Logo del sitio</label>
+                <div class="media-picker__input">
+                    <input type="text" id="site_logo" name="site_logo" value="<?= htmlspecialchars((string) ($siteLogo ?? ''), ENT_QUOTES); ?>" placeholder="/almacenamiento/medios/logo.png" data-media-input />
+                    <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
+                    <label class="admin-button secondary">
+                        <span>Subir nueva</span>
+                        <input type="file" accept="image/*" data-media-upload hidden />
+                    </label>
+                </div>
+                <div class="media-picker__preview" data-media-preview data-empty-text="Sin logo seleccionado" data-empty="<?= isset($siteLogo) && $siteLogo !== '' ? 'false' : 'true'; ?>">
+                    <?php if (!empty($siteLogo)): ?>
+                        <img src="<?= htmlspecialchars((string) $siteLogo, ENT_QUOTES); ?>" alt="Logo actual del sitio" />
+                    <?php else: ?>
+                        Sin logo seleccionado
+                    <?php endif; ?>
+                </div>
+                <p class="admin-help">Sube o elige una imagen horizontal (recomendado 250x65 px). Se permiten formatos JPG, PNG, WEBP o SVG.</p>
             </div>
-            <div class="admin-field">
-                <label for="site_favicon_file">Icono de la página (favicon)</label>
-                <input type="file" id="site_favicon_file" name="site_favicon_file" accept="image/png,image/jpeg,image/webp,image/svg+xml,image/x-icon,image/vnd.microsoft.icon" />
-                <p class="admin-help">Sube un ícono cuadrado (recomendado 512x512 px). Formatos permitidos: PNG, JPG, WEBP, SVG o ICO.</p>
-                <?php if ($siteFavicon): ?>
-                    <div class="admin-logo-preview">
-                        <div class="admin-logo-preview__image admin-logo-preview__image--square">
-                            <img src="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" alt="Favicon actual del sitio" />
-                        </div>
-                        <div class="admin-logo-preview__meta">
-                            <span class="admin-logo-preview__label">Favicon actual</span>
-                            <span class="admin-logo-preview__path"><?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?></span>
-                        </div>
-                    </div>
-                <?php endif; ?>
+            <div class="admin-field media-picker" data-media-picker data-multiple="false">
+                <label for="site_favicon">Icono de la página (favicon)</label>
+                <div class="media-picker__input">
+                    <input type="text" id="site_favicon" name="site_favicon" value="<?= htmlspecialchars((string) ($siteFavicon ?? ''), ENT_QUOTES); ?>" placeholder="/almacenamiento/medios/favicon.ico" data-media-input />
+                    <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
+                    <label class="admin-button secondary">
+                        <span>Subir nuevo</span>
+                        <input type="file" accept="image/*" data-media-upload hidden />
+                    </label>
+                </div>
+                <div class="media-picker__preview" data-media-preview data-empty-text="Sin favicon seleccionado" data-empty="<?= isset($siteFavicon) && $siteFavicon !== '' ? 'false' : 'true'; ?>">
+                    <?php if (!empty($siteFavicon)): ?>
+                        <img src="<?= htmlspecialchars((string) $siteFavicon, ENT_QUOTES); ?>" alt="Favicon actual del sitio" />
+                    <?php else: ?>
+                        Sin favicon seleccionado
+                    <?php endif; ?>
+                </div>
+                <p class="admin-help">Elige un ícono cuadrado (recomendado 512x512 px). Formatos permitidos: PNG, JPG, WEBP, SVG o ICO.</p>
             </div>
             <div class="admin-grid two-columns">
                 <div class="admin-field">
@@ -187,12 +192,22 @@ require __DIR__ . '/plantilla/cabecera.php';
             <?php endif; ?>
         </div>
 
-        <form method="post" class="admin-grid" style="margin-top: 1.5rem;" enctype="multipart/form-data">
+        <form method="post" class="admin-grid" style="margin-top: 1.5rem;">
             <input type="hidden" name="form_type" value="add_slide" />
             <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="slide_upload">Imagen del hero</label>
-                    <input type="file" id="slide_upload" name="slide_upload" accept="image/jpeg,image/png,image/webp" required />
+                <div class="admin-field media-picker" data-media-picker data-multiple="false">
+                    <label for="slide_image">Imagen del hero</label>
+                    <div class="media-picker__input">
+                        <input type="text" id="slide_image" name="slide_image" value="" placeholder="/almacenamiento/medios/hero.jpg" data-media-input />
+                        <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
+                        <label class="admin-button secondary">
+                            <span>Subir nueva</span>
+                            <input type="file" accept="image/*" data-media-upload hidden />
+                        </label>
+                    </div>
+                    <div class="media-picker__preview" data-media-preview data-empty-text="Sin imagen seleccionada" data-empty="true">
+                        Sin imagen seleccionada
+                    </div>
                     <p class="admin-help">Se admiten imágenes horizontales (1600x900 o superior). Formatos: JPG, PNG o WEBP.</p>
                 </div>
                 <div class="admin-field">
