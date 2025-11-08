@@ -102,7 +102,7 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
     <nav class="detail-anchors" aria-label="Secciones del contenido">
         <a href="#detalle">Descripción</a>
         <?php if (!empty($itinerary)): ?><a href="#itinerario">Itinerario</a><?php endif; ?>
-        <?php if (!empty($experiences)): ?><a href="#experiencias">Experiencias</a><?php endif; ?>
+        <?php if (!empty($experiences)): ?><a href="#circuitos">Circuitos Turisticos</a><?php endif; ?>
         <?php if (!empty($essentials)): ?><a href="#preparativos">Preparativos</a><?php endif; ?>
         <?php if (!empty($gallery)): ?><a href="#galeria">Galería</a><?php endif; ?>
     </nav>
@@ -183,7 +183,7 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
     <?php endif; ?>
 
     <?php if (!empty($experiences)): ?>
-        <section class="detail-section detail-section--experiences" id="experiencias">
+        <section class="detail-section detail-section--experiences" id="circuitos">
             <header class="detail-section__header">
                 <h2>Experiencias que elevan tu viaje</h2>
                 <p>Personaliza tu itinerario con actividades vibrantes y memorables.</p>
