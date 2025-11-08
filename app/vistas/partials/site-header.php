@@ -31,10 +31,9 @@ $displayName = $isAuthenticated ? trim((string) ($currentUser['nombre'] ?? '')) 
 
 $activeNav = $activeNav ?? null;
 $navItems = [
-    ['id' => 'inicio', 'label' => 'Inicio', 'href' => 'index.php#inicio'],
+    ['id' => 'destinos', 'label' => 'Destino', 'href' => 'index.php#destinos'],
+    ['id' => 'circuitos', 'label' => 'Circuito', 'href' => 'index.php#circuitos'],
     ['id' => 'paquetes', 'label' => 'Paquetes', 'href' => 'index.php#paquetes'],
-    ['id' => 'destinos', 'label' => 'Destinos', 'href' => 'index.php#destinos'],
-    ['id' => 'experiencias', 'label' => 'Experiencias', 'href' => 'explorar.php'],
     ['id' => 'contacto', 'label' => 'Contacto', 'href' => 'index.php#contacto'],
 ];
 ?>
