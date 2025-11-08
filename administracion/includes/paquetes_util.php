@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Aplicacion\BaseDatos\Conexion;
 
+require_once __DIR__ . '/slug_util.php';
+
 function paquetesCargarDestinos(array $predeterminados, array &$errores): array
 {
     $destinos = [];
@@ -161,6 +163,15 @@ function paquetesNormalizarPaquete(array $paquete): array
         'video_destacado_url' => trim((string) ($paquete['video_destacado_url'] ?? $paquete['video_destacado'] ?? '')),
         'actualizado_en' => $paquete['actualizado_en'] ?? null,
     ];
+
+    $slugFuente = trim((string) ($paquete['slug'] ?? ''));
+    if ($slugFuente === '') {
+        $slugFuente = $resultado['nombre'] !== ''
+            ? $resultado['nombre']
+            : (string) $resultado['id'];
+    }
+
+    $resultado['slug'] = adminGenerarSlug($slugFuente);
 
     if (array_key_exists('es_predeterminado', $paquete)) {
         $resultado['es_predeterminado'] = (bool) $paquete['es_predeterminado'];

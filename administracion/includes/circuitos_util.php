@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Aplicacion\BaseDatos\Conexion;
 
+require_once __DIR__ . '/slug_util.php';
+
 function cargarDestinosDisponibles(array $predeterminados, array &$errores): array
 {
     $destinos = [];
@@ -122,6 +124,15 @@ function normalizarCircuito(array $circuito, array $destinos): array
         'estado' => $estado,
         'actualizado_en' => $circuito['actualizado_en'] ?? null,
     ];
+
+    $slugFuente = trim((string) ($circuito['slug'] ?? ''));
+    if ($slugFuente === '') {
+        $slugFuente = $resultado['nombre'] !== ''
+            ? $resultado['nombre']
+            : (string) $resultado['id'];
+    }
+
+    $resultado['slug'] = adminGenerarSlug($slugFuente);
 
     if (array_key_exists('es_predeterminado', $circuito)) {
         $resultado['es_predeterminado'] = (bool) $circuito['es_predeterminado'];

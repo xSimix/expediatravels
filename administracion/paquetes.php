@@ -194,7 +194,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <div class="admin-table__actions">
                                         <a
                                             class="admin-chip"
-                                            href="../web/paquete.php?id=<?= urlencode((string) $paquete['id']); ?>"
+                                            href="../web/paquete.php?slug=<?= urlencode((string) ($paquete['slug'] ?? '')); ?>"
                                             target="_blank"
                                             rel="noopener"
                                         >Ver</a>
