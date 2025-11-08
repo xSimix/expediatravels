@@ -141,6 +141,7 @@
         <link rel="icon" href="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" />
     <?php endif; ?>
     <script src="scripts/modal-autenticacion.js" defer></script>
+    <script src="scripts/scroll-enhancements.js" defer></script>
 </head>
 <body class="page">
 
@@ -889,6 +890,13 @@
             </section>
         </div>
     </div>
+
+    <button class="scroll-to-top" type="button" aria-label="Volver al inicio" data-scroll-top hidden>
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 5.5a1 1 0 0 1 .78.37l6 7a1 1 0 0 1-1.56 1.26L12 7.89l-5.22 6.24a1 1 0 0 1-1.56-1.26l6-7A1 1 0 0 1 12 5.5Z" fill="currentColor" />
+            <path d="M12 11a1 1 0 0 1 .78.37l3 3.5a1 1 0 0 1-1.56 1.26L12 13.89l-2.22 2.24a1 1 0 0 1-1.56-1.26l3-3.5A1 1 0 0 1 12 11Z" fill="currentColor" opacity="0.65" />
+        </svg>
+    </button>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
