@@ -130,6 +130,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $medios = $repositorio->listar();
+$totalMedios = count($medios);
 
 $paginaActiva = 'medios';
 $tituloPagina = 'Medios — Panel de Control';
@@ -309,7 +310,7 @@ function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
         <section class="media-panel media-library" aria-live="polite">
             <div class="media-library__toolbar">
                 <div class="media-library__summary">
-                    <span class="media-meta">Mostrando <strong id="count"><?= count($medios); ?></strong> elementos</span>
+                    <span class="media-meta">Mostrando <strong id="pageRange">0</strong> de <strong id="totalCount"><?= $totalMedios; ?></strong> elementos</span>
                 </div>
                 <div class="media-library__summary">
                     <button class="media-btn ghost" id="clearFilters" type="button">Limpiar filtros</button>
@@ -325,7 +326,7 @@ function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
                         $creditos = (string) ($medio['creditos'] ?? '');
                         $tipoMime = (string) ($medio['tipo_mime'] ?? '');
                         $rutaRelativa = (string) $medio['ruta'];
-                        $rutaCompleta = '../' . ltrim($rutaRelativa, '/');
+                        $rutaPublica = '/' . ltrim($rutaRelativa, '/');
                         $dimensiones = formatearDimensiones($medio['ancho'], $medio['alto']);
                         $tamanoHumano = formatearTamano((int) $medio['tamano_bytes']);
                         $fechaCreacion = formatearFecha($medio['creado_en'] ?? null);
@@ -340,7 +341,7 @@ function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
                         data-alt="<?= htmlspecialchars($textoAlternativo, ENT_QUOTES, 'UTF-8'); ?>"
                         data-desc="<?= htmlspecialchars($descripcion, ENT_QUOTES, 'UTF-8'); ?>"
                         data-credits="<?= htmlspecialchars($creditos, ENT_QUOTES, 'UTF-8'); ?>"
-                        data-src="<?= htmlspecialchars($rutaCompleta, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-src="<?= htmlspecialchars($rutaPublica, ENT_QUOTES, 'UTF-8'); ?>"
                         data-kind="<?= htmlspecialchars($tipoEtiqueta, ENT_QUOTES, 'UTF-8'); ?>"
                         data-created="<?= (int) $marcaTiempo; ?>"
                         data-created-label="<?= htmlspecialchars($fechaCreacion, ENT_QUOTES, 'UTF-8'); ?>"
@@ -349,7 +350,7 @@ function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
                         data-mime="<?= htmlspecialchars($tipoMime, ENT_QUOTES, 'UTF-8'); ?>"
                         data-search="<?= htmlspecialchars($cadenaBusqueda, ENT_QUOTES, 'UTF-8'); ?>">
                         <div class="media-card__thumb">
-                            <img src="<?= htmlspecialchars($rutaCompleta, ENT_QUOTES, 'UTF-8'); ?>" alt="<?= htmlspecialchars($textoAlternativo !== '' ? $textoAlternativo : $titulo, ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" />
+                            <img src="<?= htmlspecialchars($rutaPublica, ENT_QUOTES, 'UTF-8'); ?>" alt="<?= htmlspecialchars($textoAlternativo !== '' ? $textoAlternativo : $titulo, ENT_QUOTES, 'UTF-8'); ?>" loading="lazy" />
                             <span class="media-badge"><?= strtoupper(htmlspecialchars($tipoEtiqueta, ENT_QUOTES, 'UTF-8')); ?></span>
                         </div>
                         <div class="media-card__body">
@@ -372,6 +373,7 @@ function obtenerMarcaTiempoUnix(?string $marcaTiempo): int
                 <?php endforeach; ?>
             </div>
             <div id="empty" class="media-empty"<?= empty($medios) ? '' : ' style="display:none"'; ?>>La biblioteca está vacía. ¡Sube tu primer medio!</div>
+            <nav id="pagination" class="media-pagination" aria-label="Paginación"></nav>
         </section>
     </div>
 
