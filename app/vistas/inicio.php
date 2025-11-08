@@ -420,7 +420,7 @@
                 $activeRegion = $regionNames[0] ?? null;
             ?>
             <div class="destinations-showcase__container">
-                <h1>Featured Destinations</h1>
+                <h1>Nuestros Destinos</h1>
                 <div class="tabs" id="destination-tabs">
                     <?php foreach ($regionNames as $index => $region): ?>
                         <button type="button" class="tab<?= $index === 0 ? ' active' : ''; ?>" data-region="<?= htmlspecialchars($region); ?>">
@@ -623,7 +623,7 @@
             </div>
         </section>
 
-        <section class="section section--metrics">
+        <!--<section class="section section--metrics">
             <div class="metrics">
                 <div class="metric">
                     <strong><?= htmlspecialchars((string) ($metrics['destinos'] ?? 0)); ?>+</strong>
@@ -642,9 +642,9 @@
                     <span>satisfacción promedio</span>
                 </div>
             </div>
-        </section>
+        </section>-->
 
-        <section class="section section--pillars">
+        <!--<section class="section section--pillars">
             <div class="pillars">
                 <?php foreach ($travelPillars as $pillar): ?>
                     <article class="pillar">
@@ -653,9 +653,9 @@
                     </article>
                 <?php endforeach; ?>
             </div>
-        </section>
+        </section>-->
 
-        <section class="section section--testimonials">
+        <!--<section class="section section--testimonials">
             <div class="section__header">
                 <h2>Lo que dicen los viajeros</h2>
                 <p>Historias reales de quienes ya descubrieron la magia de la Selva Central con nosotros.</p>
@@ -676,9 +676,9 @@
                     </article>
                 <?php endforeach; ?>
             </div>
-        </section>
+        </section>-->
 
-        <section class="section section--cta" id="contacto">
+     <section class="section section--cta" id="contacto">
             <div class="cta">
                 <div class="cta__copy">
                     <h2>¿Listo para tu próximo viaje?</h2>
@@ -690,7 +690,7 @@
                     <a class="button button--primary" href="#contacto">Solicitar información</a>
                 <?php endif; ?>
             </div>
-            <div class="contact-cards">
+            <!--<div class="contact-cards">
                 <?php if (!empty($contactPhones)): ?>
                     <article class="contact-card">
                         <h3 class="contact-card__title">Teléfonos</h3>
@@ -765,7 +765,7 @@
                         </ul>
                     </article>
                 <?php endif; ?>
-            </div>
+            </div>-->
         </section>
     </main>
 

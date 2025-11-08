@@ -948,6 +948,7 @@ a:hover {
 .page > main {
     width: min(100%, var(--page-max-width));
     margin-inline: auto;
+    margin-bottom: 50px;
 }
 
 .hero {
