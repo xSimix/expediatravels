@@ -420,7 +420,7 @@
                 $activeRegion = $regionNames[0] ?? null;
             ?>
             <div class="destinations-showcase__container">
-                <h1>Destinos</h1>
+                <h1>Featured Destinations</h1>
                 <div class="tabs" id="destination-tabs">
                     <?php foreach ($regionNames as $index => $region): ?>
                         <button type="button" class="tab<?= $index === 0 ? ' active' : ''; ?>" data-region="<?= htmlspecialchars($region); ?>">
@@ -434,12 +434,9 @@
                             <?php
                                 $cardImage = isset($item['img']) ? ($resolveMediaPath)($item['img']) : null;
                                 $cardHref = $item['href'] ?? null;
-                                if ($cardHref === null || trim((string) $cardHref) === '') {
-                                    continue;
-                                }
                             ?>
                             <article class="card" role="article">
-                                <a class="card__link" href="<?= htmlspecialchars($cardHref, ENT_QUOTES); ?>">
+                                <a class="card__link" href="<?= htmlspecialchars($cardHref ?? '#', ENT_QUOTES); ?>">
                                     <?php if (!empty($cardImage)): ?>
                                         <img class="media" src="<?= htmlspecialchars($cardImage); ?>" alt="<?= htmlspecialchars($item['title']); ?>" />
                                     <?php endif; ?>
