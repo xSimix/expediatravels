@@ -4,13 +4,13 @@ namespace Aplicacion\Controladores;
 
 use Aplicacion\Vistas\Vista;
 
-class ControladorPaquetes
+class ControladorDestinos
 {
     public function index(): void
     {
-        $view = new Vista('paquete');
+        $view = new Vista('destino');
         $view->render([
-            'title' => 'Paquetes — Expediatravels',
+            'title' => 'Destinos — Expediatravels',
         ]);
     }
 }

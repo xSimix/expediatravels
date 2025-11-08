@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Controladores\ControladorPaquetes;
+use Aplicacion\Controladores\ControladorDestinos;
 
-$controlador = new ControladorPaquetes();
+$controlador = new ControladorDestinos();
 $controlador->index();
