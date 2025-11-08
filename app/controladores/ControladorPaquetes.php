@@ -6,11 +6,11 @@ use Aplicacion\Vistas\Vista;
 
 class ControladorPaquetes
 {
-    public function index(): void
+    public function show(): void
     {
         $view = new Vista('paquete');
         $view->render([
-            'title' => 'Paquetes — Expediatravels',
+            'title' => 'Detalle del tour — Expediatravels',
         ]);
     }
 }
