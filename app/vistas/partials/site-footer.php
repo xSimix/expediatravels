@@ -88,23 +88,21 @@ $locationLines = array_values(array_filter([
                 <?php endif; ?>
             </ul>
         </section>
-        <nav class="site-footer__nav" aria-label="Enlaces principales del sitio">
-            <div class="site-footer__nav-group">
-                <h4>Explora</h4>
-                <ul class="site-footer__nav-list">
-                    <li><a href="index.php#paquetes">Paquetes</a></li>
-                    <li><a href="index.php#destinos">Destinos</a></li>
-                    <li><a href="explorar.php">Experiencias</a></li>
-                </ul>
-            </div>
-            <div class="site-footer__nav-group">
-                <h4>Nosotros</h4>
-                <ul class="site-footer__nav-list">
-                    <li><a href="index.php#inicio">Quiénes somos</a></li>
-                    <li><a href="#">Trabaja con nosotros</a></li>
-                    <li><a href="#">Prensa</a></li>
-                </ul>
-            </div>
+        <nav class="site-footer__nav" aria-label="Explora">
+            <h4>Explora</h4>
+            <ul class="site-footer__nav-list">
+                <li><a href="index.php#paquetes">Paquetes</a></li>
+                <li><a href="index.php#destinos">Destinos</a></li>
+                <li><a href="explorar.php">Experiencias</a></li>
+            </ul>
+        </nav>
+        <nav class="site-footer__nav" aria-label="Nosotros">
+            <h4>Nosotros</h4>
+            <ul class="site-footer__nav-list">
+                <li><a href="index.php#inicio">Quiénes somos</a></li>
+                <li><a href="#">Trabaja con nosotros</a></li>
+                <li><a href="#">Prensa</a></li>
+            </ul>
         </nav>
         <section class="site-footer__subscribe">
             <h4>Suscríbete</h4>
