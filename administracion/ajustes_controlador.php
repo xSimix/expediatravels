@@ -30,8 +30,8 @@ return (static function (): array {
             $formType = $_POST['form_type'] ?? '';
 
             if ($formType === 'site_settings') {
-                $logoPath = trim((string) ($_POST['current_site_logo'] ?? ''));
-                $faviconPath = trim((string) ($_POST['current_site_favicon'] ?? ''));
+                $logoPath = trim((string) ($_POST['site_logo'] ?? ($_POST['current_site_logo'] ?? '')));
+                $faviconPath = trim((string) ($_POST['site_favicon'] ?? ($_POST['current_site_favicon'] ?? '')));
                 $logoUpload = $_FILES['site_logo_file'] ?? null;
                 $faviconUpload = $_FILES['site_favicon_file'] ?? null;
                 $uploadFailed = false;
@@ -153,9 +153,13 @@ return (static function (): array {
                 }
             } elseif ($formType === 'add_slide') {
                 $label = trim((string) ($_POST['slide_label'] ?? ''));
+                $imagePath = trim((string) ($_POST['slide_image'] ?? ''));
                 $upload = $_FILES['slide_upload'] ?? null;
 
-                if (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+                if ($imagePath !== '') {
+                    $repository->addHeroSlide($imagePath, $label !== '' ? $label : null);
+                    $feedback = ['type' => 'success', 'message' => 'Nuevo fondo del hero agregado desde la biblioteca de medios.'];
+                } elseif (!is_array($upload) || ($upload['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
                     $feedback = ['type' => 'error', 'message' => 'Debes seleccionar una imagen para el hero.'];
                 } elseif (($upload['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK || !isset($upload['tmp_name']) || !is_uploaded_file($upload['tmp_name'])) {
                     $feedback = ['type' => 'error', 'message' => 'No se pudo subir la imagen. Inténtalo nuevamente.'];
