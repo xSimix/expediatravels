@@ -992,6 +992,7 @@ a:hover {
     background: rgba(0, 0, 0, 0.4);
     mix-blend-mode: normal;
     pointer-events: none;
+    z-index: 1;
 }
 
 .hero__slider-meta {
