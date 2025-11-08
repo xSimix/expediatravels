@@ -2,26 +2,36 @@
 
 declare(strict_types=1);
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
+use Aplicacion\BaseDatos\Conexion;
 
-function cargarDestinosDisponibles(string $archivoDestinos, array $predeterminados, array &$errores): array
+function cargarDestinosDisponibles(array $predeterminados, array &$errores): array
 {
+    $destinos = [];
+
     try {
-        $destinos = ServicioAlmacenamientoJson::leer($archivoDestinos, $predeterminados);
-    } catch (RuntimeException $exception) {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->query('SELECT id, nombre, region FROM destinos ORDER BY nombre');
+        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) ?: [] as $destino) {
+            $destinos[(int) $destino['id']] = [
+                'id' => (int) $destino['id'],
+                'nombre' => trim((string) $destino['nombre']),
+                'region' => trim((string) $destino['region']),
+            ];
+        }
+    } catch (\PDOException $exception) {
         $errores[] = 'No se pudieron cargar los destinos. Se usarán los de referencia.';
-        $destinos = $predeterminados;
     }
 
-    $resultado = [];
-    foreach ($destinos as $destino) {
-        $destino = normalizarDestinoCircuito($destino);
-        $resultado[$destino['id']] = $destino;
+    if (empty($destinos)) {
+        foreach ($predeterminados as $destino) {
+            $normalizado = normalizarDestinoCircuito($destino);
+            $destinos[$normalizado['id']] = $normalizado;
+        }
     }
 
-    ksort($resultado);
+    ksort($destinos);
 
-    return $resultado;
+    return $destinos;
 }
 
 function normalizarDestinoCircuito(array $destino): array
@@ -33,61 +43,91 @@ function normalizarDestinoCircuito(array $destino): array
     ];
 }
 
-function cargarCircuitos(string $archivo, array $predeterminados, array $destinosDisponibles, array &$errores): array
+function cargarCircuitos(array $predeterminados, array $destinosDisponibles, array &$errores): array
 {
+    $circuitos = [];
+
     try {
-        $circuitos = ServicioAlmacenamientoJson::leer($archivo, $predeterminados);
-    } catch (RuntimeException $exception) {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->query(
+            'SELECT c.*, d.nombre AS destino_nombre, d.region AS destino_region
+             FROM circuitos c
+             LEFT JOIN destinos d ON d.id = c.destino_id
+             ORDER BY c.nombre'
+        );
+        $circuitos = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    } catch (\PDOException $exception) {
         $errores[] = 'No se pudo cargar el catálogo de circuitos. Se muestran los circuitos de referencia.';
-        $circuitos = $predeterminados;
     }
 
-    $circuitos = array_map(static fn (array $circuito): array => normalizarCircuito($circuito, $destinosDisponibles), $circuitos);
+    if (!empty($circuitos)) {
+        $normalizados = array_map(static fn (array $circuito): array => normalizarCircuito($circuito, $destinosDisponibles), $circuitos);
 
-    return ordenarCircuitos($circuitos);
+        return ordenarCircuitos($normalizados);
+    }
+
+    $predeterminadosNormalizados = array_map(static function (array $circuito) use ($destinosDisponibles): array {
+        $circuito['es_predeterminado'] = true;
+        return normalizarCircuito($circuito, $destinosDisponibles);
+    }, $predeterminados);
+
+    return ordenarCircuitos($predeterminadosNormalizados);
 }
 
 function normalizarCircuito(array $circuito, array $destinos): array
 {
-    $destino = $circuito['destino'] ?? [];
-    $destinoId = isset($destino['id']) ? (int) $destino['id'] : null;
+    $destinoDatos = $circuito['destino'] ?? [];
+    $destinoId = $circuito['destino_id'] ?? $destinoDatos['id'] ?? null;
+    $destinoPersonalizado = trim((string) ($circuito['destino_personalizado'] ?? $destinoDatos['personalizado'] ?? ''));
+
+    if ($destinoId !== null) {
+        $destinoId = (int) $destinoId;
+    }
 
     if ($destinoId !== null && isset($destinos[$destinoId])) {
         $destinoNombre = $destinos[$destinoId]['nombre'];
         $destinoRegion = $destinos[$destinoId]['region'];
     } else {
-        $destinoNombre = trim((string) ($destino['nombre'] ?? ''));
-        $destinoRegion = trim((string) ($destino['region'] ?? ''));
+        $destinoNombre = trim((string) ($destinoDatos['nombre'] ?? $circuito['destino_nombre'] ?? ''));
+        $destinoRegion = trim((string) ($destinoDatos['region'] ?? $circuito['destino_region'] ?? ''));
     }
 
-    $imagenPortada = trim((string) ($circuito['imagen_portada'] ?? ''));
-    $imagenDestacada = trim((string) ($circuito['imagen_destacada'] ?? ''));
-    $videoDestacado = trim((string) ($circuito['video_destacado_url'] ?? $circuito['video_destacado'] ?? ''));
-    $galeria = array_values(array_unique(array_filter(array_map('trim', (array) ($circuito['galeria'] ?? [])), static fn (string $valor): bool => $valor !== '')));
+    $puntosInteres = prepararArrayCircuito($circuito['puntos_interes'] ?? []);
+    $servicios = prepararArrayCircuito($circuito['servicios'] ?? []);
+    $galeria = prepararArrayCircuito($circuito['galeria'] ?? []);
+    $categoria = strtolower(trim((string) ($circuito['categoria'] ?? 'naturaleza')));
+    $dificultad = strtolower(trim((string) ($circuito['dificultad'] ?? 'relajado')));
+    $estado = strtolower(trim((string) ($circuito['estado'] ?? 'borrador')));
 
-    return [
+    $resultado = [
         'id' => (int) ($circuito['id'] ?? 0),
         'nombre' => trim((string) ($circuito['nombre'] ?? '')),
         'destino' => [
             'id' => $destinoId,
             'nombre' => $destinoNombre,
-            'personalizado' => trim((string) ($destino['personalizado'] ?? '')),
+            'personalizado' => $destinoPersonalizado,
             'region' => $destinoRegion,
         ],
         'duracion' => trim((string) ($circuito['duracion'] ?? '')),
-        'categoria' => strtolower(trim((string) ($circuito['categoria'] ?? 'naturaleza'))),
-        'dificultad' => strtolower(trim((string) ($circuito['dificultad'] ?? 'relajado'))),
+        'categoria' => $categoria,
+        'dificultad' => $dificultad,
         'frecuencia' => trim((string) ($circuito['frecuencia'] ?? '')),
         'descripcion' => trim((string) ($circuito['descripcion'] ?? '')),
-        'imagen_portada' => $imagenPortada,
-        'imagen_destacada' => $imagenDestacada,
+        'imagen_portada' => trim((string) ($circuito['imagen_portada'] ?? '')),
+        'imagen_destacada' => trim((string) ($circuito['imagen_destacada'] ?? '')),
         'galeria' => $galeria,
-        'video_destacado_url' => $videoDestacado,
-        'puntos_interes' => array_values(array_filter(array_map('trim', (array) ($circuito['puntos_interes'] ?? [])), static fn (string $valor): bool => $valor !== '')),
-        'servicios' => array_values(array_filter(array_map('trim', (array) ($circuito['servicios'] ?? [])), static fn (string $valor): bool => $valor !== '')),
-        'estado' => strtolower(trim((string) ($circuito['estado'] ?? 'borrador'))),
+        'video_destacado_url' => trim((string) ($circuito['video_destacado_url'] ?? $circuito['video_destacado'] ?? '')),
+        'puntos_interes' => $puntosInteres,
+        'servicios' => $servicios,
+        'estado' => $estado,
         'actualizado_en' => $circuito['actualizado_en'] ?? null,
     ];
+
+    if (array_key_exists('es_predeterminado', $circuito)) {
+        $resultado['es_predeterminado'] = (bool) $circuito['es_predeterminado'];
+    }
+
+    return $resultado;
 }
 
 function ordenarCircuitos(array $circuitos): array
@@ -97,14 +137,173 @@ function ordenarCircuitos(array $circuitos): array
     return array_values($circuitos);
 }
 
-function obtenerSiguienteId(array $circuitos): int
+function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
 {
-    $maximo = 0;
-    foreach ($circuitos as $circuito) {
-        $maximo = max($maximo, (int) ($circuito['id'] ?? 0));
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, categoria, dificultad, frecuencia, estado, descripcion, puntos_interes, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
+             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :categoria, :dificultad, :frecuencia, :estado, :descripcion, :puntos_interes, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
+        );
+        $statement->execute([
+            ':destino_id' => $circuito['destino_id'] > 0 ? $circuito['destino_id'] : null,
+            ':destino_personalizado' => $circuito['destino_personalizado'] !== '' ? $circuito['destino_personalizado'] : null,
+            ':nombre' => $circuito['nombre'],
+            ':duracion' => $circuito['duracion'],
+            ':categoria' => $circuito['categoria'],
+            ':dificultad' => $circuito['dificultad'],
+            ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
+            ':estado' => $circuito['estado'],
+            ':descripcion' => $circuito['descripcion'] !== '' ? $circuito['descripcion'] : null,
+            ':puntos_interes' => prepararJsonListaCircuito($circuito['puntos_interes']),
+            ':servicios' => prepararJsonListaCircuito($circuito['servicios']),
+            ':imagen_portada' => $circuito['imagen_portada'] !== '' ? $circuito['imagen_portada'] : null,
+            ':imagen_destacada' => $circuito['imagen_destacada'] !== '' ? $circuito['imagen_destacada'] : null,
+            ':galeria' => prepararJsonListaCircuito($circuito['galeria']),
+            ':video' => $circuito['video_destacado_url'] !== '' ? $circuito['video_destacado_url'] : null,
+        ]);
+
+        return (int) $pdo->lastInsertId();
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo guardar el circuito en la base de datos.';
     }
 
-    return $maximo + 1;
+    return null;
+}
+
+function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$errores): bool
+{
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'UPDATE circuitos
+             SET destino_id = :destino_id,
+                 destino_personalizado = :destino_personalizado,
+                 nombre = :nombre,
+                 duracion = :duracion,
+                 categoria = :categoria,
+                 dificultad = :dificultad,
+                 frecuencia = :frecuencia,
+                 estado = :estado,
+                 descripcion = :descripcion,
+                 puntos_interes = :puntos_interes,
+                 servicios = :servicios,
+                 imagen_portada = :imagen_portada,
+                 imagen_destacada = :imagen_destacada,
+                 galeria = :galeria,
+                 video_destacado_url = :video
+             WHERE id = :id'
+        );
+        $statement->execute([
+            ':id' => $circuitoId,
+            ':destino_id' => $circuito['destino_id'] > 0 ? $circuito['destino_id'] : null,
+            ':destino_personalizado' => $circuito['destino_personalizado'] !== '' ? $circuito['destino_personalizado'] : null,
+            ':nombre' => $circuito['nombre'],
+            ':duracion' => $circuito['duracion'],
+            ':categoria' => $circuito['categoria'],
+            ':dificultad' => $circuito['dificultad'],
+            ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
+            ':estado' => $circuito['estado'],
+            ':descripcion' => $circuito['descripcion'] !== '' ? $circuito['descripcion'] : null,
+            ':puntos_interes' => prepararJsonListaCircuito($circuito['puntos_interes']),
+            ':servicios' => prepararJsonListaCircuito($circuito['servicios']),
+            ':imagen_portada' => $circuito['imagen_portada'] !== '' ? $circuito['imagen_portada'] : null,
+            ':imagen_destacada' => $circuito['imagen_destacada'] !== '' ? $circuito['imagen_destacada'] : null,
+            ':galeria' => prepararJsonListaCircuito($circuito['galeria']),
+            ':video' => $circuito['video_destacado_url'] !== '' ? $circuito['video_destacado_url'] : null,
+        ]);
+
+        return $statement->rowCount() > 0;
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo actualizar el circuito en la base de datos.';
+    }
+
+    return false;
+}
+
+function eliminarCircuitoCatalogo(int $circuitoId, array &$errores): bool
+{
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare('DELETE FROM circuitos WHERE id = :id');
+        $statement->execute([':id' => $circuitoId]);
+
+        return $statement->rowCount() > 0;
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo eliminar el circuito en la base de datos.';
+    }
+
+    return false;
+}
+
+function obtenerCircuitoPorId(int $circuitoId, array $destinosDisponibles, array $predeterminados, array &$errores): ?array
+{
+    if ($circuitoId <= 0) {
+        return null;
+    }
+
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'SELECT c.*, d.nombre AS destino_nombre, d.region AS destino_region
+             FROM circuitos c
+             LEFT JOIN destinos d ON d.id = c.destino_id
+             WHERE c.id = :id'
+        );
+        $statement->execute([':id' => $circuitoId]);
+        $circuito = $statement->fetch(\PDO::FETCH_ASSOC);
+        if ($circuito !== false) {
+            $normalizado = normalizarCircuito($circuito, $destinosDisponibles);
+            $normalizado['es_predeterminado'] = false;
+
+            return $normalizado;
+        }
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo obtener el circuito desde la base de datos.';
+    }
+
+    foreach ($predeterminados as $predeterminado) {
+        if ((int) ($predeterminado['id'] ?? 0) === $circuitoId) {
+            $predeterminado['es_predeterminado'] = true;
+
+            return normalizarCircuito($predeterminado, $destinosDisponibles);
+        }
+    }
+
+    return null;
+}
+
+function prepararArrayCircuito($valor): array
+{
+    if (is_string($valor)) {
+        $decodificado = json_decode($valor, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodificado)) {
+            $valor = $decodificado;
+        }
+    }
+
+    if (!is_array($valor)) {
+        $valor = [];
+    }
+
+    $resultado = [];
+    foreach ($valor as $item) {
+        $texto = trim((string) $item);
+        if ($texto !== '') {
+            $resultado[] = $texto;
+        }
+    }
+
+    return array_values(array_unique($resultado));
+}
+
+function prepararJsonListaCircuito(array $valores): ?string
+{
+    if (empty($valores)) {
+        return null;
+    }
+
+    return json_encode(array_values($valores), JSON_UNESCAPED_UNICODE);
 }
 
 if (!function_exists('convertirListado')) {
@@ -182,4 +381,3 @@ if (!function_exists('formatearMarcaTiempo')) {
         }
     }
 }
-

@@ -39,23 +39,81 @@ CREATE TABLE destinos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(120) NOT NULL,
     descripcion TEXT,
+    tagline VARCHAR(180) DEFAULT NULL,
     lat DECIMAL(10, 7),
     lon DECIMAL(10, 7),
     imagen VARCHAR(255),
-    region VARCHAR(120)
+    imagen_destacada VARCHAR(255) DEFAULT NULL,
+    region VARCHAR(120),
+    galeria JSON DEFAULT NULL,
+    video_destacado_url VARCHAR(255) DEFAULT NULL,
+    tags JSON DEFAULT NULL,
+    estado ENUM('activo', 'oculto', 'borrador') NOT NULL DEFAULT 'activo',
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE circuitos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    destino_id INT DEFAULT NULL,
+    destino_personalizado VARCHAR(150) DEFAULT NULL,
+    nombre VARCHAR(150) NOT NULL,
+    duracion VARCHAR(80) NOT NULL,
+    categoria ENUM('naturaleza', 'cultural', 'aventura', 'gastronomico', 'bienestar') NOT NULL DEFAULT 'naturaleza',
+    dificultad ENUM('relajado', 'moderado', 'intenso') NOT NULL DEFAULT 'relajado',
+    frecuencia VARCHAR(120) DEFAULT NULL,
+    estado ENUM('borrador', 'activo', 'inactivo') NOT NULL DEFAULT 'borrador',
+    descripcion TEXT,
+    puntos_interes JSON DEFAULT NULL,
+    servicios JSON DEFAULT NULL,
+    imagen_portada VARCHAR(255) DEFAULT NULL,
+    imagen_destacada VARCHAR(255) DEFAULT NULL,
+    galeria JSON DEFAULT NULL,
+    video_destacado_url VARCHAR(255) DEFAULT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (destino_id) REFERENCES destinos(id) ON DELETE SET NULL
 );
 
 CREATE TABLE paquetes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    destino_id INT NOT NULL,
+    destino_id INT DEFAULT NULL,
     nombre VARCHAR(150) NOT NULL,
     resumen TEXT,
     itinerario MEDIUMTEXT,
-    duracion VARCHAR(50),
-    precio DECIMAL(10, 2) NOT NULL,
-    estado ENUM('borrador', 'publicado') DEFAULT 'borrador',
+    duracion VARCHAR(80),
+    precio DECIMAL(10, 2) DEFAULT NULL,
+    moneda CHAR(3) NOT NULL DEFAULT 'PEN',
+    estado ENUM('borrador', 'publicado', 'agotado', 'inactivo') DEFAULT 'borrador',
+    imagen_portada VARCHAR(255) DEFAULT NULL,
+    imagen_destacada VARCHAR(255) DEFAULT NULL,
+    galeria JSON DEFAULT NULL,
+    video_destacado_url VARCHAR(255) DEFAULT NULL,
+    beneficios JSON DEFAULT NULL,
+    incluye JSON DEFAULT NULL,
+    no_incluye JSON DEFAULT NULL,
+    salidas JSON DEFAULT NULL,
+    cupos_min INT DEFAULT NULL,
+    cupos_max INT DEFAULT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (destino_id) REFERENCES destinos(id)
+);
+
+CREATE TABLE paquete_destinos (
+    paquete_id INT NOT NULL,
+    destino_id INT NOT NULL,
+    PRIMARY KEY (paquete_id, destino_id),
+    FOREIGN KEY (paquete_id) REFERENCES paquetes(id) ON DELETE CASCADE,
+    FOREIGN KEY (destino_id) REFERENCES destinos(id) ON DELETE CASCADE
+);
+
+CREATE TABLE paquete_circuitos (
+    paquete_id INT NOT NULL,
+    circuito_id INT NOT NULL,
+    PRIMARY KEY (paquete_id, circuito_id),
+    FOREIGN KEY (paquete_id) REFERENCES paquetes(id) ON DELETE CASCADE,
+    FOREIGN KEY (circuito_id) REFERENCES circuitos(id) ON DELETE CASCADE
 );
 
 CREATE TABLE reservas (

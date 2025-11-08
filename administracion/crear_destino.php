@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/destinos_util.php';
 
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
 $destinosPredeterminados = obtenerDestinosPredeterminados();
 $errores = [];
 $mensajeExito = null;
-
-$destinos = cargarDestinosCatalogo($archivoDestinos, $destinosPredeterminados, $errores);
 
 $datos = [
     'nombre' => '',
@@ -58,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errores)) {
         $nuevoDestino = [
-            'id' => obtenerSiguienteId($destinos),
             'nombre' => $datos['nombre'],
             'region' => $datos['region'],
             'descripcion' => $datos['descripcion'],
@@ -66,24 +60,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'latitud' => $latitud,
             'longitud' => $longitud,
             'imagen' => $datos['imagen'],
-            'imagen_portada' => $datos['imagen'],
             'imagen_destacada' => $datos['imagen_destacada'],
             'galeria' => $datos['galeria'],
             'video_destacado_url' => $datos['video_destacado_url'],
             'tags' => $etiquetas,
             'estado' => $datos['estado'],
-            'actualizado_en' => date('c'),
         ];
 
-        $destinos[] = normalizarDestino($nuevoDestino);
-        $destinos = ordenarDestinos($destinos);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoDestinos, $destinos);
+        $identificador = crearDestinoCatalogo($nuevoDestino, $errores);
+        if ($identificador !== null) {
             header('Location: destinos.php?creado=1');
             exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'El destino se agregó, pero no se pudo guardar en almacenamiento.';
         }
     }
 }

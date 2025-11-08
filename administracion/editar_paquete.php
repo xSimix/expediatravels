@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/paquetes_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
-$archivoCircuitos = __DIR__ . '/../almacenamiento/circuitos.json';
-$archivoPaquetes = __DIR__ . '/../almacenamiento/paquetes.json';
 
 $errores = [];
 $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_predeterminados.php';
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
 $paquetesPredeterminados = require __DIR__ . '/../app/configuracion/paquetes_predeterminados.php';
 
-$destinosDisponibles = paquetesCargarDestinos($archivoDestinos, $destinosPredeterminados, $errores);
-$circuitosDisponibles = paquetesCargarCircuitos($archivoCircuitos, $circuitosPredeterminados, $destinosDisponibles, $errores);
-$paquetes = paquetesCargarPaquetes($archivoPaquetes, $paquetesPredeterminados, $errores);
+$destinosDisponibles = paquetesCargarDestinos($destinosPredeterminados, $errores);
+$circuitosDisponibles = paquetesCargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
+$paquetes = paquetesCargarPaquetes($paquetesPredeterminados, $errores);
 
 $estadosPermitidos = [
     'publicado' => 'Publicado',
@@ -38,13 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $paqueteId = isset($_POST['paquete_id']) ? (int) $_POST['paquete_id'] : $paqueteId;
 }
 
-$paqueteSeleccionado = null;
-foreach ($paquetes as $paquete) {
-    if ($paquete['id'] === $paqueteId) {
-        $paqueteSeleccionado = $paquete;
-        break;
-    }
-}
+$paqueteSeleccionado = paquetesObtenerPorId($paqueteId, $paquetesPredeterminados, $errores);
 
 if ($paqueteSeleccionado === null) {
     http_response_code(404);
@@ -160,41 +148,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $salidas = convertirListado($datos['salidas']);
 
     if (empty($errores)) {
-        foreach ($paquetes as &$paquete) {
-            if ($paquete['id'] === $paqueteId) {
-                $paquete['nombre'] = $datos['nombre'];
-                $paquete['estado'] = $datos['estado'];
-                $paquete['duracion'] = $datos['duracion'];
-                $paquete['moneda'] = $datos['moneda'];
-                $paquete['precio_desde'] = $precioDesde;
-                $paquete['descripcion_breve'] = $datos['descripcion_breve'];
-                $paquete['descripcion_detallada'] = $datos['descripcion_detallada'];
-                $paquete['imagen_portada'] = $datos['imagen_portada'];
-                $paquete['imagen_destacada'] = $datos['imagen_destacada'];
-                $paquete['galeria'] = $datos['galeria'];
-                $paquete['video_destacado_url'] = $datos['video_destacado_url'];
-                $paquete['beneficios'] = $beneficios;
-                $paquete['incluye'] = $incluye;
-                $paquete['no_incluye'] = $noIncluye;
-                $paquete['salidas'] = $salidas;
-                $paquete['cupos_min'] = $cuposMin;
-                $paquete['cupos_max'] = $cuposMax;
-                $paquete['destinos'] = $datos['destinos'];
-                $paquete['circuitos'] = $datos['circuitos'];
-                $paquete['actualizado_en'] = date('c');
-                break;
+        $paqueteActualizado = [
+            'nombre' => $datos['nombre'],
+            'estado' => $datos['estado'],
+            'duracion' => $datos['duracion'],
+            'precio_desde' => $precioDesde,
+            'moneda' => $datos['moneda'],
+            'descripcion_breve' => $datos['descripcion_breve'],
+            'descripcion_detallada' => $datos['descripcion_detallada'],
+            'imagen_portada' => $datos['imagen_portada'],
+            'imagen_destacada' => $datos['imagen_destacada'],
+            'galeria' => $datos['galeria'],
+            'video_destacado_url' => $datos['video_destacado_url'],
+            'beneficios' => $beneficios,
+            'incluye' => $incluye,
+            'no_incluye' => $noIncluye,
+            'salidas' => $salidas,
+            'cupos_min' => $cuposMin,
+            'cupos_max' => $cuposMax,
+            'destinos' => $datos['destinos'],
+            'circuitos' => $datos['circuitos'],
+        ];
+
+        $esPredeterminado = (bool) ($paqueteSeleccionado['es_predeterminado'] ?? false);
+
+        if ($esPredeterminado) {
+            $nuevoId = paquetesCrearPaquete($paqueteActualizado, $errores);
+            if ($nuevoId !== null) {
+                header('Location: paquetes.php?actualizado=1');
+                exit;
             }
-        }
-        unset($paquete);
-
-        $paquetes = paquetesOrdenarPaquetes($paquetes);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoPaquetes, $paquetes);
-            header('Location: paquetes.php?actualizado=1');
-            exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'Los cambios se aplicaron, pero no se pudieron guardar.';
+        } else {
+            $actualizado = paquetesActualizarPaquete($paqueteId, $paqueteActualizado, $errores);
+            if ($actualizado) {
+                header('Location: paquetes.php?actualizado=1');
+                exit;
+            }
         }
     }
 }

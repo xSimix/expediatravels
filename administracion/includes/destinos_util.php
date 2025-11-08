@@ -2,23 +2,39 @@
 
 declare(strict_types=1);
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
+use Aplicacion\BaseDatos\Conexion;
 
 /**
  * @return array<int, array<string, mixed>>
  */
-function cargarDestinosCatalogo(string $archivo, array $predeterminados, array &$errores): array
+function cargarDestinosCatalogo(array $predeterminados, array &$errores): array
 {
+    $destinos = [];
+
     try {
-        $destinos = ServicioAlmacenamientoJson::leer($archivo, $predeterminados);
-    } catch (RuntimeException $exception) {
-        $errores[] = 'No se pudo cargar el catálogo desde almacenamiento. Se muestran los destinos de referencia.';
-        $destinos = $predeterminados;
+        $pdo = Conexion::obtener();
+        $statement = $pdo->query(
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
+             FROM destinos
+             ORDER BY nombre'
+        );
+        $destinos = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo conectar con la base de datos. Se muestran los destinos de referencia.';
     }
 
-    $destinos = array_map('normalizarDestino', $destinos);
+    if (!empty($destinos)) {
+        $normalizados = array_map(static fn (array $destino): array => normalizarDestino($destino), $destinos);
 
-    return ordenarDestinos($destinos);
+        return ordenarDestinos($normalizados);
+    }
+
+    $destinosPredeterminados = array_map(static function (array $destino): array {
+        $destino['es_predeterminado'] = true;
+        return normalizarDestino($destino);
+    }, $predeterminados);
+
+    return ordenarDestinos($destinosPredeterminados);
 }
 
 function obtenerDestinosPredeterminados(): array
@@ -28,15 +44,29 @@ function obtenerDestinosPredeterminados(): array
 
 function normalizarDestino(array $destino): array
 {
-    $latitud = isset($destino['latitud']) && is_numeric((string) $destino['latitud']) ? (float) $destino['latitud'] : null;
-    $longitud = isset($destino['longitud']) && is_numeric((string) $destino['longitud']) ? (float) $destino['longitud'] : null;
+    $latitud = null;
+    foreach (['latitud', 'lat'] as $campoLat) {
+        if (isset($destino[$campoLat]) && is_numeric((string) $destino[$campoLat])) {
+            $latitud = (float) $destino[$campoLat];
+            break;
+        }
+    }
+
+    $longitud = null;
+    foreach (['longitud', 'lon'] as $campoLon) {
+        if (isset($destino[$campoLon]) && is_numeric((string) $destino[$campoLon])) {
+            $longitud = (float) $destino[$campoLon];
+            break;
+        }
+    }
 
     $imagenPortada = trim((string) ($destino['imagen_portada'] ?? $destino['imagen'] ?? ''));
     $imagenDestacada = trim((string) ($destino['imagen_destacada'] ?? ''));
     $videoDestacado = trim((string) ($destino['video_destacado_url'] ?? $destino['video_destacado'] ?? ''));
-    $galeria = array_values(array_unique(array_filter(array_map('trim', (array) ($destino['galeria'] ?? [])), static fn (string $valor): bool => $valor !== '')));
+    $galeria = prepararArrayDesdeEntrada($destino['galeria'] ?? []);
+    $tags = prepararArrayDesdeEntrada($destino['tags'] ?? []);
 
-    return [
+    $resultado = [
         'id' => (int) ($destino['id'] ?? 0),
         'nombre' => trim((string) ($destino['nombre'] ?? '')),
         'region' => trim((string) ($destino['region'] ?? '')),
@@ -49,10 +79,16 @@ function normalizarDestino(array $destino): array
         'imagen_destacada' => $imagenDestacada,
         'galeria' => $galeria,
         'video_destacado_url' => $videoDestacado,
-        'tags' => array_values(array_filter(array_map('trim', (array) ($destino['tags'] ?? [])), static fn (string $valor): bool => $valor !== '')),
+        'tags' => $tags,
         'estado' => normalizarEstado($destino['estado'] ?? 'activo'),
         'actualizado_en' => $destino['actualizado_en'] ?? null,
     ];
+
+    if (array_key_exists('es_predeterminado', $destino)) {
+        $resultado['es_predeterminado'] = (bool) $destino['es_predeterminado'];
+    }
+
+    return $resultado;
 }
 
 function ordenarDestinos(array $destinos): array
@@ -60,6 +96,165 @@ function ordenarDestinos(array $destinos): array
     usort($destinos, static fn (array $a, array $b): int => strcmp(mb_strtolower($a['nombre'], 'UTF-8'), mb_strtolower($b['nombre'], 'UTF-8')));
 
     return array_values($destinos);
+}
+
+function crearDestinoCatalogo(array $destino, array &$errores): ?int
+{
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'INSERT INTO destinos (nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado)
+             VALUES (:nombre, :descripcion, :tagline, :lat, :lon, :imagen, :imagen_destacada, :region, :galeria, :video, :tags, :estado)'
+        );
+        $statement->execute([
+            ':nombre' => $destino['nombre'],
+            ':descripcion' => $destino['descripcion'],
+            ':tagline' => $destino['tagline'],
+            ':lat' => $destino['latitud'],
+            ':lon' => $destino['longitud'],
+            ':imagen' => $destino['imagen'] !== '' ? $destino['imagen'] : null,
+            ':imagen_destacada' => $destino['imagen_destacada'] !== '' ? $destino['imagen_destacada'] : null,
+            ':region' => $destino['region'],
+            ':galeria' => prepararJsonLista($destino['galeria']),
+            ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
+            ':tags' => prepararJsonLista($destino['tags']),
+            ':estado' => $destino['estado'],
+        ]);
+
+        return (int) $pdo->lastInsertId();
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo guardar el destino en la base de datos.';
+    }
+
+    return null;
+}
+
+function actualizarDestinoCatalogo(int $destinoId, array $destino, array &$errores): bool
+{
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'UPDATE destinos
+             SET nombre = :nombre,
+                 descripcion = :descripcion,
+                 tagline = :tagline,
+                 lat = :lat,
+                 lon = :lon,
+                 imagen = :imagen,
+                 imagen_destacada = :imagen_destacada,
+                 region = :region,
+                 galeria = :galeria,
+                 video_destacado_url = :video,
+                 tags = :tags,
+                 estado = :estado
+             WHERE id = :id'
+        );
+        $statement->execute([
+            ':id' => $destinoId,
+            ':nombre' => $destino['nombre'],
+            ':descripcion' => $destino['descripcion'],
+            ':tagline' => $destino['tagline'],
+            ':lat' => $destino['latitud'],
+            ':lon' => $destino['longitud'],
+            ':imagen' => $destino['imagen'] !== '' ? $destino['imagen'] : null,
+            ':imagen_destacada' => $destino['imagen_destacada'] !== '' ? $destino['imagen_destacada'] : null,
+            ':region' => $destino['region'],
+            ':galeria' => prepararJsonLista($destino['galeria']),
+            ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
+            ':tags' => prepararJsonLista($destino['tags']),
+            ':estado' => $destino['estado'],
+        ]);
+
+        return $statement->rowCount() > 0;
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo actualizar el destino en la base de datos.';
+    }
+
+    return false;
+}
+
+function eliminarDestinoCatalogo(int $destinoId, array &$errores): bool
+{
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare('DELETE FROM destinos WHERE id = :id');
+        $statement->execute([':id' => $destinoId]);
+
+        return $statement->rowCount() > 0;
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo eliminar el destino en la base de datos.';
+    }
+
+    return false;
+}
+
+function obtenerDestinoPorId(int $destinoId, array $predeterminados, array &$errores): ?array
+{
+    if ($destinoId <= 0) {
+        return null;
+    }
+
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->prepare(
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
+             FROM destinos
+             WHERE id = :id'
+        );
+        $statement->execute([':id' => $destinoId]);
+        $destino = $statement->fetch(\PDO::FETCH_ASSOC);
+        if ($destino !== false) {
+            $normalizado = normalizarDestino($destino);
+            $normalizado['es_predeterminado'] = false;
+
+            return $normalizado;
+        }
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo obtener el destino desde la base de datos.';
+    }
+
+    foreach ($predeterminados as $predeterminado) {
+        if ((int) ($predeterminado['id'] ?? 0) === $destinoId) {
+            $predeterminado['es_predeterminado'] = true;
+
+            return normalizarDestino($predeterminado);
+        }
+    }
+
+    return null;
+}
+
+function prepararArrayDesdeEntrada($valor): array
+{
+    if (is_string($valor)) {
+        $decodificado = json_decode($valor, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodificado)) {
+            $valor = $decodificado;
+        }
+    }
+
+    if (!is_array($valor)) {
+        $valor = [];
+    }
+
+    $resultado = [];
+    foreach ($valor as $item) {
+        $texto = trim((string) $item);
+        if ($texto !== '') {
+            $resultado[] = $texto;
+        }
+    }
+
+    return array_values(array_unique($resultado));
+}
+
+function prepararJsonLista(array $valores): ?string
+{
+    if (empty($valores)) {
+        return null;
+    }
+
+    return json_encode(array_values($valores), JSON_UNESCAPED_UNICODE);
 }
 
 function convertirEtiquetas($valor): array
@@ -132,4 +327,3 @@ if (!function_exists('formatearMarcaTiempo')) {
         }
     }
 }
-

@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/destinos_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
 
 $errores = [];
 $mensajeExito = null;
 $mensajeInfo = null;
 
 $destinosPredeterminados = obtenerDestinosPredeterminados();
-$destinos = cargarDestinosCatalogo($archivoDestinos, $destinosPredeterminados, $errores);
+$destinos = cargarDestinosCatalogo($destinosPredeterminados, $errores);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $accion = $_POST['action'] ?? '';
@@ -25,22 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($identificador <= 0) {
             $errores[] = 'No se pudo identificar el destino a eliminar.';
         } else {
-            $cantidadInicial = count($destinos);
-            $destinos = array_values(array_filter(
-                $destinos,
-                static fn (array $destino): bool => $destino['id'] !== $identificador
-            ));
-
-            if ($cantidadInicial === count($destinos)) {
+            $eliminado = eliminarDestinoCatalogo($identificador, $errores);
+            if ($eliminado) {
+                $mensajeExito = 'Destino eliminado correctamente.';
+            } elseif (empty($errores)) {
                 $errores[] = 'El destino indicado ya no existe.';
-            } else {
-                try {
-                    ServicioAlmacenamientoJson::guardar($archivoDestinos, $destinos);
-                    $mensajeExito = 'Destino eliminado correctamente.';
-                } catch (RuntimeException $exception) {
-                    $errores[] = 'El destino se eliminó, pero no se pudo actualizar el almacenamiento.';
-                }
             }
+
+            $destinos = cargarDestinosCatalogo($destinosPredeterminados, $errores);
         }
     } else {
         $errores[] = 'Acción no reconocida.';
@@ -55,8 +43,17 @@ if (isset($_GET['actualizado'])) {
     $mensajeExito = 'Destino actualizado correctamente.';
 }
 
-if ($mensajeExito === null && empty($errores) && !is_file($archivoDestinos)) {
-    $mensajeInfo = 'Actualmente se utilizan los destinos de ejemplo. Agrega el primero para crear tu propio catálogo.';
+if ($mensajeExito === null && empty($errores)) {
+    $usaPredeterminados = !empty($destinos)
+        && array_reduce(
+            $destinos,
+            static fn (bool $carry, array $destino): bool => $carry && ($destino['es_predeterminado'] ?? false),
+            true
+        );
+
+    if ($usaPredeterminados) {
+        $mensajeInfo = 'Actualmente se utilizan los destinos de referencia. Agrega el primero para crear tu propio catálogo.';
+    }
 }
 
 $paginaActiva = 'destinos_registrados';

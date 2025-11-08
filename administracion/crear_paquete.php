@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use Aplicacion\Servicios\ServicioAlmacenamientoJson;
-
 require_once __DIR__ . '/includes/paquetes_util.php';
-
-$archivoDestinos = __DIR__ . '/../almacenamiento/destinos.json';
-$archivoCircuitos = __DIR__ . '/../almacenamiento/circuitos.json';
-$archivoPaquetes = __DIR__ . '/../almacenamiento/paquetes.json';
 
 $errores = [];
 $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_predeterminados.php';
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
 $paquetesPredeterminados = require __DIR__ . '/../app/configuracion/paquetes_predeterminados.php';
 
-$destinosDisponibles = paquetesCargarDestinos($archivoDestinos, $destinosPredeterminados, $errores);
-$circuitosDisponibles = paquetesCargarCircuitos($archivoCircuitos, $circuitosPredeterminados, $destinosDisponibles, $errores);
-$paquetes = paquetesCargarPaquetes($archivoPaquetes, $paquetesPredeterminados, $errores);
+$destinosDisponibles = paquetesCargarDestinos($destinosPredeterminados, $errores);
+$circuitosDisponibles = paquetesCargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
+$paquetes = paquetesCargarPaquetes($paquetesPredeterminados, $errores);
 
 $estadosPermitidos = [
     'publicado' => 'Publicado',
@@ -123,7 +117,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errores)) {
         $paquete = [
-            'id' => obtenerSiguienteId($paquetes),
             'nombre' => $datos['nombre'],
             'estado' => $datos['estado'],
             'duracion' => $datos['duracion'],
@@ -143,18 +136,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'cupos_max' => $cuposMax,
             'destinos' => $datos['destinos'],
             'circuitos' => $datos['circuitos'],
-            'actualizado_en' => date('c'),
         ];
 
-        $paquetes[] = paquetesNormalizarPaquete($paquete);
-        $paquetes = paquetesOrdenarPaquetes($paquetes);
-
-        try {
-            ServicioAlmacenamientoJson::guardar($archivoPaquetes, $paquetes);
+        $nuevoId = paquetesCrearPaquete($paquete, $errores);
+        if ($nuevoId !== null) {
             header('Location: paquetes.php?creado=1');
             exit;
-        } catch (RuntimeException $exception) {
-            $errores[] = 'El paquete se creó, pero no se pudo guardar en almacenamiento.';
         }
     }
 }
