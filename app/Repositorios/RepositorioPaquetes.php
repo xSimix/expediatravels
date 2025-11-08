@@ -16,7 +16,9 @@ class RepositorioPaquetes
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, p.itinerario, d.nombre AS destino, d.region, d.imagen
+                'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, p.moneda, p.itinerario,
+                        COALESCE(p.imagen_destacada, p.imagen_portada) AS imagen,
+                        d.nombre AS destino, d.region
                  FROM paquetes p
                  INNER JOIN destinos d ON d.id = p.destino_id
                  WHERE p.estado = "publicado"
@@ -42,7 +44,9 @@ class RepositorioPaquetes
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
-                'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, d.nombre AS destino, d.region
+                'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, p.moneda,
+                        COALESCE(p.imagen_destacada, p.imagen_portada) AS imagen,
+                        d.nombre AS destino, d.region
                  FROM paquetes p
                  INNER JOIN destinos d ON d.id = p.destino_id
                  WHERE p.estado = "publicado"
@@ -80,18 +84,38 @@ class RepositorioPaquetes
 
     private function hydratePackage(array $package): array
     {
+        $name = (string) ($package['nombre'] ?? '');
+        $price = $package['precio'] ?? null;
+        if (is_string($price)) {
+            $price = str_replace(',', '', $price);
+        }
+
         return [
             'id' => (int) ($package['id'] ?? 0),
-            'nombre' => $package['nombre'] ?? '',
+            'nombre' => $name,
             'resumen' => $package['resumen'] ?? '',
             'duracion' => $package['duracion'] ?? '',
-            'precio' => (float) ($package['precio'] ?? 0),
+            'precio' => is_numeric($price) ? (float) $price : null,
+            'moneda' => strtoupper((string) ($package['moneda'] ?? 'PEN')),
             'destino' => $package['destino'] ?? '',
             'region' => $package['region'] ?? '',
             'itinerario' => $package['itinerario'] ?? null,
             'imagen' => $package['imagen'] ?? null,
-            'slug' => $package['slug'] ?? null,
+            'slug' => $package['slug'] ?? $this->generateSlug($name),
         ];
+    }
+
+    private function generateSlug(string $value): string
+    {
+        $normalized = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+        $normalized = strtolower(trim((string) $normalized));
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', $normalized);
+        if (!is_string($normalized)) {
+            $normalized = '';
+        }
+        $normalized = trim($normalized, '-');
+
+        return $normalized !== '' ? $normalized : 'paquete';
     }
 
     private function fallbackPackages(): array
