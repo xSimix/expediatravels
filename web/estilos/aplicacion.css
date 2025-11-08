@@ -988,7 +988,7 @@ a:hover {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(30, 64, 175, 0.55));
+    background: rgba(0, 0, 0, 0.4);
     mix-blend-mode: normal;
     pointer-events: none;
 }
