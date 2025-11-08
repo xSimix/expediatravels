@@ -47,6 +47,88 @@
     $isAdmin = $isAuthenticated && ($currentUser['rol'] ?? '') === 'administrador';
     $displayName = $isAuthenticated ? trim((string) ($currentUser['nombre'] ?? '')) : '';
     $accountDeleted = !empty($accountDeleted);
+
+    $featuredPackages = $featuredPackages ?? [];
+    $signatureExperiences = $signatureExperiences ?? [];
+    $featuredCircuits = $featuredCircuits ?? $signatureExperiences;
+    if (empty($featuredCircuits) && !empty($signatureExperiences)) {
+        $featuredCircuits = $signatureExperiences;
+    }
+
+    $slugify = static function (string $value): string {
+        $normalized = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+        $normalized = strtolower(trim((string) $normalized));
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', $normalized);
+        if (!is_string($normalized)) {
+            $normalized = '';
+        }
+
+        return $normalized !== '' ? trim($normalized, '-') : 'experiencia';
+    };
+
+    $resolveMediaPath = static function (?string $path) {
+        if (!is_string($path)) {
+            return null;
+        }
+
+        $trimmed = trim($path);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        if (filter_var($trimmed, FILTER_VALIDATE_URL)) {
+            return $trimmed;
+        }
+
+        $normalized = ltrim($trimmed, '/');
+        if (is_file(__DIR__ . '/../../web/' . $normalized)) {
+            return $normalized;
+        }
+
+        if (is_file(__DIR__ . '/../../' . $normalized)) {
+            return '../' . $normalized;
+        }
+
+        if (is_file(__DIR__ . '/../../web/recursos/' . $normalized)) {
+            return 'recursos/' . $normalized;
+        }
+
+        return null;
+    };
+
+    $parsePriceFromString = static function ($value): ?float {
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $filtered = filter_var($value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION | FILTER_FLAG_ALLOW_THOUSAND);
+        if ($filtered === null || $filtered === false || $filtered === '') {
+            return null;
+        }
+
+        return (float) str_replace(',', '', (string) $filtered);
+    };
+
+    $currencySymbols = [
+        'PEN' => 'S/',
+        'USD' => '$',
+        'EUR' => '€',
+    ];
+
+    $formatCurrency = static function (?float $amount, string $currency) use ($currencySymbols): ?string {
+        if ($amount === null) {
+            return null;
+        }
+
+        $code = strtoupper($currency);
+        $symbol = $currencySymbols[$code] ?? ($currencySymbols['PEN'] ?? 'S/');
+
+        return sprintf('%s %s', $symbol, number_format($amount, 2));
+    };
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -288,13 +370,12 @@
                         continue;
                     }
 
-                    $imagePath = null;
-                    $imageFile = trim((string) ($destination['imagen'] ?? ''));
-                    if ($imageFile !== '' && is_file(__DIR__ . '/../../web/recursos/' . $imageFile)) {
-                        $imagePath = 'recursos/' . $imageFile;
-                    } elseif ($imageFile !== '' && isset($fallbackImageMap[$imageFile])) {
-                        $imagePath = $fallbackImageMap[$imageFile];
-                    } elseif (isset($fallbackImageMap[$destinationName])) {
+                    $imageSource = $destination['imagen_destacada'] ?? $destination['imagen'] ?? null;
+                    $imagePath = ($resolveMediaPath)($imageSource);
+                    if ($imagePath === null && is_string($imageSource) && isset($fallbackImageMap[$imageSource])) {
+                        $imagePath = $fallbackImageMap[$imageSource];
+                    }
+                    if ($imagePath === null && isset($fallbackImageMap[$destinationName])) {
                         $imagePath = $fallbackImageMap[$destinationName];
                     }
 
@@ -309,10 +390,14 @@
                     $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
                     $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
 
+                    $destinationSlug = $destination['slug'] ?? $slugify($destinationName);
+
                     $destinationsByRegion[$region][] = [
                         'title' => $destinationName,
                         'meta' => sprintf('%s tours | %s salidas · %s viajeros.', $formattedTours, $formattedDepartures, $formattedGuests),
                         'img' => $imagePath,
+                        'slug' => $destinationSlug,
+                        'href' => 'destino.php?slug=' . urlencode($destinationSlug),
                     ];
                 }
 
@@ -324,6 +409,7 @@
                                 'title' => (string) $item['title'],
                                 'meta' => (string) $item['meta'],
                                 'img' => $item['img'] ? (string) $item['img'] : null,
+                                'href' => isset($item['href']) ? (string) $item['href'] : null,
                             ];
                         },
                         $items
@@ -345,24 +431,30 @@
                 <section class="cards" id="destination-cards" aria-live="polite">
                     <?php if ($activeRegion): ?>
                         <?php foreach ($destinationsPayload[$activeRegion] as $item): ?>
+                            <?php
+                                $cardImage = isset($item['img']) ? ($resolveMediaPath)($item['img']) : null;
+                                $cardHref = $item['href'] ?? null;
+                            ?>
                             <article class="card" role="article">
-                                <?php if (!empty($item['img'])): ?>
-                                    <img class="media" src="<?= htmlspecialchars($item['img']); ?>" alt="<?= htmlspecialchars($item['title']); ?>" />
-                                <?php endif; ?>
-                                <div class="body">
-                                    <div class="title">
-                                        <span class="row">
-                                            <svg class="pin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 22s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5" />
-                                                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
-                                            </svg>
-                                        </span>
-                                        <?= htmlspecialchars($item['title']); ?>
-                                    </div>
-                                    <?php if (!empty($item['meta'])): ?>
-                                        <div class="meta"><?= htmlspecialchars($item['meta']); ?></div>
+                                <a class="card__link" href="<?= htmlspecialchars($cardHref ?? '#', ENT_QUOTES); ?>">
+                                    <?php if (!empty($cardImage)): ?>
+                                        <img class="media" src="<?= htmlspecialchars($cardImage); ?>" alt="<?= htmlspecialchars($item['title']); ?>" />
                                     <?php endif; ?>
-                                </div>
+                                    <div class="body">
+                                        <div class="title">
+                                            <span class="row">
+                                                <svg class="pin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M12 22s7-6.1 7-12a7 7 0 10-14 0c0 5.9 7 12 7 12z" stroke="currentColor" stroke-width="1.5" />
+                                                    <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5" />
+                                                </svg>
+                                            </span>
+                                            <?= htmlspecialchars($item['title']); ?>
+                                        </div>
+                                        <?php if (!empty($item['meta'])): ?>
+                                            <div class="meta"><?= htmlspecialchars($item['meta']); ?></div>
+                                        <?php endif; ?>
+                                    </div>
+                                </a>
                             </article>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -387,26 +479,41 @@
             <div class="cards-grid">
                 <?php foreach ($featuredPackages as $package): ?>
                     <?php
-                        $originalPrice = $package['precio'] * 1.18;
-                        $statusLabel = $package['precio'] <= 110 ? 'Oferta especial' : 'Salida garantizada';
-                        $tagLabel = $package['destino'] . ' • ' . $package['region'];
+                        $packageName = (string) ($package['nombre'] ?? '');
+                        $packageSlug = $package['slug'] ?? $slugify($packageName);
+                        $packageHref = 'paquete.php?slug=' . urlencode($packageSlug);
+                        $packageCurrency = $package['moneda'] ?? 'PEN';
+                        $packagePrice = $parsePriceFromString($package['precio'] ?? null);
+                        $originalPrice = $packagePrice !== null ? $packagePrice * 1.18 : null;
+                        $statusLabel = ($packagePrice !== null && $packagePrice <= 110) ? 'Oferta especial' : 'Salida garantizada';
+                        $tagParts = array_filter([
+                            trim((string) ($package['destino'] ?? '')),
+                            trim((string) ($package['region'] ?? '')),
+                        ]);
+                        $tagLabel = implode(' • ', $tagParts);
                         $imagePath = null;
-                        if (!empty($package['imagen']) && is_file(__DIR__ . '/../../web/recursos/' . $package['imagen'])) {
-                            $imagePath = 'recursos/' . $package['imagen'];
+                        if (!empty($package['imagen'])) {
+                            $imagePath = ($resolveMediaPath)($package['imagen']);
                         }
+                        $priceText = $formatCurrency($packagePrice, $packageCurrency);
+                        $originalPriceText = $formatCurrency($originalPrice, $packageCurrency);
                     ?>
                     <article class="travel-card" data-theme="package">
                         <div class="travel-card__media"<?= $imagePath ? " style=\"background-image: url('" . htmlspecialchars($imagePath) . "');\"" : ''; ?> aria-hidden="true"></div>
                         <div class="travel-card__pill-group">
                             <span class="travel-card__status"><?= htmlspecialchars($statusLabel); ?></span>
-                            <span class="travel-card__tag"><?= htmlspecialchars($tagLabel); ?></span>
+                            <?php if ($tagLabel !== ''): ?>
+                                <span class="travel-card__tag"><?= htmlspecialchars($tagLabel); ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="travel-card__content">
                             <header class="travel-card__header">
                                 <span class="travel-card__category">Tour <?= htmlspecialchars($package['destino']); ?></span>
                                 <span class="travel-card__badge">Circuito destacado</span>
                             </header>
-                            <h3 class="travel-card__title"><?= htmlspecialchars($package['nombre']); ?></h3>
+                            <h3 class="travel-card__title">
+                                <a href="<?= htmlspecialchars($packageHref, ENT_QUOTES); ?>"><?= htmlspecialchars($packageName); ?></a>
+                            </h3>
                             <p class="travel-card__excerpt"><?= htmlspecialchars($package['resumen']); ?></p>
                             <dl class="travel-card__meta">
                                 <div>
@@ -425,11 +532,17 @@
                         </div>
                         <footer class="travel-card__footer">
                             <div class="travel-card__pricing">
-                                <span class="travel-card__price">S/ <?= number_format((float) $package['precio'], 2); ?></span>
-                                <span class="travel-card__price-original">S/ <?= number_format((float) $originalPrice, 2); ?></span>
-                                <span class="travel-card__price-note">por persona</span>
+                                <?php if ($priceText !== null): ?>
+                                    <span class="travel-card__price"><?= htmlspecialchars($priceText); ?></span>
+                                    <?php if ($originalPriceText !== null): ?>
+                                        <span class="travel-card__price-original"><?= htmlspecialchars($originalPriceText); ?></span>
+                                    <?php endif; ?>
+                                    <span class="travel-card__price-note">por persona</span>
+                                <?php else: ?>
+                                    <span class="travel-card__price">Pronto</span>
+                                <?php endif; ?>
                             </div>
-                            <a class="travel-card__cta" href="paquete.php?id=<?= urlencode((string) $package['id']); ?>">RESERVAR</a>
+                            <a class="travel-card__cta" href="<?= htmlspecialchars($packageHref, ENT_QUOTES); ?>">VER PAQUETE</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>
@@ -463,52 +576,68 @@
                 <p>Aventuras que combinan cultura viva, sostenibilidad y confort en cada detalle.</p>
             </div>
             <div class="cards-grid cards-grid--experiences">
-                <?php foreach ($signatureExperiences as $experience): ?>
+                <?php foreach ($featuredCircuits as $experience): ?>
                     <?php
-                        $experiencePrice = $experience['precio'] ?? 0;
-                        $experienceOriginal = $experiencePrice ? $experiencePrice * 1.12 : null;
+                        $circuitName = (string) ($experience['nombre'] ?? ($experience['title'] ?? 'Circuito destacado'));
+                        $circuitSlug = $experience['slug'] ?? $slugify($circuitName);
+                        $circuitHref = 'circuito.php?slug=' . urlencode($circuitSlug);
+                        $circuitCurrency = $experience['moneda'] ?? 'PEN';
+                        $circuitPrice = $parsePriceFromString($experience['precio'] ?? $experience['priceFrom'] ?? null);
+                        if ($circuitPrice === null && isset($experience['priceFrom'])) {
+                            $circuitPrice = $parsePriceFromString($experience['priceFrom']);
+                        }
+                        $circuitOriginal = $circuitPrice !== null ? $circuitPrice * 1.12 : null;
+                        $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
+                        $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
+                        $circuitSummary = $experience['resumen'] ?? ($experience['summary'] ?? 'Pronto sumaremos más detalles.');
                     ?>
                     <article class="travel-card" data-theme="experience">
-                        <div class="travel-card__media" aria-hidden="true"></div>
+                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true"></div>
                         <div class="travel-card__pill-group">
                             <span class="travel-card__status">Nuevo recorrido</span>
-                            <span class="travel-card__tag"><?= htmlspecialchars($experience['destino']); ?></span>
+                            <?php if (trim((string) $circuitDestination) !== ''): ?>
+                                <span class="travel-card__tag"><?= htmlspecialchars($circuitDestination); ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="travel-card__content">
                             <header class="travel-card__header">
                                 <span class="travel-card__category">Experiencia guiada</span>
                                 <span class="travel-card__badge">Circuito exclusivo</span>
                             </header>
-                            <h3 class="travel-card__title"><?= htmlspecialchars($experience['nombre']); ?></h3>
-                            <p class="travel-card__excerpt"><?= htmlspecialchars($experience['resumen']); ?></p>
+                            <h3 class="travel-card__title">
+                                <a href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"><?= htmlspecialchars($circuitName); ?></a>
+                            </h3>
+                            <p class="travel-card__excerpt"><?= htmlspecialchars($circuitSummary); ?></p>
                             <dl class="travel-card__meta">
                                 <div>
                                     <dt>Duración</dt>
-                                    <dd><?= htmlspecialchars($experience['duracion']); ?></dd>
+                                    <dd><?= htmlspecialchars($experience['duracion'] ?? ($experience['duration'] ?? 'Pronto')); ?></dd>
                                 </div>
                                 <div>
                                     <dt>Destino</dt>
-                                    <dd><?= htmlspecialchars($experience['destino']); ?></dd>
+                                    <dd><?= htmlspecialchars($circuitDestination); ?></dd>
                                 </div>
                                 <div>
                                     <dt>Experiencia</dt>
-                                    <dd>Grupos reducidos</dd>
+                                    <dd><?= htmlspecialchars($experience['dificultad'] ?? 'Grupos reducidos'); ?></dd>
                                 </div>
                             </dl>
                         </div>
                         <footer class="travel-card__footer">
                             <div class="travel-card__pricing">
-                                <?php if ($experiencePrice): ?>
-                                    <span class="travel-card__price">S/ <?= number_format((float) $experiencePrice, 2); ?></span>
-                                    <?php if ($experienceOriginal): ?>
-                                        <span class="travel-card__price-original">S/ <?= number_format((float) $experienceOriginal, 2); ?></span>
+                                <?php $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency); ?>
+                                <?php $circuitOriginalText = $formatCurrency($circuitOriginal, $circuitCurrency); ?>
+                                <?php if ($circuitPriceText !== null): ?>
+                                    <span class="travel-card__price"><?= htmlspecialchars($circuitPriceText); ?></span>
+                                    <?php if ($circuitOriginalText !== null): ?>
+                                        <span class="travel-card__price-original"><?= htmlspecialchars($circuitOriginalText); ?></span>
                                     <?php endif; ?>
+                                    <span class="travel-card__price-note">por persona</span>
                                 <?php else: ?>
                                     <span class="travel-card__price">Pronto</span>
                                 <?php endif; ?>
-                                <span class="travel-card__price-note">por persona</span>
                             </div>
-                            <a class="travel-card__cta" href="#contacto">RESERVAR</a>
+                            <a class="travel-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">VER CIRCUITO</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>

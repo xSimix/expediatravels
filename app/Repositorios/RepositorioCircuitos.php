@@ -2,24 +2,114 @@
 
 namespace Aplicacion\Repositorios;
 
+use Aplicacion\BaseDatos\Conexion;
+use PDO;
+use PDOException;
+
 class RepositorioCircuitos
 {
+    public function getFeatured(int $limit = 6): array
+    {
+        try {
+            $pdo = Conexion::obtener();
+            $statement = $pdo->prepare(
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia,
+                        COALESCE(c.destino_personalizado, d.nombre) AS destino,
+                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
+                 FROM circuitos c
+                 LEFT JOIN destinos d ON d.id = c.destino_id
+                 WHERE c.estado = "activo"
+                 ORDER BY c.creado_en DESC, c.id DESC
+                 LIMIT :limit'
+            );
+            $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
+            $statement->execute();
+
+            $circuits = $statement->fetchAll();
+            if ($circuits) {
+                return array_map(fn (array $circuit) => $this->hydrateCircuit($circuit), $circuits);
+            }
+        } catch (PDOException $exception) {
+            // Silencia problemas de conexión para usar datos de respaldo.
+        }
+
+        return array_map(
+            fn (array $circuit) => $this->hydrateCircuit($circuit),
+            array_slice($this->fallbackCircuits(), 0, $limit)
+        );
+    }
+
     public function findBySlug(string $slug): ?array
     {
         $slug = strtolower(trim($slug));
-        $circuits = $this->fallbackCircuits();
 
         if ($slug === '') {
-            return $circuits[0] ?? null;
+            $fallback = $this->fallbackCircuits();
+
+            return $fallback[0] ?? null;
         }
 
-        foreach ($circuits as $circuit) {
+        try {
+            $pdo = Conexion::obtener();
+            $statement = $pdo->query(
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia,
+                        COALESCE(c.destino_personalizado, d.nombre) AS destino,
+                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
+                 FROM circuitos c
+                 LEFT JOIN destinos d ON d.id = c.destino_id
+                 WHERE c.estado = "activo"'
+            );
+
+            if ($statement !== false) {
+                while ($row = $statement->fetch()) {
+                    $circuit = $this->hydrateCircuit($row);
+                    if (($circuit['slug'] ?? '') === $slug) {
+                        return $circuit;
+                    }
+                }
+            }
+        } catch (PDOException $exception) {
+            // Recurre a los datos de respaldo cuando la base de datos no está disponible.
+        }
+
+        foreach ($this->fallbackCircuits() as $circuit) {
             if (($circuit['slug'] ?? '') === $slug) {
-                return $circuit;
+                return $this->hydrateCircuit($circuit);
             }
         }
 
-        return $circuits[0] ?? null;
+        $fallback = $this->fallbackCircuits();
+
+        return $fallback[0] ?? null;
+    }
+
+    private function hydrateCircuit(array $circuit): array
+    {
+        $name = $circuit['nombre'] ?? $circuit['title'] ?? '';
+        $summary = $circuit['resumen'] ?? $circuit['summary'] ?? $circuit['descripcion'] ?? '';
+        $duration = $circuit['duracion'] ?? $circuit['duration'] ?? '';
+        $destination = $circuit['destino'] ?? $circuit['location'] ?? $circuit['region'] ?? '';
+        $price = $circuit['precio'] ?? $circuit['precio_desde'] ?? null;
+
+        if (is_string($price)) {
+            $price = filter_var($price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION | FILTER_FLAG_ALLOW_THOUSAND);
+            if ($price !== null && $price !== false) {
+                $price = str_replace(',', '', (string) $price);
+            }
+        }
+
+        return array_merge($circuit, [
+            'id' => (int) ($circuit['id'] ?? 0),
+            'slug' => $circuit['slug'] ?? $this->generateSlug((string) $name),
+            'nombre' => (string) $name,
+            'title' => $circuit['title'] ?? (string) $name,
+            'resumen' => (string) $summary,
+            'duracion' => (string) $duration,
+            'destino' => (string) $destination,
+            'precio' => is_numeric($price) ? (float) $price : null,
+            'moneda' => strtoupper((string) ($circuit['moneda'] ?? 'PEN')),
+            'imagen' => $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? $circuit['heroImage'] ?? null,
+        ]);
     }
 
     private function fallbackCircuits(): array
@@ -292,5 +382,18 @@ class RepositorioCircuitos
                 ],
             ],
         ];
+    }
+
+    private function generateSlug(string $value): string
+    {
+        $normalized = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+        $normalized = strtolower(trim((string) $normalized));
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', $normalized);
+        if (!is_string($normalized)) {
+            $normalized = '';
+        }
+        $normalized = trim($normalized, '-');
+
+        return $normalized !== '' ? $normalized : 'circuito';
     }
 }

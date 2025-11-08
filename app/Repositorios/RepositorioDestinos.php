@@ -15,7 +15,13 @@ class RepositorioDestinos
     {
         try {
             $pdo = Conexion::obtener();
-            $statement = $pdo->prepare('SELECT id, nombre, descripcion, region, imagen FROM destinos ORDER BY id LIMIT :limit');
+            $statement = $pdo->prepare(
+                'SELECT id, nombre, descripcion, region, imagen, imagen_destacada, tagline
+                 FROM destinos
+                 WHERE estado = "activo"
+                 ORDER BY id
+                 LIMIT :limit'
+            );
             $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
             $statement->execute();
 
@@ -50,13 +56,17 @@ class RepositorioDestinos
 
     private function hydrateDestination(array $destination): array
     {
+        $name = (string) ($destination['nombre'] ?? '');
+
         return [
             'id' => (int) ($destination['id'] ?? 0),
-            'nombre' => $destination['nombre'] ?? '',
+            'nombre' => $name,
             'descripcion' => $destination['descripcion'] ?? '',
             'region' => $destination['region'] ?? '',
             'imagen' => $destination['imagen'] ?? null,
-            'slug' => $destination['slug'] ?? null,
+            'imagen_destacada' => $destination['imagen_destacada'] ?? null,
+            'tagline' => $destination['tagline'] ?? null,
+            'slug' => $destination['slug'] ?? $this->generateSlug($name),
         ];
     }
 
@@ -426,5 +436,18 @@ class RepositorioDestinos
                 ],
             ],
         ];
+    }
+
+    private function generateSlug(string $value): string
+    {
+        $normalized = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
+        $normalized = strtolower(trim((string) $normalized));
+        $normalized = preg_replace('/[^a-z0-9]+/i', '-', $normalized);
+        if (!is_string($normalized)) {
+            $normalized = '';
+        }
+        $normalized = trim($normalized, '-');
+
+        return $normalized !== '' ? $normalized : 'destino';
     }
 }

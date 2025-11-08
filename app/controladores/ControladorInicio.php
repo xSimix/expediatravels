@@ -3,6 +3,7 @@
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
+use Aplicacion\Repositorios\RepositorioCircuitos;
 use Aplicacion\Repositorios\RepositorioDestinos;
 use Aplicacion\Repositorios\RepositorioIdeas;
 use Aplicacion\Repositorios\RepositorioPaquetes;
@@ -18,6 +19,7 @@ class ControladorInicio
         $destinationRepository = new RepositorioDestinos();
         $reviewRepository = new RepositorioResenas();
         $insightRepository = new RepositorioIdeas();
+        $circuitRepository = new RepositorioCircuitos();
         $authService = new ServicioAutenticacion();
 
         $settingsRepository = new RepositorioConfiguracionSitio();
@@ -42,6 +44,7 @@ class ControladorInicio
             'siteSettings' => $siteSettings,
             'featuredPackages' => $packagesRepository->getFeatured(),
             'signatureExperiences' => $packagesRepository->getSignatureExperiences(),
+            'featuredCircuits' => $circuitRepository->getFeatured(),
             'destinations' => $destinationRepository->getHighlights(),
             'testimonials' => $reviewRepository->getLatest(),
             'metrics' => $insightRepository->getMetrics(),
