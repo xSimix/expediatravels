@@ -42,10 +42,17 @@
   const searchInput = document.getElementById('q');
   const typeSelect = document.getElementById('type');
   const sortSelect = document.getElementById('sort');
-  const countEl = document.getElementById('count');
+  const pageRangeEl = document.getElementById('pageRange');
+  const totalCountEl = document.getElementById('totalCount');
   const emptyState = document.getElementById('empty');
   const clearFiltersBtn = document.getElementById('clearFilters');
   const bulkSelectBtn = document.getElementById('bulkSelectBtn');
+  const pagination = document.getElementById('pagination');
+
+  const ITEMS_PER_PAGE = 18;
+  let orderedCards = [];
+  let filteredCards = [];
+  let currentPage = 1;
 
   const modalTitle = document.getElementById('modalTitle');
   const modalPreview = document.getElementById('modalPreview');
@@ -475,36 +482,138 @@
     return copia;
   }
 
+  function updateCounts(total, startIndex, endIndex) {
+    if (totalCountEl) {
+      totalCountEl.textContent = String(total);
+    }
+    if (pageRangeEl) {
+      if (!total || !startIndex || !endIndex) {
+        pageRangeEl.textContent = '0';
+      } else if (startIndex === endIndex) {
+        pageRangeEl.textContent = String(startIndex);
+      } else {
+        pageRangeEl.textContent = `${startIndex} – ${endIndex}`;
+      }
+    }
+  }
+
+  function goToPage(page) {
+    const totalPages = Math.max(1, Math.ceil(filteredCards.length / ITEMS_PER_PAGE));
+    const target = Math.min(Math.max(page, 1), totalPages);
+    if (target === currentPage) {
+      return;
+    }
+    currentPage = target;
+    renderPage();
+  }
+
+  function createNavButton(label, page, disabled) {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'media-pagination__button';
+    button.textContent = label;
+    button.setAttribute('aria-label', label);
+    if (disabled) {
+      button.disabled = true;
+    } else {
+      button.addEventListener('click', () => goToPage(page));
+    }
+    li.appendChild(button);
+    return li;
+  }
+
+  function createPageButton(page) {
+    const li = document.createElement('li');
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'media-pagination__button';
+    button.textContent = String(page);
+    button.setAttribute('aria-label', `Página ${page}`);
+    if (page === currentPage) {
+      button.classList.add('is-active');
+      button.setAttribute('aria-current', 'page');
+      button.disabled = true;
+    } else {
+      button.addEventListener('click', () => goToPage(page));
+    }
+    li.appendChild(button);
+    return li;
+  }
+
+  function buildPagination(totalPages) {
+    if (!pagination) {
+      return;
+    }
+    pagination.innerHTML = '';
+    if (!totalPages || totalPages <= 1) {
+      pagination.style.display = 'none';
+      return;
+    }
+    pagination.style.display = 'block';
+    const list = document.createElement('ul');
+    list.className = 'media-pagination__list';
+    list.appendChild(createNavButton('Anterior', currentPage - 1, currentPage === 1));
+    for (let page = 1; page <= totalPages; page += 1) {
+      list.appendChild(createPageButton(page));
+    }
+    list.appendChild(createNavButton('Siguiente', currentPage + 1, currentPage === totalPages));
+    pagination.appendChild(list);
+  }
+
+  function renderPage() {
+    orderedCards.forEach((card) => {
+      card.style.display = 'none';
+    });
+
+    const total = filteredCards.length;
+    if (total === 0) {
+      currentPage = 1;
+      updateCounts(0, 0, 0);
+      if (emptyState) {
+        emptyState.style.display = 'block';
+      }
+      buildPagination(0);
+      return;
+    }
+
+    const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE));
+    if (currentPage > totalPages) {
+      currentPage = totalPages;
+    }
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    const pageItems = filteredCards.slice(start, start + ITEMS_PER_PAGE);
+    pageItems.forEach((card) => {
+      card.style.display = '';
+    });
+    const startIndex = pageItems.length ? start + 1 : 0;
+    const endIndex = pageItems.length ? start + pageItems.length : 0;
+    updateCounts(total, startIndex, endIndex);
+    if (emptyState) {
+      emptyState.style.display = pageItems.length ? 'none' : 'block';
+    }
+    buildPagination(totalPages);
+  }
+
   function applyFilters() {
-    const cards = Array.from(grid.querySelectorAll('.media-card'));
-    const ordenadas = sortCards(cards, sortSelect ? sortSelect.value : 'new');
+    orderedCards = Array.from(grid.querySelectorAll('.media-card'));
+    const ordenadas = sortCards(orderedCards, sortSelect ? sortSelect.value : 'new');
     ordenadas.forEach((card) => {
       grid.appendChild(card);
     });
 
     const termino = (searchInput ? searchInput.value : '').trim().toLowerCase();
     const tipo = typeSelect ? typeSelect.value : '';
-    let visibles = 0;
 
-    ordenadas.forEach((card) => {
+    filteredCards = ordenadas.filter((card) => {
       const texto = card.dataset.search || '';
       const coincideTermino = !termino || texto.includes(termino);
       const coincideTipo = !tipo || card.dataset.kind === tipo;
-      if (coincideTermino && coincideTipo) {
-        card.style.display = '';
-        visibles += 1;
-      } else {
-        card.style.display = 'none';
-      }
+      return coincideTermino && coincideTipo;
     });
 
-    if (countEl) {
-      countEl.textContent = String(visibles);
-    }
-
-    if (emptyState) {
-      emptyState.style.display = visibles ? 'none' : 'block';
-    }
+    currentPage = 1;
+    renderPage();
   }
 
   if (searchInput) {
