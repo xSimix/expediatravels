@@ -21,7 +21,7 @@ $currentUser = $currentUser ?? null;
     <?php endif; ?>
 </head>
 <body class="page page--detail">
-    <?php $activeNav = 'paquetes'; include __DIR__ . '/partials/site-header.php'; ?>
+    <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
     <?php include __DIR__ . '/partials/detail-page.php'; ?>
     <?php include __DIR__ . '/partials/site-footer.php'; ?>
     <?php include __DIR__ . '/partials/auth-modal.php'; ?>
