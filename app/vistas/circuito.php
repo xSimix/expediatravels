@@ -34,6 +34,9 @@ $related = is_array($detail['related'] ?? null) ? $detail['related'] : [];
 $services = is_array($detail['servicios'] ?? null) ? $detail['servicios'] : [];
 $gallery = is_array($detail['gallery'] ?? null) ? $detail['gallery'] : [];
 
+$reviewsSummary = is_array($reviewsSummary ?? null) ? $reviewsSummary : [];
+$reviewsListRaw = is_array($detail['reviewsList'] ?? null) ? $detail['reviewsList'] : [];
+
 $duration = $detail['duration'] ?? ($detail['duracion'] ?? '');
 $frequency = $detail['frecuencia'] ?? ($detail['proximaSalida'] ?? ($detail['proxima_salida'] ?? ''));
 $group = $detail['grupo'] ?? ($detail['grupo_maximo'] ?? '');
@@ -155,8 +158,12 @@ $locationsList = [];
 if (is_array($locationsRaw)) {
     foreach ($locationsRaw as $item) {
         if (is_string($item)) {
+            $titleLocation = trim($item);
+            if ($titleLocation === '') {
+                continue;
+            }
             $locationsList[] = [
-                'title' => $item,
+                'title' => $titleLocation,
                 'duration' => '',
                 'image' => $heroImage,
             ];
@@ -228,6 +235,8 @@ foreach ($essentials as $essential) {
 if (empty($includesList) && !empty($services)) {
     $includesList = $normalizeList($services);
 }
+$includesList = array_values(array_unique($includesList));
+$excludesList = array_values(array_unique($excludesList));
 
 $brochuresRaw = $detail['brochures'] ?? ($detail['brochure'] ?? []);
 $brochures = [];
@@ -408,23 +417,120 @@ foreach ($itinerary as $index => $day) {
     ];
 }
 
-$ctaNavPrimaryLabel = $ctaPrimaryLabel !== '' ? $ctaPrimaryLabel : 'Reservar ahora';
-$ctaNavPrimaryHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : '#reserva';
-$ctaNavSecondaryHref = '#itinerario';
-$ctaNavSecondaryLabel = 'Ver itinerario';
-
-$sidebarChecks = [];
-if (!empty($services)) {
-    $sidebarChecks = array_slice($normalizeList($services), 0, 3);
+$reviewsAverage = isset($reviewsSummary['average']) && is_numeric($reviewsSummary['average']) ? round((float) $reviewsSummary['average'], 1) : null;
+$reviewsCountSummary = isset($reviewsSummary['count']) && is_numeric($reviewsSummary['count']) ? (int) $reviewsSummary['count'] : 0;
+if ($reviewsAverage === null) {
+    $reviewsAverage = $rating;
 }
-if (empty($sidebarChecks)) {
-    $sidebarChecks = [
-        'Arma tu paquete favorito',
-        'Hoteles a tu elección',
-        'Guía local verificada',
+if ($reviewsCountSummary === 0 && $reviews !== null) {
+    $reviewsCountSummary = $reviews;
+}
+
+$reviewsList = [];
+foreach ($reviewsListRaw as $review) {
+    if (!is_array($review)) {
+        continue;
+    }
+    $nameReview = trim((string) ($review['nombre'] ?? ($review['usuario'] ?? ($review['name'] ?? ''))));
+    if ($nameReview === '') {
+        $nameReview = 'Viajero';
+    }
+    $ratingReview = $review['rating'] ?? ($review['calificacion'] ?? ($review['calificación'] ?? null));
+    if (!is_numeric($ratingReview)) {
+        $ratingReview = 5;
+    }
+    $ratingReview = max(1, min(5, (int) $ratingReview));
+    $commentReview = trim((string) ($review['comentario'] ?? ($review['comment'] ?? '')));
+    if ($commentReview === '') {
+        $commentReview = 'Sin comentarios.';
+    }
+    $createdReview = $review['creado_en'] ?? ($review['fecha'] ?? null);
+    if ($createdReview !== null && !is_string($createdReview)) {
+        $createdReview = null;
+    }
+    $reviewsList[] = [
+        'nombre' => $nameReview,
+        'rating' => $ratingReview,
+        'comentario' => $commentReview,
+        'creado_en' => $createdReview,
     ];
 }
 
+$heroSlides = [];
+if ($heroImage !== '') {
+    $heroSlides[] = ['src' => $heroImage, 'alt' => $title];
+}
+foreach ($galleryItems as $image) {
+    $heroSlides[] = $image;
+}
+$uniqueSlides = [];
+foreach ($heroSlides as $slide) {
+    $srcSlide = $slide['src'] ?? '';
+    if ($srcSlide === '') {
+        continue;
+    }
+    $uniqueSlides[$srcSlide] = [
+        'src' => $srcSlide,
+        'alt' => $slide['alt'] ?? $title,
+    ];
+}
+$heroSlides = array_values($uniqueSlides);
+if (empty($heroSlides)) {
+    $heroSlides[] = [
+        'src' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
+        'alt' => $title,
+    ];
+}
+while (count($heroSlides) < 3) {
+    $heroSlides[] = $heroSlides[count($heroSlides) % max(1, count($heroSlides))];
+}
+
+$mapMarkers = [];
+foreach ($locationsList as $loc) {
+    $markerTitle = trim((string) ($loc['title'] ?? ''));
+    if ($markerTitle === '') {
+        continue;
+    }
+    $markerImage = trim((string) ($loc['image'] ?? ''));
+    if ($markerImage === '') {
+        $markerImage = $heroImage;
+    }
+    $mapMarkers[] = [
+        'title' => $markerTitle,
+        'duration' => trim((string) ($loc['duration'] ?? '')),
+        'image' => $markerImage,
+        'mapUrl' => 'https://maps.google.com/maps?q=' . rawurlencode($markerTitle) . '&output=embed',
+    ];
+}
+if (empty($mapMarkers) && ($location !== '' || $title !== '')) {
+    $label = $location !== '' ? $location : $title;
+    $mapMarkers[] = [
+        'title' => $label,
+        'duration' => '',
+        'image' => $heroImage,
+        'mapUrl' => 'https://maps.google.com/maps?q=' . rawurlencode($label) . '&output=embed',
+    ];
+}
+$mapDefaultUrl = $mapMarkers[0]['mapUrl'] ?? 'https://maps.google.com/maps?q=' . rawurlencode($location !== '' ? $location : $title) . '&output=embed';
+
+$sidebarBenefits = !empty($services) ? array_slice($normalizeList($services), 0, 3) : [];
+if (empty($sidebarBenefits)) {
+    $sidebarBenefits = [
+        'Reservas flexibles y confirmación en menos de 24h.',
+        'Asistencia de especialistas locales durante todo el viaje.',
+        'Pagos seguros y protección de datos garantizada.',
+    ];
+}
+
+$reviewsAverageText = $reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '—';
+$reviewsCountText = number_format($reviewsCountSummary);
+
+$selectionGroups = [
+    'include' => $includesList,
+    'exclude' => $excludesList,
+];
+
+$currentUser = $currentUser ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -432,510 +538,529 @@ if (empty($sidebarChecks)) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title><?= htmlspecialchars($pageTitle); ?></title>
+    <link rel="stylesheet" href="estilos/aplicacion.css" />
+    <link rel="stylesheet" href="estilos/circuito.css" />
     <?php if ($siteFavicon): ?>
         <link rel="icon" href="<?= htmlspecialchars($siteFavicon, ENT_QUOTES); ?>" />
     <?php endif; ?>
-    <style>
-        :root{
-          --brand:#0ea5e9;
-          --brand-2:#22c55e;
-          --ink:#0f172a;
-          --muted:#64748b;
-          --bg:#f8fafc;
-          --card:#ffffff;
-          --accent:#fde68a;
-          --danger:#ef4444;
-          --ok:#10b981;
-          --shadow: 0 8px 24px rgba(2,8,23,.08);
-          --radius: 16px;
-        }
-        *{box-sizing:border-box}
-        html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial}
-        img{max-width:100%;display:block}
-        a{color:var(--brand);text-decoration:none}
-        .container{width:min(1200px,92vw);margin:auto}
-        .grid{display:grid;gap:20px}
-        .btn{display:inline-flex;align-items:center;gap:.5rem;background:var(--brand);color:#fff;padding:.85rem 1.15rem;border-radius:999px;border:0;font-weight:600;box-shadow:var(--shadow);cursor:pointer}
-        .btn.secondary{background:#fff;color:var(--brand);border:2px solid var(--brand)}
-        .badge{display:inline-flex;align-items:center;gap:.45rem;padding:.35rem .65rem;border-radius:999px;background:#e0f2fe;color:#075985;font-weight:600;font-size:.8rem}
-        .badge--price{background:#dcfce7;color:#065f46}
-        .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow)}
-        .nav{position:sticky;top:0;z-index:50;background:#ffffffcc;backdrop-filter:saturate(180%) blur(10px);border-bottom:1px solid #e5e7eb}
-        .nav .container{display:flex;align-items:center;justify-content:space-between;padding:10px 0}
-        .logo{display:flex;align-items:center;gap:.6rem;font-weight:800}
-        .logo .dot{width:10px;height:10px;border-radius:50%;background:var(--brand)}
-        .nav .actions{display:flex;gap:.6rem}
-        .hero{position:relative;padding:32px 0 10px}
-        .hero-wrap{display:grid;grid-template-columns:1.1fr .6fr;gap:24px}
-        .hero-left{display:grid;gap:18px}
-        .hero h1{margin:0;font-size:clamp(28px,4vw,42px);line-height:1.15}
-        .hero .meta{display:flex;flex-wrap:wrap;gap:10px}
-        .hero .banner{overflow:hidden;border-radius:var(--radius)}
-        .hero .banner img{height:340px;width:100%;object-fit:cover}
-        .hero .banner-placeholder{height:340px;width:100%;display:grid;place-items:center;background:linear-gradient(135deg,#e0f2fe,#bae6fd);color:#0f172ab3;font-weight:600;border-radius:var(--radius)}
-        .sidebar{position:sticky;top:84px;align-self:start}
-        .sidebox{padding:18px}
-        .sidebox h3{margin:0 0 10px}
-        .check{display:flex;align-items:flex-start;gap:.65rem;margin:.5rem 0;color:#065f46}
-        .check i{width:22px;height:22px;border-radius:50%;background:var(--ok);display:inline-grid;place-items:center;color:#fff;font-style:normal;font-size:.9rem}
-        .facts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-        .fact{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;display:grid;gap:6px}
-        .fact small{color:var(--muted)}
-        .content{display:grid;grid-template-columns:1fr .45fr;gap:26px;margin:26px 0 80px}
-        section{scroll-margin-top:92px}
-        .section{padding:18px 18px 8px}
-        .section h2{margin:6px 0 14px;font-size:1.35rem}
-        .locations{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
-        .loc{border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;background:#fff}
-        .loc img{height:120px;width:100%;object-fit:cover}
-        .loc .info{padding:10px 12px;display:flex;justify-content:space-between;align-items:center}
-        .chip{background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:999px;font-size:.75rem;font-weight:700}
-        .list{display:grid;gap:10px}
-        .item{display:flex;gap:.8rem;align-items:flex-start;background:#fff;border:1px dashed #cbd5e1;padding:12px;border-radius:12px}
-        .item i{color:#059669}
-        .accordion{display:grid;gap:10px}
-        .day{border:1px solid #e5e7eb;border-radius:12px;background:#fff;overflow:hidden}
-        .day summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
-        .day summary::-webkit-details-marker{display:none}
-        .day .body{padding:2px 16px 16px;display:grid;gap:10px}
-        .splits{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-        .kv{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:10px}
-        .kv b{display:block;margin-bottom:6px}
-        .map-box{height:340px;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;background:linear-gradient(135deg,#e0f2fe,#fef9c3)}
-        .map-box .placeholder{height:100%;display:grid;place-items:center;color:#0f172a80;font-weight:700}
-        .features{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-        .featcol{background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:14px}
-        .featcol h3{margin:0 0 8px}
-        .ul{display:grid;gap:8px}
-        .ul .ok{color:#059669}
-        .ul .no{color:var(--danger)}
-        .brochure{display:grid;gap:14px}
-        .banner{display:grid;grid-template-columns:1fr auto;align-items:center;gap:18px;background:linear-gradient(90deg,#0ea5e9,#22c55e);color:white;padding:16px;border-radius:16px}
-        .banner small{opacity:.9}
-        .banner.secondary{background:linear-gradient(90deg,#22c55e,#0ea5e9)}
-        .notes{display:grid;gap:8px;padding-left:1.1rem}
-        .gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
-        .gallery-grid img{height:160px;width:100%;object-fit:cover;border-radius:12px}
-        .related{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-        .related-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;display:grid}
-        .related-card__media img{height:150px;width:100%;object-fit:cover}
-        .related-card__body{padding:16px;display:grid;gap:8px}
-        .related-card__badge{font-size:.75rem;font-weight:700;color:#1d4ed8;background:#eff6ff;align-self:start;padding:2px 8px;border-radius:999px}
-        footer{margin:50px 0 40px;color:var(--muted);text-align:center}
-        @media (max-width: 1024px){
-          .hero-wrap{grid-template-columns:1fr}
-          .content{grid-template-columns:1fr}
-          .facts{grid-template-columns:repeat(2,1fr)}
-          .splits{grid-template-columns:repeat(2,1fr)}
-        }
-        @media (max-width: 560px){
-          .features{grid-template-columns:1fr}
-          .facts{grid-template-columns:1fr}
-          .locations{grid-template-columns:repeat(2,1fr)}
-          .hero .banner img,.hero .banner-placeholder{height:220px}
-        }
-    </style>
 </head>
-<body>
-  <!-- NAV -->
-  <nav class="nav">
-    <div class="container">
-      <div class="logo"><span class="dot"></span> <?= htmlspecialchars($siteTitle); ?> <span style="color:var(--muted);font-weight:600">/ <?= htmlspecialchars($typeLabel); ?></span></div>
-      <div class="actions">
-        <a href="<?= htmlspecialchars($ctaNavSecondaryHref); ?>" class="btn secondary"><?= htmlspecialchars($ctaNavSecondaryLabel); ?></a>
-        <a href="<?= htmlspecialchars($ctaNavPrimaryHref, ENT_QUOTES); ?>" class="btn"><?= htmlspecialchars($ctaNavPrimaryLabel); ?></a>
-      </div>
-    </div>
-  </nav>
+<body class="page page--detail page--circuit">
+    <?php $activeNav = 'circuitos'; include __DIR__ . '/partials/site-header.php'; ?>
 
-  <!-- HERO -->
-  <header class="hero container">
-    <div class="hero-wrap">
-      <div class="hero-left">
-        <h1><?= htmlspecialchars($title); ?></h1>
-        <?php if (!empty($metaBadges)): ?>
-          <div class="meta">
-            <?php foreach ($metaBadges as $badge): ?>
-              <?php $badgeClasses = 'badge' . (!empty($badge['variant']) && $badge['variant'] === 'price' ? ' badge--price' : ''); ?>
-              <span class="<?= $badgeClasses; ?>"><?= htmlspecialchars($badge['text']); ?></span>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-        <?php if ($rating !== null || $reviews !== null): ?>
-          <div style="display:flex;flex-wrap:wrap;gap:12px;color:var(--muted);font-weight:600">
-            <?php if ($rating !== null): ?>
-              <span>★ <?= htmlspecialchars(number_format($rating, 1)); ?></span>
-            <?php endif; ?>
-            <?php if ($reviews !== null): ?>
-              <span><?= htmlspecialchars((string) $reviews); ?> opiniones</span>
-            <?php endif; ?>
-          </div>
-        <?php endif; ?>
-        <?php if ($tagline !== ''): ?>
-          <p style="margin:0;color:var(--muted)"><?= htmlspecialchars($tagline); ?></p>
-        <?php endif; ?>
-        <?php if ($primarySummaryParagraph !== ''): ?>
-          <p style="margin:0;"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
-        <?php endif; ?>
-
-        <div class="banner card">
-          <?php if ($heroImage !== ''): ?>
-            <img src="<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($title); ?>" loading="lazy" />
-          <?php else: ?>
-            <div class="banner-placeholder">Imagen del circuito próximamente</div>
-          <?php endif; ?>
-        </div>
-
-        <?php if (!empty($facts)): ?>
-          <div class="facts">
-            <?php foreach ($facts as $fact): ?>
-              <div class="fact">
-                <small><?= htmlspecialchars($fact['label']); ?></small>
-                <strong><?= htmlspecialchars($fact['value']); ?></strong>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php endif; ?>
-      </div>
-
-      <aside class="sidebar">
-        <div class="sidebox card">
-          <h3>¡Personaliza tu viaje!</h3>
-          <?php foreach ($sidebarChecks as $check): ?>
-            <div class="check"><i>✓</i><div><?= htmlspecialchars($check); ?></div></div>
-          <?php endforeach; ?>
-          <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
-            <a class="btn" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
-          <?php elseif ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
-            <a class="btn" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
-          <?php else: ?>
-            <a class="btn" href="#reserva">Consulta disponibilidad</a>
-          <?php endif; ?>
-        </div>
-      </aside>
-    </div>
-  </header>
-
-  <!-- CONTENT -->
-  <main class="container content">
-    <div class="grid">
-      <?php if (!empty($locationsList)): ?>
-        <section id="lugares" class="card section">
-          <h2>Explora los lugares clave</h2>
-          <div class="locations">
-            <?php foreach ($locationsList as $loc): ?>
-              <article class="loc">
-                <?php if (!empty($loc['image'])): ?>
-                  <img src="<?= htmlspecialchars($loc['image'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($loc['title']); ?>" loading="lazy" />
+    <main class="circuit-page">
+        <section class="circuit-hero">
+            <div class="circuit-hero__gallery">
+                <div class="circuit-hero__track" data-hero-track>
+                    <?php foreach ($heroSlides as $slide): ?>
+                        <figure class="circuit-hero__slide">
+                            <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt']); ?>" loading="lazy" />
+                        </figure>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($heroSlides) > 1): ?>
+                    <button class="circuit-hero__nav circuit-hero__nav--prev" type="button" data-hero-prev aria-label="Imagen anterior">‹</button>
+                    <button class="circuit-hero__nav circuit-hero__nav--next" type="button" data-hero-next aria-label="Imagen siguiente">›</button>
                 <?php endif; ?>
-                <div class="info">
-                  <strong><?= htmlspecialchars($loc['title']); ?></strong>
-                  <?php if (!empty($loc['duration'])): ?>
-                    <span class="chip"><?= htmlspecialchars($loc['duration']); ?></span>
-                  <?php endif; ?>
-                </div>
-              </article>
-            <?php endforeach; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($highlights)): ?>
-        <section id="destacados" class="card section">
-          <h2>Momentos imperdibles del circuito</h2>
-          <div class="list">
-            <?php foreach ($highlights as $highlight):
-                $titleHighlight = trim((string) ($highlight['title'] ?? ''));
-                $descriptionHighlight = trim((string) ($highlight['description'] ?? ''));
-                if ($titleHighlight === '' || $descriptionHighlight === '') {
-                    continue;
-                }
-                $icon = trim((string) ($highlight['icon'] ?? '✔'));
-            ?>
-              <div class="item"><i><?= htmlspecialchars($icon); ?></i><div><strong><?= htmlspecialchars($titleHighlight); ?></strong> — <?= htmlspecialchars($descriptionHighlight); ?></div></div>
-            <?php endforeach; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($itineraryDays)): ?>
-        <section id="itinerario" class="card section">
-          <h2>Itinerario sugerido</h2>
-          <div class="accordion">
-            <?php foreach ($itineraryDays as $index => $day): ?>
-              <details class="day"<?= $index === 0 ? ' open' : ''; ?>>
-                <summary>
-                  <?= htmlspecialchars($day['title']); ?>
-                  <?php if ($day['schedule'] !== ''): ?>
-                    <span style="color:var(--muted);font-weight:500"><?= htmlspecialchars($day['schedule']); ?></span>
-                  <?php endif; ?>
-                </summary>
-                <div class="body">
-                  <?php if ($day['summary'] !== ''): ?>
-                    <p><?= htmlspecialchars($day['summary']); ?></p>
-                  <?php endif; ?>
-                  <?php if (!empty($day['activities'])): ?>
-                    <ul>
-                      <?php foreach ($day['activities'] as $activity): ?>
-                        <li><?= htmlspecialchars($activity); ?></li>
-                      <?php endforeach; ?>
-                    </ul>
-                  <?php endif; ?>
-                  <?php if (!empty($day['meta'])): ?>
-                    <div class="splits">
-                      <?php foreach ($day['meta'] as $meta): ?>
-                        <div class="kv"><b><?= htmlspecialchars($meta['label']); ?></b> <?= htmlspecialchars($meta['value']); ?></div>
-                      <?php endforeach; ?>
-                    </div>
-                  <?php endif; ?>
-                </div>
-              </details>
-            <?php endforeach; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <section id="mapa" class="card section">
-        <h2>Mapa del circuito</h2>
-        <div class="map-box">
-          <?php if ($mapImage !== ''): ?>
-            <img src="<?= htmlspecialchars($mapImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($mapLabel); ?>" loading="lazy" style="width:100%;height:100%;object-fit:cover" />
-          <?php else: ?>
-            <div class="placeholder">Mapa de referencia próximamente</div>
-          <?php endif; ?>
-        </div>
-      </section>
-
-      <?php if (!empty($includesList) || !empty($excludesList)): ?>
-        <section id="caracteristicas" class="section" style="padding:0;gap:0">
-          <div class="features">
-            <?php if (!empty($includesList)): ?>
-              <div class="featcol">
-                <h3>Incluye</h3>
-                <div class="ul">
-                  <?php foreach ($includesList as $item): ?>
-                    <div class="ok">✅ <?= htmlspecialchars($item); ?></div>
-                  <?php endforeach; ?>
-                </div>
-              </div>
-            <?php endif; ?>
-            <?php if (!empty($excludesList)): ?>
-              <div class="featcol">
-                <h3>No incluye</h3>
-                <div class="ul">
-                  <?php foreach ($excludesList as $item): ?>
-                    <div class="no">❌ <?= htmlspecialchars($item); ?></div>
-                  <?php endforeach; ?>
-                </div>
-              </div>
-            <?php endif; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($brochures)): ?>
-        <section id="brochure" class="card section brochure">
-          <h2>Descargar material</h2>
-          <?php foreach ($brochures as $index => $brochure): ?>
-            <?php
-              $bannerClass = 'banner' . ($index % 2 === 1 ? ' secondary' : '');
-              if (!empty($brochure['primary'])) {
-                  $bannerClass = 'banner';
-              }
-              $targetAttrs = preg_match('~^https?://~i', $brochure['href']) === 1 ? ' target="_blank" rel="noopener"' : '';
-            ?>
-            <div class="<?= $bannerClass; ?>">
-              <div>
-                <strong><?= htmlspecialchars($brochure['title']); ?></strong>
-                <?php if ($brochure['description'] !== ''): ?>
-                  <small><?= htmlspecialchars($brochure['description']); ?></small>
-                <?php endif; ?>
-              </div>
-              <a class="btn<?= $index % 2 === 1 ? ' secondary' : ''; ?>" href="<?= htmlspecialchars($brochure['href'], ENT_QUOTES); ?>"<?= $targetAttrs; ?>>Descargar</a>
             </div>
-          <?php endforeach; ?>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($notesList)): ?>
-        <section id="info" class="card section">
-          <h2>Información adicional</h2>
-          <ul class="notes">
-            <?php foreach ($notesList as $note): ?>
-              <li><?= htmlspecialchars($note); ?></li>
-            <?php endforeach; ?>
-          </ul>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($otherEssentialSections)): ?>
-        <?php foreach ($otherEssentialSections as $extraSection): ?>
-          <section class="card section">
-            <h2><?= htmlspecialchars($extraSection['title']); ?></h2>
-            <ul class="notes">
-              <?php foreach ($extraSection['items'] as $item): ?>
-                <li><?= htmlspecialchars($item); ?></li>
-              <?php endforeach; ?>
-            </ul>
-          </section>
-        <?php endforeach; ?>
-      <?php endif; ?>
-
-      <?php if (!empty($experiences)): ?>
-        <section id="experiencias" class="card section">
-          <h2>Experiencias que complementan tu viaje</h2>
-          <div class="list">
-            <?php foreach ($experiences as $experience):
-                $experienceTitle = trim((string) ($experience['title'] ?? ''));
-                $experienceDescription = trim((string) ($experience['description'] ?? ''));
-                if ($experienceTitle === '' || $experienceDescription === '') {
-                    continue;
-                }
-                $experienceIcon = trim((string) ($experience['icon'] ?? '✨'));
-                $experiencePriceRaw = $experience['price'] ?? ($experience['precio'] ?? ($experience['priceFrom'] ?? null));
-                $experienceCurrency = strtoupper((string) ($experience['currency'] ?? ($experience['moneda'] ?? 'PEN')));
-                $experiencePriceText = '';
-                if (is_numeric($experiencePriceRaw)) {
-                    $symbol = match ($experienceCurrency) {
-                        'USD' => '$',
-                        'EUR' => '€',
-                        'GBP' => '£',
-                        default => 'S/',
-                    };
-                    $experiencePriceText = sprintf('%s %s', $symbol, number_format((float) $experiencePriceRaw, 2, '.', ','));
-                } elseif (is_string($experiencePriceRaw)) {
-                    $experiencePriceText = trim($experiencePriceRaw);
-                }
-                $experiencePriceNote = '';
-                if (!empty($experience['priceNote'] ?? null)) {
-                    $experiencePriceNote = trim((string) $experience['priceNote']);
-                } elseif (!empty($experience['notaPrecio'] ?? null)) {
-                    $experiencePriceNote = trim((string) $experience['notaPrecio']);
-                }
-            ?>
-              <div class="item">
-                <i><?= htmlspecialchars($experienceIcon); ?></i>
-                <div>
-                  <strong><?= htmlspecialchars($experienceTitle); ?></strong>
-                  <p style="margin:.25rem 0 0;"><?= htmlspecialchars($experienceDescription); ?></p>
-                  <?php if ($experiencePriceText !== ''): ?>
-                    <p style="margin:.35rem 0 0;font-size:.9rem;color:var(--muted)">
-                      Tarifa referencial: <?= htmlspecialchars($experiencePriceText); ?>
-                      <?php if ($experiencePriceNote !== ''): ?>
-                        <span>· <?= htmlspecialchars($experiencePriceNote); ?></span>
-                      <?php endif; ?>
-                    </p>
-                  <?php endif; ?>
-                </div>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($galleryItems)): ?>
-        <section id="galeria" class="card section">
-          <h2>Galería del circuito</h2>
-          <div class="gallery-grid">
-            <?php foreach ($galleryItems as $image): ?>
-              <img src="<?= htmlspecialchars($image['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($image['alt']); ?>" loading="lazy" />
-            <?php endforeach; ?>
-          </div>
-        </section>
-      <?php endif; ?>
-
-      <?php if (!empty($relatedCards)): ?>
-        <section id="relacionados" class="card section">
-          <h2>También te puede interesar</h2>
-          <div class="related">
-            <?php foreach ($relatedCards as $card): ?>
-              <article class="related-card">
-                <?php if ($card['image'] !== ''): ?>
-                  <div class="related-card__media">
-                    <img src="<?= htmlspecialchars($card['image'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($card['title']); ?>" loading="lazy" />
-                  </div>
+            <div class="circuit-hero__info">
+                <?php if ($typeLabel !== ''): ?>
+                    <span class="circuit-hero__label"><?= htmlspecialchars($typeLabel); ?></span>
                 <?php endif; ?>
-                <div class="related-card__body">
-                  <?php if ($card['badge'] !== ''): ?>
-                    <span class="related-card__badge"><?= htmlspecialchars($card['badge']); ?></span>
-                  <?php endif; ?>
-                  <h3><?= htmlspecialchars($card['title']); ?></h3>
-                  <p><?= htmlspecialchars($card['summary']); ?></p>
-                  <a class="btn secondary" href="<?= htmlspecialchars($card['href'], ENT_QUOTES); ?>">Ver detalles</a>
+                <h1 class="circuit-hero__title"><?= htmlspecialchars($title); ?></h1>
+                <?php if ($tagline !== ''): ?>
+                    <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
+                <?php endif; ?>
+                <?php if (!empty($metaBadges)): ?>
+                    <div class="circuit-hero__meta">
+                        <?php foreach ($metaBadges as $badge): ?>
+                            <?php $badgeClasses = 'circuit-hero__badge'; ?>
+                            <?php if (!empty($badge['variant'] ?? null)): ?>
+                                <?php $badgeClasses .= ' circuit-hero__badge--' . htmlspecialchars((string) $badge['variant']); ?>
+                            <?php endif; ?>
+                            <span class="<?= $badgeClasses; ?>"><?= htmlspecialchars($badge['text']); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+                <div class="circuit-hero__rating">
+                    <div class="rating-stars" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;">
+                        <span class="sr-only">Calificación promedio <?= htmlspecialchars($reviewsAverageText); ?> de 5</span>
+                    </div>
+                    <div class="rating-summary">
+                        <span class="rating-summary__value"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</span>
+                        <span class="rating-summary__count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</span>
+                    </div>
                 </div>
-              </article>
-            <?php endforeach; ?>
-          </div>
+                <?php if ($primarySummaryParagraph !== ''): ?>
+                    <p class="circuit-hero__summary"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
+                <?php endif; ?>
+                <div class="circuit-hero__actions">
+                    <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
+                        <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
+                    <?php else: ?>
+                        <a class="button button--primary" href="#reserva">Reservar ahora</a>
+                    <?php endif; ?>
+                    <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
+                        <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
+                    <?php endif; ?>
+                </div>
+            </div>
         </section>
-      <?php endif; ?>
-    </div>
 
-    <aside class="grid" id="reserva" style="position:sticky;top:84px;height:fit-content">
-      <div class="card section">
-        <h2>Reserva rápida</h2>
-        <div class="list">
-          <label>
-            <small>Fecha de salida</small><br />
-            <input type="date" style="width:100%;padding:12px;border-radius:10px;border:1px solid #cbd5e1" />
-          </label>
-          <label>
-            <small>Pasajeros</small><br />
-            <input type="number" min="1" value="2" style="width:100%;padding:12px;border-radius:10px;border:1px solid #cbd5e1" />
-          </label>
-          <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
-            <a class="btn" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
-          <?php else: ?>
-            <button class="btn" type="button">Consultar disponibilidad</button>
-          <?php endif; ?>
-          <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
-            <a class="btn secondary" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
-          <?php else: ?>
-            <button class="btn secondary" type="button">Personalizar paquete</button>
-          <?php endif; ?>
+        <div class="circuit-layout">
+            <div class="circuit-main">
+                <?php if (!empty($extraSummaryParagraphs) || !empty($facts)): ?>
+                    <section class="circuit-section" id="resumen">
+                        <?php if (!empty($extraSummaryParagraphs)): ?>
+                            <div class="circuit-intro">
+                                <?php foreach ($extraSummaryParagraphs as $paragraph): ?>
+                                    <?php $trimmedParagraph = trim((string) $paragraph); ?>
+                                    <?php if ($trimmedParagraph === '') { continue; } ?>
+                                    <p><?= htmlspecialchars($trimmedParagraph); ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($facts)): ?>
+                            <dl class="circuit-facts">
+                                <?php foreach ($facts as $fact): ?>
+                                    <div class="circuit-fact">
+                                        <dt><?= htmlspecialchars($fact['label']); ?></dt>
+                                        <dd><?= htmlspecialchars($fact['value']); ?></dd>
+                                    </div>
+                                <?php endforeach; ?>
+                            </dl>
+                        <?php endif; ?>
+                    </section>
+                <?php endif; ?>
+
+                <?php if (!empty($highlights)): ?>
+                    <section class="circuit-section" id="destacados">
+                        <header class="circuit-section__header">
+                            <h2>Momentos imperdibles</h2>
+                            <p>Una selección curada de experiencias para este circuito.</p>
+                        </header>
+                        <div class="circuit-highlights">
+                            <?php foreach ($highlights as $highlight): ?>
+                                <?php
+                                    $highlightTitle = trim((string) ($highlight['title'] ?? ''));
+                                    $highlightDescription = trim((string) ($highlight['description'] ?? ''));
+                                    if ($highlightTitle === '' || $highlightDescription === '') {
+                                        continue;
+                                    }
+                                    $highlightIcon = trim((string) ($highlight['icon'] ?? '✨'));
+                                ?>
+                                <article class="circuit-highlight">
+                                    <div class="circuit-highlight__icon" aria-hidden="true"><?= htmlspecialchars($highlightIcon); ?></div>
+                                    <div class="circuit-highlight__body">
+                                        <h3><?= htmlspecialchars($highlightTitle); ?></h3>
+                                        <p><?= htmlspecialchars($highlightDescription); ?></p>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
+                <?php if (!empty($itineraryDays)): ?>
+                    <section class="circuit-section" id="itinerario">
+                        <header class="circuit-section__header">
+                            <h2>Itinerario sugerido</h2>
+                            <p>Despliega cada jornada para conocer el detalle de actividades y horarios.</p>
+                        </header>
+                        <div class="circuit-accordion">
+                            <?php foreach ($itineraryDays as $index => $day): ?>
+                                <details class="circuit-day"<?= $index === 0 ? ' open' : ''; ?>>
+                                    <summary>
+                                        <span class="circuit-day__badge">D<?= $index + 1; ?></span>
+                                        <div class="circuit-day__header">
+                                            <h3><?= htmlspecialchars($day['title']); ?></h3>
+                                            <?php if ($day['schedule'] !== ''): ?>
+                                                <span class="circuit-day__schedule"><?= htmlspecialchars($day['schedule']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </summary>
+                                    <div class="circuit-day__body">
+                                        <table class="circuit-table" aria-label="Detalle del día <?= $index + 1; ?>">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Día / Hora</th>
+                                                    <th scope="col">Título</th>
+                                                    <th scope="col">Descripción</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><?= htmlspecialchars($day['schedule'] !== '' ? $day['schedule'] : 'Todo el día'); ?></td>
+                                                    <td><?= htmlspecialchars($day['title']); ?></td>
+                                                    <td>
+                                                        <?php if ($day['summary'] !== ''): ?>
+                                                            <p><?= htmlspecialchars($day['summary']); ?></p>
+                                                        <?php endif; ?>
+                                                        <?php if (!empty($day['activities'])): ?>
+                                                            <ul class="circuit-day__activities">
+                                                                <?php foreach ($day['activities'] as $activity): ?>
+                                                                    <li><?= htmlspecialchars($activity); ?></li>
+                                                                <?php endforeach; ?>
+                                                            </ul>
+                                                        <?php endif; ?>
+                                                    </td>
+                                                </tr>
+                                                <?php if (!empty($day['meta'])): ?>
+                                                    <?php foreach ($day['meta'] as $meta): ?>
+                                                        <tr class="circuit-table__meta">
+                                                            <td><?= htmlspecialchars($meta['label']); ?></td>
+                                                            <td colspan="2"><?= htmlspecialchars($meta['value']); ?></td>
+                                                        </tr>
+                                                    <?php endforeach; ?>
+                                                <?php endif; ?>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </details>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
+                <section class="circuit-section" id="mapa">
+                    <header class="circuit-section__header">
+                        <h2>Mapa del circuito</h2>
+                        <p>Explora los puntos clave del recorrido y selecciona cada marcador para más detalles.</p>
+                    </header>
+                    <div class="circuit-map" data-map-container>
+                        <div class="circuit-map__frame">
+                            <iframe src="<?= htmlspecialchars($mapDefaultUrl, ENT_QUOTES); ?>" loading="lazy" allowfullscreen data-map-frame title="Mapa del circuito"></iframe>
+                        </div>
+                        <?php if (!empty($mapMarkers)): ?>
+                            <div class="circuit-map__markers" role="list">
+                                <?php foreach ($mapMarkers as $markerIndex => $marker): ?>
+                                    <button class="circuit-map__marker<?= $markerIndex === 0 ? ' is-active' : ''; ?>" type="button" data-map-marker="<?= htmlspecialchars($marker['mapUrl'], ENT_QUOTES); ?>">
+                                        <span class="circuit-map__marker-thumb" style="background-image: url('<?= htmlspecialchars($marker['image'] !== '' ? $marker['image'] : $heroSlides[0]['src'], ENT_QUOTES); ?>');"></span>
+                                        <span class="circuit-map__marker-title"><?= htmlspecialchars($marker['title']); ?></span>
+                                        <?php if ($marker['duration'] !== ''): ?>
+                                            <span class="circuit-map__marker-duration"><?= htmlspecialchars($marker['duration']); ?></span>
+                                        <?php endif; ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </section>
+
+                <?php if (!empty($selectionGroups['include']) || !empty($selectionGroups['exclude'])): ?>
+                    <section class="circuit-section" id="incluye">
+                        <header class="circuit-section__header">
+                            <h2>Incluido y no incluido</h2>
+                            <p>Marca los elementos que quieres destacar y míralos aparecer en tu nube personalizada.</p>
+                        </header>
+                        <div class="selection-cloud" data-selection-cloud>
+                            <span class="selection-chip selection-chip--empty">Selecciona elementos para construir tu nube.</span>
+                        </div>
+                        <div class="selection-groups">
+                            <?php if (!empty($selectionGroups['include'])): ?>
+                                <div class="selection-group">
+                                    <h3>Incluye</h3>
+                                    <div class="selection-options">
+                                        <?php foreach ($selectionGroups['include'] as $index => $item): ?>
+                                            <label class="selection-option">
+                                                <input type="checkbox" name="incluye[]" value="<?= htmlspecialchars($item); ?>" data-selection-source data-selection-group="include" data-label="<?= htmlspecialchars($item); ?>"<?= $index < 6 ? ' checked' : ''; ?> />
+                                                <span><?= htmlspecialchars($item); ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!empty($selectionGroups['exclude'])): ?>
+                                <div class="selection-group">
+                                    <h3>No incluye</h3>
+                                    <div class="selection-options">
+                                        <?php foreach ($selectionGroups['exclude'] as $index => $item): ?>
+                                            <label class="selection-option">
+                                                <input type="checkbox" name="no_incluye[]" value="<?= htmlspecialchars($item); ?>" data-selection-source data-selection-group="exclude" data-label="<?= htmlspecialchars($item); ?>"<?= $index < 3 ? ' checked' : ''; ?> />
+                                                <span><?= htmlspecialchars($item); ?></span>
+                                            </label>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
+                <?php if (!empty($experiences)): ?>
+                    <section class="circuit-section" id="experiencias">
+                        <header class="circuit-section__header">
+                            <h2>Experiencias que elevan tu viaje</h2>
+                            <p>Opcionales recomendadas para personalizar tu circuito.</p>
+                        </header>
+                        <div class="circuit-experiences">
+                            <?php foreach ($experiences as $experience): ?>
+                                <?php
+                                    $experienceTitle = trim((string) ($experience['title'] ?? ''));
+                                    $experienceDescription = trim((string) ($experience['description'] ?? ''));
+                                    if ($experienceTitle === '' || $experienceDescription === '') {
+                                        continue;
+                                    }
+                                    $experienceIcon = trim((string) ($experience['icon'] ?? '🌟'));
+                                    $experiencePriceRaw = $experience['price'] ?? ($experience['precio'] ?? ($experience['priceFrom'] ?? null));
+                                    $experienceCurrency = strtoupper((string) ($experience['currency'] ?? ($experience['moneda'] ?? 'PEN')));
+                                    $experiencePriceText = '';
+                                    if (is_numeric($experiencePriceRaw)) {
+                                        $symbol = match ($experienceCurrency) {
+                                            'USD' => '$',
+                                            'EUR' => '€',
+                                            'GBP' => '£',
+                                            default => 'S/',
+                                        };
+                                        $experiencePriceText = sprintf('%s %s', $symbol, number_format((float) $experiencePriceRaw, 2, '.', ','));
+                                    } elseif (is_string($experiencePriceRaw)) {
+                                        $experiencePriceText = trim($experiencePriceRaw);
+                                    }
+                                ?>
+                                <article class="circuit-experience">
+                                    <div class="circuit-experience__icon" aria-hidden="true"><?= htmlspecialchars($experienceIcon); ?></div>
+                                    <div class="circuit-experience__body">
+                                        <h3><?= htmlspecialchars($experienceTitle); ?></h3>
+                                        <p><?= htmlspecialchars($experienceDescription); ?></p>
+                                        <?php if ($experiencePriceText !== ''): ?>
+                                            <p class="circuit-experience__price">Tarifa referencial: <?= htmlspecialchars($experiencePriceText); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
+                <?php if (!empty($otherEssentialSections) || !empty($notesList)): ?>
+                    <section class="circuit-section" id="informacion">
+                        <header class="circuit-section__header">
+                            <h2>Información útil</h2>
+                            <p>Todo lo que necesitas saber antes de viajar.</p>
+                        </header>
+                        <?php if (!empty($notesList)): ?>
+                            <ul class="circuit-notes">
+                                <?php foreach ($notesList as $note): ?>
+                                    <li><?= htmlspecialchars($note); ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
+                        <?php if (!empty($otherEssentialSections)): ?>
+                            <div class="circuit-essentials">
+                                <?php foreach ($otherEssentialSections as $extraSection): ?>
+                                    <article class="circuit-essential">
+                                        <h3><?= htmlspecialchars($extraSection['title']); ?></h3>
+                                        <ul>
+                                            <?php foreach ($extraSection['items'] as $item): ?>
+                                                <li><?= htmlspecialchars($item); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </article>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </section>
+                <?php endif; ?>
+
+                <?php if (!empty($brochures)): ?>
+                    <section class="circuit-section" id="descargas">
+                        <header class="circuit-section__header">
+                            <h2>Material descargable</h2>
+                            <p>Folletos y fichas técnicas para compartir con tu equipo o familia.</p>
+                        </header>
+                        <div class="circuit-brochures">
+                            <?php foreach ($brochures as $brochure): ?>
+                                <article class="circuit-brochure">
+                                    <div>
+                                        <h3><?= htmlspecialchars($brochure['title']); ?></h3>
+                                        <?php if ($brochure['description'] !== ''): ?>
+                                            <p><?= htmlspecialchars($brochure['description']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <a class="button button--primary" href="<?= htmlspecialchars($brochure['href'], ENT_QUOTES); ?>"<?= preg_match('~^https?://~i', $brochure['href']) ? ' target="_blank" rel="noopener"' : ''; ?>>Descargar</a>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
+                <section class="circuit-section" id="opiniones">
+                    <header class="circuit-section__header">
+                        <h2>Opiniones de viajeros</h2>
+                        <p>Reseñas verificadas de nuestra comunidad de suscriptores.</p>
+                    </header>
+                    <div class="reviews">
+                        <div class="reviews__summary">
+                            <div class="rating-stars rating-stars--lg" data-review-stars-secondary style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
+                            <div>
+                                <p class="reviews__average"><strong data-review-average-secondary><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
+                                <p class="reviews__count"><span data-review-count-secondary><?= htmlspecialchars($reviewsCountText); ?></span> opiniones totales</p>
+                            </div>
+                        </div>
+                        <ul class="reviews__list" data-review-list>
+                            <?php if (empty($reviewsList)): ?>
+                                <li class="reviews__empty">Sé la primera persona en dejar una reseña sobre este circuito.</li>
+                            <?php else: ?>
+                                <?php foreach ($reviewsList as $review): ?>
+                                    <li class="review-card">
+                                        <div class="review-card__header">
+                                            <strong><?= htmlspecialchars($review['nombre']); ?></strong>
+                                            <div class="review-card__stars" style="--rating: <?= htmlspecialchars(number_format((float) $review['rating'], 1, '.', '')); ?>;" aria-label="<?= htmlspecialchars($review['rating']); ?> de 5"></div>
+                                        </div>
+                                        <p class="review-card__comment"><?= htmlspecialchars($review['comentario']); ?></p>
+                                        <?php if (!empty($review['creado_en'])): ?>
+                                            <small class="review-card__date">Publicado el <?= htmlspecialchars($review['creado_en']); ?></small>
+                                        <?php endif; ?>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </ul>
+                        <form class="reviews__form" method="post" action="api/resenas-circuitos.php" data-review-form>
+                            <input type="hidden" name="slug" value="<?= htmlspecialchars($detail['slug'] ?? '', ENT_QUOTES); ?>" />
+                            <input type="hidden" name="titulo" value="<?= htmlspecialchars($title, ENT_QUOTES); ?>" />
+                            <div class="form-grid">
+                                <label>
+                                    <span>Nombre completo *</span>
+                                    <input type="text" name="nombre" required autocomplete="name" />
+                                </label>
+                                <label>
+                                    <span>Correo electrónico</span>
+                                    <input type="email" name="correo" autocomplete="email" placeholder="Opcional" />
+                                </label>
+                                <label>
+                                    <span>Calificación *</span>
+                                    <select name="rating" required>
+                                        <?php for ($i = 5; $i >= 1; $i--): ?>
+                                            <option value="<?= $i; ?>"><?= $i; ?> estrella<?= $i === 1 ? '' : 's'; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </label>
+                                <label class="form-grid__full">
+                                    <span>Tu reseña *</span>
+                                    <textarea name="comentario" rows="4" required placeholder="Cuéntanos cómo fue tu experiencia"></textarea>
+                                </label>
+                            </div>
+                            <div class="form-actions">
+                                <button class="button button--primary" type="submit" data-loading>Enviar reseña</button>
+                                <p class="form-note">Marcamos con * los campos obligatorios. Nos reservamos el derecho de moderar los comentarios.</p>
+                            </div>
+                            <div class="form-status" data-review-status></div>
+                        </form>
+                    </div>
+                </section>
+
+                <?php if (!empty($relatedCards)): ?>
+                    <section class="circuit-section" id="relacionados">
+                        <header class="circuit-section__header">
+                            <h2>También te puede interesar</h2>
+                            <p>Explora otras propuestas que combinan perfecto con este circuito.</p>
+                        </header>
+                        <div class="circuit-related">
+                            <?php foreach ($relatedCards as $card): ?>
+                                <article class="circuit-related__card">
+                                    <?php if ($card['image'] !== ''): ?>
+                                        <div class="circuit-related__media">
+                                            <img src="<?= htmlspecialchars($card['image'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($card['title']); ?>" loading="lazy" />
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="circuit-related__body">
+                                        <?php if ($card['badge'] !== ''): ?>
+                                            <span class="circuit-related__badge"><?= htmlspecialchars($card['badge']); ?></span>
+                                        <?php endif; ?>
+                                        <h3><?= htmlspecialchars($card['title']); ?></h3>
+                                        <p><?= htmlspecialchars($card['summary']); ?></p>
+                                        <a class="button button--ghost" href="<?= htmlspecialchars($card['href'], ENT_QUOTES); ?>">Ver detalles</a>
+                                    </div>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+            </div>
+
+            <aside class="circuit-sidebar" id="reserva">
+                <section class="sidebar-card">
+                    <h2>Reserva tu circuito</h2>
+                    <p>Comparte tus datos y un asesor se comunicará contigo para confirmar disponibilidad.</p>
+                    <form class="sidebar-form" method="post" action="api/reservas-circuitos.php" data-reservation-form>
+                        <input type="hidden" name="slug" value="<?= htmlspecialchars($detail['slug'] ?? '', ENT_QUOTES); ?>" />
+                        <input type="hidden" name="titulo" value="<?= htmlspecialchars($title, ENT_QUOTES); ?>" />
+                        <label>
+                            <span>Nombre completo *</span>
+                            <input type="text" name="nombre" required autocomplete="name" />
+                        </label>
+                        <label>
+                            <span>Correo electrónico *</span>
+                            <input type="email" name="correo" required autocomplete="email" />
+                        </label>
+                        <label>
+                            <span>Teléfono</span>
+                            <input type="tel" name="telefono" autocomplete="tel" placeholder="Opcional" />
+                        </label>
+                        <label>
+                            <span>Fecha estimada de viaje</span>
+                            <input type="date" name="fecha_salida" />
+                        </label>
+                        <label>
+                            <span>Personas</span>
+                            <input type="number" name="cantidad_personas" min="1" value="2" />
+                        </label>
+                        <label>
+                            <span>Mensaje</span>
+                            <textarea name="mensaje" rows="3" placeholder="¿Quieres una experiencia personalizada?"></textarea>
+                        </label>
+                        <button class="button button--primary" type="submit" data-loading>Enviar solicitud</button>
+                        <div class="form-status" data-reservation-status></div>
+                    </form>
+                </section>
+
+                <section class="sidebar-card sidebar-card--accent">
+                    <h3>Garantía Expediatravels</h3>
+                    <ul class="sidebar-benefits">
+                        <?php foreach ($sidebarBenefits as $benefit): ?>
+                            <li><?= htmlspecialchars($benefit); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                    <p class="sidebar-note">Somos especialistas locales. Cada reserva pasa por nuestro equipo para garantizar calidad y seguridad.</p>
+                </section>
+
+                <section class="sidebar-card">
+                    <h3>Contacto directo</h3>
+                    <ul class="sidebar-contact">
+                        <?php if (!empty($contactPhones)): ?>
+                            <?php foreach ($contactPhones as $phone): ?>
+                                <li><span aria-hidden="true">📞</span> <a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $phone)); ?>"><?= htmlspecialchars($phone); ?></a></li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php if (!empty($contactEmails)): ?>
+                            <?php foreach ($contactEmails as $email): ?>
+                                <li><span aria-hidden="true">✉️</span> <a href="mailto:<?= htmlspecialchars($email); ?>"><?= htmlspecialchars($email); ?></a></li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                        <?php if (!empty($contactAddresses)): ?>
+                            <?php foreach ($contactAddresses as $address): ?>
+                                <li><span aria-hidden="true">📍</span> <?= htmlspecialchars($address); ?></li>
+                            <?php endforeach; ?>
+                        <?php elseif (!empty($contactLocations)): ?>
+                            <?php foreach ($contactLocations as $contactLocation): ?>
+                                <li><span aria-hidden="true">📍</span> <?= htmlspecialchars($contactLocation); ?></li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </ul>
+                </section>
+            </aside>
         </div>
-      </div>
+    </main>
 
-      <div class="card section">
-        <h2>Contacto</h2>
-        <div class="list">
-          <?php if (!empty($contactPhones)): ?>
-            <?php foreach ($contactPhones as $phone): ?>
-              <div>📞 <?= htmlspecialchars($phone); ?></div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-          <?php if (!empty($contactEmails)): ?>
-            <?php foreach ($contactEmails as $email): ?>
-              <div>✉️ <?= htmlspecialchars($email); ?></div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-          <?php if (!empty($contactAddresses)): ?>
-            <?php foreach ($contactAddresses as $address): ?>
-              <div>📍 <?= htmlspecialchars($address); ?></div>
-            <?php endforeach; ?>
-          <?php elseif (!empty($contactLocations)): ?>
-            <?php foreach ($contactLocations as $contactLocation): ?>
-              <div>📍 <?= htmlspecialchars($contactLocation); ?></div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </div>
-      </div>
-    </aside>
-  </main>
-
-  <footer class="container">© <?= date('Y'); ?> <?= htmlspecialchars($siteTitle); ?> — Circuitos y Paquetes Turísticos</footer>
-
-  <script>
-    document.querySelectorAll('.accordion details').forEach((detail) => {
-      detail.addEventListener('toggle', () => {
-        if (detail.open) {
-          document.querySelectorAll('.accordion details').forEach((other) => {
-            if (other !== detail) {
-              other.removeAttribute('open');
-            }
-          });
-        }
-      });
-    });
-  </script>
+    <?php include __DIR__ . '/partials/site-footer.php'; ?>
+    <?php include __DIR__ . '/partials/auth-modal.php'; ?>
+    <script>
+        window.circuitoPageConfig = {
+            reviewEndpoint: 'api/resenas-circuitos.php',
+            reservationEndpoint: 'api/reservas-circuitos.php'
+        };
+    </script>
+    <script src="scripts/circuito.js" defer></script>
+    <script src="scripts/modal-autenticacion.js" defer></script>
+    <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
 </body>
 </html>
