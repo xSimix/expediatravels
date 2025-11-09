@@ -90,12 +90,63 @@ class RepositorioCircuitos
         $duration = $circuit['duracion'] ?? $circuit['duration'] ?? '';
         $destination = $circuit['destino'] ?? $circuit['location'] ?? $circuit['region'] ?? '';
         $price = $circuit['precio'] ?? $circuit['precio_desde'] ?? null;
+        $rawGroup = $circuit['grupo'] ?? $circuit['grupo_maximo'] ?? $circuit['capacidad'] ?? $circuit['capacidad_maxima'] ?? $circuit['group'] ?? null;
+        $rawNextDeparture = $circuit['proxima_salida'] ?? $circuit['proximaSalida'] ?? $circuit['nextDeparture'] ?? $circuit['frecuencia'] ?? null;
+        $rawRating = $circuit['calificacion'] ?? $circuit['calificación'] ?? $circuit['rating'] ?? $circuit['rating_promedio'] ?? $circuit['ratingAverage'] ?? $circuit['ratingPromedio'] ?? null;
+        $rawReviews = $circuit['resenas'] ?? $circuit['reseñas'] ?? $circuit['reviews'] ?? $circuit['reviewsCount'] ?? $circuit['totalResenas'] ?? null;
+        $rawIsNew = $circuit['es_nuevo'] ?? $circuit['esNuevo'] ?? $circuit['nuevo'] ?? $circuit['isNew'] ?? null;
+        $rawIsExclusive = $circuit['es_exclusivo'] ?? $circuit['esExclusivo'] ?? $circuit['exclusivo'] ?? $circuit['isExclusive'] ?? null;
 
         if (is_string($price)) {
             $price = filter_var($price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION | FILTER_FLAG_ALLOW_THOUSAND);
             if ($price !== null && $price !== false) {
                 $price = str_replace(',', '', (string) $price);
             }
+        }
+
+        $parseBoolean = static function ($value): bool {
+            if (is_bool($value)) {
+                return $value;
+            }
+
+            if (is_numeric($value)) {
+                return (int) $value === 1;
+            }
+
+            if (is_string($value)) {
+                $normalized = strtolower(trim($value));
+                if ($normalized === '') {
+                    return false;
+                }
+
+                return in_array($normalized, ['1', 'true', 'yes', 'on', 'si', 'sí', 'nuevo', 'exclusivo', 'activo'], true);
+            }
+
+            return false;
+        };
+
+        $groupText = '';
+        if (is_string($rawGroup)) {
+            $groupText = trim($rawGroup);
+        } elseif (is_numeric($rawGroup)) {
+            $groupText = 'Hasta ' . (int) $rawGroup . ' viajeros';
+        }
+
+        $nextDepartureText = '';
+        if (is_string($rawNextDeparture)) {
+            $nextDepartureText = trim($rawNextDeparture);
+        } elseif ($rawNextDeparture instanceof \DateTimeInterface) {
+            $nextDepartureText = $rawNextDeparture->format('d M Y');
+        }
+
+        $ratingValue = null;
+        if (is_numeric($rawRating)) {
+            $ratingValue = round((float) $rawRating, 1);
+        }
+
+        $reviewsCount = null;
+        if (is_numeric($rawReviews)) {
+            $reviewsCount = (int) $rawReviews;
         }
 
         return array_merge($circuit, [
@@ -109,6 +160,14 @@ class RepositorioCircuitos
             'precio' => is_numeric($price) ? (float) $price : null,
             'moneda' => strtoupper((string) ($circuit['moneda'] ?? 'PEN')),
             'imagen' => $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? $circuit['heroImage'] ?? null,
+            'frecuencia' => isset($circuit['frecuencia']) ? (string) $circuit['frecuencia'] : $nextDepartureText,
+            'proximaSalida' => $nextDepartureText,
+            'grupo' => $groupText,
+            'experiencia' => (string) ($circuit['experiencia'] ?? $circuit['dificultad'] ?? ''),
+            'ratingPromedio' => $ratingValue,
+            'totalResenas' => $reviewsCount,
+            'esNuevo' => $parseBoolean($rawIsNew),
+            'esExclusivo' => $parseBoolean($rawIsExclusive),
         ]);
     }
 
@@ -124,6 +183,14 @@ class RepositorioCircuitos
                 'location' => 'Oxapampa, Villa Rica y Perené — Selva Central, Perú',
                 'region' => 'Pasco y Junín',
                 'duration' => '4 días / 3 noches',
+                'dificultad' => 'Moderado',
+                'frecuencia' => 'Salidas cada viernes',
+                'grupo' => 'Hasta 12 viajeros',
+                'proximaSalida' => '15 ago 2024',
+                'ratingPromedio' => 4.9,
+                'totalResenas' => 132,
+                'esNuevo' => true,
+                'esExclusivo' => true,
                 'priceFrom' => 'Desde S/ 1,450 por viajero',
                 'heroImage' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80',
                 'mapImage' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
@@ -272,6 +339,14 @@ class RepositorioCircuitos
                 'location' => 'Valle del Perené — Junín, Perú',
                 'region' => 'Junín',
                 'duration' => '2 días / 1 noche',
+                'dificultad' => 'Activo',
+                'frecuencia' => 'Próxima salida 22 ago 2024',
+                'grupo' => 'Hasta 10 viajeros',
+                'proximaSalida' => '22 ago 2024',
+                'ratingPromedio' => 4.7,
+                'totalResenas' => 98,
+                'esNuevo' => false,
+                'esExclusivo' => false,
                 'priceFrom' => 'Desde S/ 680 por viajero',
                 'heroImage' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
                 'mapImage' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80',

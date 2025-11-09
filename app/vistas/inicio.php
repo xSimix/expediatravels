@@ -142,6 +142,7 @@
     <?php endif; ?>
     <script src="scripts/modal-autenticacion.js" defer></script>
     <script src="scripts/scroll-enhancements.js" defer></script>
+    <script src="scripts/quick-view.js" defer></script>
 </head>
 <body class="page">
 
@@ -488,63 +489,176 @@
                         if ($circuitPrice === null && isset($experience['priceFrom'])) {
                             $circuitPrice = $parsePriceFromString($experience['priceFrom']);
                         }
-                        $circuitOriginal = $circuitPrice !== null ? $circuitPrice * 1.12 : null;
                         $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
                         $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
                         $circuitSummary = $experience['resumen'] ?? ($experience['summary'] ?? 'Pronto sumaremos más detalles.');
+                        $circuitIsNew = (bool) ($experience['esNuevo'] ?? false);
+                        $circuitIsExclusive = (bool) ($experience['esExclusivo'] ?? false);
+                        $circuitExperienceType = (string) ($experience['experiencia'] ?? $experience['dificultad'] ?? '');
+                        $circuitExperienceLabel = trim($circuitExperienceType) !== '' ? $circuitExperienceType : '';
+                        $circuitGroupRaw = $experience['grupo'] ?? $experience['personas'] ?? $experience['capacidad'] ?? $experience['capacidad_maxima'] ?? null;
+                        if (is_numeric($circuitGroupRaw)) {
+                            $circuitGroupRaw = 'Hasta ' . (int) $circuitGroupRaw . ' viajeros';
+                        }
+                        $circuitGroup = is_string($circuitGroupRaw) ? trim($circuitGroupRaw) : '';
+                        $circuitDeparture = (string) ($experience['proximaSalida'] ?? $experience['frecuencia'] ?? '');
+                        $ratingValueRaw = $experience['ratingPromedio'] ?? $experience['rating'] ?? $experience['calificacion'] ?? null;
+                        if (is_string($ratingValueRaw) && is_numeric(str_replace(',', '.', $ratingValueRaw))) {
+                            $ratingValueRaw = str_replace(',', '.', $ratingValueRaw);
+                        }
+                        $ratingValue = is_numeric($ratingValueRaw) ? round((float) $ratingValueRaw, 1) : null;
+                        $ratingCountRaw = $experience['totalResenas'] ?? $experience['reseñas'] ?? $experience['resenas'] ?? $experience['reviews'] ?? $experience['reviewsCount'] ?? null;
+                        if (is_string($ratingCountRaw)) {
+                            $ratingCountRaw = preg_replace('/[^0-9]/', '', $ratingCountRaw);
+                        }
+                        $ratingCount = is_numeric($ratingCountRaw) ? (int) $ratingCountRaw : null;
+                        $reviewsText = null;
+                        if ($ratingValue !== null && $ratingValue > 0) {
+                            $reviewsText = number_format($ratingValue, 1, '.', ',') . ' ★';
+                            if ($ratingCount !== null && $ratingCount > 0) {
+                                $reviewsText .= ' (' . number_format($ratingCount, 0, '.', ',') . ')';
+                            }
+                        } elseif ($ratingCount !== null && $ratingCount > 0) {
+                            $reviewsText = number_format($ratingCount, 0, '.', ',') . ' reseñas';
+                        }
+                        $circuitDuration = trim((string) ($experience['duracion'] ?? ($experience['duration'] ?? '')));
+                        if ($circuitDuration === '') {
+                            $circuitDuration = 'Pronto';
+                        }
+                        $circuitExperienceDisplay = $circuitExperienceLabel !== '' ? $circuitExperienceLabel : 'Experiencia guiada';
+                        $circuitGroupDisplay = $circuitGroup !== '' ? $circuitGroup : 'Grupos reducidos';
+                        $circuitDepartureDisplay = trim($circuitDeparture) !== '' ? $circuitDeparture : 'Pronto';
+                        $reviewsDisplay = $reviewsText ?? 'Pronto';
+                        $circuitDetails = [
+                            'Duración' => $circuitDuration,
+                            'Experiencia' => $circuitExperienceDisplay,
+                            'Grupo' => $circuitGroupDisplay,
+                            'Próxima salida' => $circuitDepartureDisplay,
+                            'Reseñas' => $reviewsDisplay,
+                        ];
+                        $circuitSummaryQuickView = trim(preg_replace('/\s+/', ' ', (string) $circuitSummary));
+                        if ($circuitSummaryQuickView === '') {
+                            $circuitSummaryQuickView = 'Pronto sumaremos más detalles de este circuito.';
+                        }
+                        $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency);
+                        $priceNoteText = $circuitPriceText !== null ? 'por persona' : '';
+                        $circuitDestinationLabel = trim((string) $circuitDestination);
                     ?>
                     <article class="travel-card" data-theme="experience">
-                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true"></div>
-                        <div class="travel-card__pill-group">
-                            <span class="travel-card__status">Nuevo recorrido</span>
-                            <?php if (trim((string) $circuitDestination) !== ''): ?>
-                                <span class="travel-card__tag"><?= htmlspecialchars($circuitDestination); ?></span>
+                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true">
+                            <?php if ($circuitIsNew || $circuitIsExclusive || $circuitDestinationLabel !== ''): ?>
+                                <div class="travel-card__pill-group">
+                                    <?php if ($circuitIsNew): ?>
+                                        <span class="travel-card__status">Nuevo recorrido</span>
+                                    <?php endif; ?>
+                                    <?php if ($circuitIsExclusive): ?>
+                                        <span class="travel-card__status travel-card__status--exclusive">Circuito exclusivo</span>
+                                    <?php endif; ?>
+                                    <?php if ($circuitDestinationLabel !== ''): ?>
+                                        <span class="travel-card__tag"><?= htmlspecialchars($circuitDestinationLabel); ?></span>
+                                    <?php endif; ?>
+                                </div>
                             <?php endif; ?>
                         </div>
                         <div class="travel-card__content">
                             <header class="travel-card__header">
-                                <span class="travel-card__category">Experiencia guiada</span>
-                                <span class="travel-card__badge">Circuito exclusivo</span>
+                                <span class="travel-card__category"><?= htmlspecialchars($circuitExperienceDisplay); ?></span>
+                                <?php if ($reviewsText !== null): ?>
+                                    <span class="travel-card__rating"><?= htmlspecialchars($reviewsText); ?></span>
+                                <?php endif; ?>
                             </header>
                             <h3 class="travel-card__title">
                                 <a href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"><?= htmlspecialchars($circuitName); ?></a>
                             </h3>
-                            <p class="travel-card__excerpt"><?= htmlspecialchars($circuitSummary); ?></p>
-                            <dl class="travel-card__meta">
-                                <div>
-                                    <dt>Duración</dt>
-                                    <dd><?= htmlspecialchars($experience['duracion'] ?? ($experience['duration'] ?? 'Pronto')); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Destino</dt>
-                                    <dd><?= htmlspecialchars($circuitDestination); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Experiencia</dt>
-                                    <dd><?= htmlspecialchars($experience['dificultad'] ?? 'Grupos reducidos'); ?></dd>
-                                </div>
-                            </dl>
+                            <?php if (!empty($circuitDetails)): ?>
+                                <ul class="travel-card__details">
+                                    <?php foreach ($circuitDetails as $label => $value): ?>
+                                        <li>
+                                            <span><?= htmlspecialchars($label); ?></span>
+                                            <span><?= htmlspecialchars((string) $value); ?></span>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
                         </div>
                         <footer class="travel-card__footer">
                             <div class="travel-card__pricing">
-                                <?php $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency); ?>
-                                <?php $circuitOriginalText = $formatCurrency($circuitOriginal, $circuitCurrency); ?>
                                 <?php if ($circuitPriceText !== null): ?>
                                     <span class="travel-card__price"><?= htmlspecialchars($circuitPriceText); ?></span>
-                                    <?php if ($circuitOriginalText !== null): ?>
-                                        <span class="travel-card__price-original"><?= htmlspecialchars($circuitOriginalText); ?></span>
-                                    <?php endif; ?>
-                                    <span class="travel-card__price-note">por persona</span>
+                                    <span class="travel-card__price-note"><?= htmlspecialchars($priceNoteText); ?></span>
                                 <?php else: ?>
                                     <span class="travel-card__price">Pronto</span>
                                 <?php endif; ?>
                             </div>
-                            <a class="travel-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">VER CIRCUITO</a>
+                            <div class="travel-card__actions">
+                                <button
+                                    type="button"
+                                    class="travel-card__action travel-card__action--ghost"
+                                    data-quick-view
+                                    aria-haspopup="dialog"
+                                    data-title="<?= htmlspecialchars($circuitName, ENT_QUOTES); ?>"
+                                    data-summary="<?= htmlspecialchars($circuitSummaryQuickView, ENT_QUOTES); ?>"
+                                    data-duration="<?= htmlspecialchars($circuitDuration, ENT_QUOTES); ?>"
+                                    data-experience="<?= htmlspecialchars($circuitExperienceDisplay, ENT_QUOTES); ?>"
+                                    data-group="<?= htmlspecialchars($circuitGroupDisplay, ENT_QUOTES); ?>"
+                                    data-departure="<?= htmlspecialchars($circuitDepartureDisplay, ENT_QUOTES); ?>"
+                                    data-reviews="<?= htmlspecialchars($reviewsDisplay, ENT_QUOTES); ?>"
+                                    data-rating="<?= htmlspecialchars($ratingValue !== null ? number_format($ratingValue, 1, '.', '') : '', ENT_QUOTES); ?>"
+                                    data-price="<?= htmlspecialchars($circuitPriceText ?? 'Pronto', ENT_QUOTES); ?>"
+                                    data-price-note="<?= htmlspecialchars($priceNoteText, ENT_QUOTES); ?>"
+                                    data-link="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"
+                                    data-image="<?= $circuitImage ? htmlspecialchars($circuitImage, ENT_QUOTES) : ''; ?>"
+                                    data-destination="<?= htmlspecialchars($circuitDestinationLabel, ENT_QUOTES); ?>"
+                                >⚡ Vista rápida</button>
+                                <a class="travel-card__action travel-card__action--primary" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">Ver circuito</a>
+                            </div>
                         </footer>
                     </article>
                 <?php endforeach; ?>
             </div>
         </section>
+
+        <div class="quick-view-modal" id="quick-view-modal" hidden>
+            <div class="quick-view-modal__backdrop" data-quick-view-close></div>
+            <div class="quick-view-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="quick-view-title">
+                <button type="button" class="quick-view-modal__close" data-quick-view-close aria-label="Cerrar vista rápida">×</button>
+                <div class="quick-view-modal__image" data-quick-view-image hidden></div>
+                <div class="quick-view-modal__body">
+                    <p class="quick-view-modal__destination" data-quick-view-destination></p>
+                    <h2 class="quick-view-modal__title" id="quick-view-title" data-quick-view-title></h2>
+                    <p class="quick-view-modal__summary" data-quick-view-summary></p>
+                    <dl class="quick-view-modal__details">
+                        <div>
+                            <dt>Duración</dt>
+                            <dd data-quick-view-duration>Pronto</dd>
+                        </div>
+                        <div>
+                            <dt>Experiencia</dt>
+                            <dd data-quick-view-experience>Pronto</dd>
+                        </div>
+                        <div>
+                            <dt>Grupo</dt>
+                            <dd data-quick-view-group>Pronto</dd>
+                        </div>
+                        <div>
+                            <dt>Próxima salida</dt>
+                            <dd data-quick-view-departure>Pronto</dd>
+                        </div>
+                        <div>
+                            <dt>Reseñas</dt>
+                            <dd data-quick-view-reviews>Pronto</dd>
+                        </div>
+                    </dl>
+                    <div class="quick-view-modal__footer">
+                        <div class="quick-view-modal__price">
+                            <span class="quick-view-modal__price-value" data-quick-view-price></span>
+                            <span class="quick-view-modal__price-note" data-quick-view-price-note></span>
+                        </div>
+                        <a class="quick-view-modal__link button button--primary" data-quick-view-link href="#">Ver circuito completo</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <section id="paquetes" class="section section--packages">
             <div class="section__header">
