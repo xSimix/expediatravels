@@ -16,8 +16,7 @@ class RepositorioCircuitos
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
-                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen,
-                        c.galeria
+                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
                  LEFT JOIN destinos d ON d.id = c.destino_id
                  WHERE c.estado = "activo"
@@ -57,8 +56,7 @@ class RepositorioCircuitos
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
-                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen,
-                        c.galeria
+                        COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
                  LEFT JOIN destinos d ON d.id = c.destino_id
                  WHERE c.estado = "activo"'
@@ -155,27 +153,6 @@ class RepositorioCircuitos
         }
 
         $services = $this->parseJsonList($circuit['servicios'] ?? null);
-        $gallerySources = $this->parseGallerySources($circuit['galeria'] ?? ($circuit['gallery'] ?? null));
-        $galleryItems = $this->normaliseGalleryItems($circuit['gallery'] ?? null, (string) $name, $gallerySources);
-        if (empty($galleryItems) && !empty($gallerySources)) {
-            $galleryItems = array_map(
-                static fn (string $src): array => [
-                    'src' => $src,
-                    'alt' => $name !== '' ? $name : 'Galería del circuito',
-                ],
-                $gallerySources
-            );
-        }
-        $galleryList = $gallerySources;
-        if (empty($galleryList) && !empty($galleryItems)) {
-            $galleryList = array_values(array_filter(
-                array_map(
-                    static fn (array $item): ?string => isset($item['src']) && is_string($item['src']) ? trim($item['src']) : null,
-                    $galleryItems
-                ),
-                static fn (?string $src): bool => $src !== null && $src !== ''
-            ));
-        }
 
         return array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
@@ -198,8 +175,6 @@ class RepositorioCircuitos
             'esNuevo' => $parseBoolean($rawIsNew),
             'esExclusivo' => $parseBoolean($rawIsExclusive),
             'servicios' => $services,
-            'galeria' => $galleryList,
-            'gallery' => $galleryItems,
         ]);
     }
 
@@ -223,120 +198,6 @@ class RepositorioCircuitos
         }
 
         return [];
-    }
-
-    private function parseGallerySources($value): array
-    {
-        if (is_array($value)) {
-            $sources = [];
-            foreach ($value as $item) {
-                if (is_string($item)) {
-                    $trimmed = trim($item);
-                    if ($trimmed !== '') {
-                        $sources[] = $trimmed;
-                    }
-                    continue;
-                }
-
-                if (!is_array($item)) {
-                    continue;
-                }
-
-                $candidate = $item['src'] ?? $item['url'] ?? $item['image'] ?? $item['path'] ?? null;
-                if (is_string($candidate)) {
-                    $trimmed = trim($candidate);
-                    if ($trimmed !== '') {
-                        $sources[] = $trimmed;
-                    }
-                }
-            }
-
-            return $sources;
-        }
-
-        if (is_string($value)) {
-            $trimmed = trim($value);
-            if ($trimmed === '') {
-                return [];
-            }
-
-            $decoded = json_decode($trimmed, true);
-            if (is_array($decoded)) {
-                return $this->parseGallerySources($decoded);
-            }
-
-            return [$trimmed];
-        }
-
-        return [];
-    }
-
-    private function normaliseGalleryItems($value, string $fallbackAlt, array $existingSources = []): array
-    {
-        $items = [];
-        $append = static function (?string $src, ?string $alt, string $fallback) use (&$items): void {
-            if (!is_string($src)) {
-                return;
-            }
-
-            $trimmedSrc = trim($src);
-            if ($trimmedSrc === '') {
-                return;
-            }
-
-            $label = is_string($alt) ? trim($alt) : '';
-            if ($label === '') {
-                $label = $fallback !== '' ? $fallback : 'Galería del circuito';
-            }
-
-            $items[] = [
-                'src' => $trimmedSrc,
-                'alt' => $label,
-            ];
-        };
-
-        if (is_array($value)) {
-            foreach ($value as $entry) {
-                if (is_string($entry)) {
-                    $append($entry, null, $fallbackAlt);
-                    continue;
-                }
-
-                if (!is_array($entry)) {
-                    continue;
-                }
-
-                $source = $entry['src'] ?? $entry['url'] ?? $entry['image'] ?? $entry['path'] ?? null;
-                $alt = $entry['alt'] ?? $entry['caption'] ?? $entry['title'] ?? null;
-                $append($source, $alt, $fallbackAlt);
-            }
-
-            return $items;
-        }
-
-        if (is_string($value)) {
-            $trimmed = trim($value);
-            if ($trimmed === '') {
-                return [];
-            }
-
-            $decoded = json_decode($trimmed, true);
-            if (is_array($decoded)) {
-                return $this->normaliseGalleryItems($decoded, $fallbackAlt, $existingSources);
-            }
-
-            $append($trimmed, null, $fallbackAlt);
-
-            return $items;
-        }
-
-        if (!empty($existingSources)) {
-            foreach ($existingSources as $source) {
-                $append($source, null, $fallbackAlt);
-            }
-        }
-
-        return $items;
     }
 
     private function fallbackCircuits(): array

@@ -1131,21 +1131,10 @@ a:hover {
     .booking-form {
         margin-inline: auto;
         max-width: min(100%, 480px);
-        justify-self: center;
     }
 
     .booking-form__tabs {
         justify-content: center;
-    }
-
-    .hero__slider-meta {
-        align-items: center;
-        text-align: center;
-        max-width: min(100%, 520px);
-    }
-
-    .hero__slider-description {
-        text-align: center;
     }
 }
 
@@ -1156,8 +1145,8 @@ a:hover {
 }
 
 .page > main {
-    width: 100%;
-    margin-inline: 0;
+    width: min(100%, var(--page-max-width));
+    margin-inline: auto;
     margin-bottom: 50px;
 }
 
@@ -1208,11 +1197,10 @@ a:hover {
 .hero__slider-meta {
     margin-top: 1.5rem;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.75rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
     color: rgba(248, 250, 252, 0.88);
-    max-width: clamp(280px, 50vw, 640px);
 }
 
 .hero__slider-label {
@@ -1220,13 +1208,6 @@ a:hover {
     letter-spacing: 0.12em;
     text-transform: uppercase;
     font-weight: 600;
-}
-
-.hero__slider-description {
-    margin: 0;
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: rgba(248, 250, 252, 0.78);
 }
 
 .hero__slider-dots {
@@ -1267,16 +1248,14 @@ a:hover {
     display: grid;
     gap: 2.5rem;
     align-items: start;
-    grid-template-columns: minmax(0, 1.2fr) minmax(280px, 420px);
-    width: 100%;
-    max-width: none;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    width: min(100%, 1100px);
 }
 
 .hero__copy {
     display: grid;
     gap: 1.5rem;
     text-align: left;
-    max-width: 640px;
 }
 
 .hero__badge {
@@ -1320,7 +1299,6 @@ a:hover {
     width: 100%;
     max-width: 420px;
     color: var(--text-main);
-    justify-self: end;
 }
 
 .booking-form__tabs {
