@@ -1802,24 +1802,11 @@ main {
     box-shadow: 0 28px 60px rgba(15, 23, 42, 0.12);
 }
 
-.circuit-card__media {
-    position: relative;
-}
-
 .circuit-card__image {
     width: 100%;
     height: 180px;
     object-fit: cover;
     display: block;
-}
-
-.circuit-card__tags--overlay {
-    position: absolute;
-    top: 1rem;
-    left: 1rem;
-    right: 1rem;
-    z-index: 1;
-    max-width: calc(100% - 2rem);
 }
 
 .circuit-card__body {
