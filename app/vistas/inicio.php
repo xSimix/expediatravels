@@ -10,23 +10,7 @@
     if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
         $siteFavicon = null;
     }
-    $heroSlidesData = $heroSlides ?? ($siteSettings['heroSlides'] ?? []);
-    if (!is_array($heroSlidesData)) {
-        $heroSlidesData = [];
-    }
-    $heroSlides = [];
-    foreach ($heroSlidesData as $slide) {
-        if (is_string($slide)) {
-            $slide = ['image' => $slide];
-        }
-
-        if (!is_array($slide)) {
-            continue;
-        }
-
-        $heroSlides[] = $slide;
-    }
-
+    $heroSlides = $siteSettings['heroSlides'] ?? [];
     $visibleHeroSlides = array_values(array_filter($heroSlides, static function ($slide) {
         if (isset($slide['isVisible']) && !$slide['isVisible']) {
             return false;
@@ -36,12 +20,6 @@
 
         return $imageUrl !== '';
     }));
-    $primaryHeroSlide = $visibleHeroSlides[0] ?? null;
-    $heroPrimaryLabel = is_array($primaryHeroSlide) ? trim((string) ($primaryHeroSlide['label'] ?? '')) : '';
-    $heroPrimaryDescription = is_array($primaryHeroSlide) ? trim((string) ($primaryHeroSlide['description'] ?? '')) : '';
-    $heroSubtitle = $heroPrimaryDescription !== ''
-        ? $heroPrimaryDescription
-        : 'Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.';
     $hasHeroSlides = !empty($visibleHeroSlides);
     $contact = $siteSettings['contact'] ?? [];
     $contactEmails = $contact['emails'] ?? [];
@@ -275,11 +253,8 @@
         <?php endif; ?>
         <div class="hero__content">
             <div class="hero__copy">
-                <?php if ($heroPrimaryLabel !== ''): ?>
-                    <span class="hero__badge">Circuito destacado · <?= htmlspecialchars($heroPrimaryLabel); ?></span>
-                <?php endif; ?>
                 <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
-                <p class="hero__subtitle"><?= htmlspecialchars($heroSubtitle); ?></p>
+                <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.</p>
             </div>
             <form class="booking-form" action="explorar.php" method="get" role="search">
                 <fieldset class="booking-form__tabs">
@@ -332,12 +307,6 @@
                         <div class="hero__slider-label" data-hero-label><?= htmlspecialchars($initialLabel); ?></div>
                     <?php else: ?>
                         <div class="hero__slider-label" data-hero-label hidden></div>
-                    <?php endif; ?>
-                    <?php $initialDescription = $visibleHeroSlides[0]['description'] ?? null; ?>
-                    <?php if (!empty($initialDescription)): ?>
-                        <p class="hero__slider-description" data-hero-description><?= htmlspecialchars(trim((string) $initialDescription)); ?></p>
-                    <?php else: ?>
-                        <p class="hero__slider-description" data-hero-description hidden></p>
                     <?php endif; ?>
                     <?php if (count($visibleHeroSlides) > 1): ?>
                         <div class="hero__slider-dots" role="tablist">
@@ -1255,7 +1224,6 @@
             const heroSlides = heroSection ? Array.from(heroSection.querySelectorAll('[data-hero-slide]')) : [];
             const heroDots = heroSection ? Array.from(heroSection.querySelectorAll('[data-hero-dot]')) : [];
             const heroLabel = heroSection ? heroSection.querySelector('[data-hero-label]') : null;
-            const heroDescription = heroSection ? heroSection.querySelector('[data-hero-description]') : null;
 
             if (heroSection && heroSlides.length) {
                 let activeIndex = heroSlides.findIndex((slide) => slide.classList.contains('hero__background--active'));
@@ -1275,19 +1243,6 @@
                     } else {
                         heroLabel.hidden = true;
                         heroLabel.textContent = '';
-                    }
-
-                    if (!heroDescription) {
-                        return;
-                    }
-
-                    const descriptionText = (slide.dataset.heroDescription || '').trim();
-                    if (descriptionText) {
-                        heroDescription.textContent = descriptionText;
-                        heroDescription.hidden = false;
-                    } else {
-                        heroDescription.textContent = '';
-                        heroDescription.hidden = true;
                     }
                 };
 

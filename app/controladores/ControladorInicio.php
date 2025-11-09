@@ -36,160 +36,21 @@ class ControladorInicio
             $pageTitle .= ' — ' . $siteSettings['siteTagline'];
         }
 
-        $featuredCircuits = $circuitRepository->getFeatured();
-        $heroSlides = $this->buildHeroSlides($siteSettings, $featuredCircuits);
-
         $view = new Vista('inicio');
         $view->render([
             'title' => $pageTitle,
             'currentUser' => $authService->currentUser(),
             'accountDeleted' => $accountDeleted,
             'siteSettings' => $siteSettings,
-            'heroSlides' => $heroSlides,
             'featuredPackages' => $packagesRepository->getFeatured(),
             'signatureExperiences' => $packagesRepository->getSignatureExperiences(),
-            'featuredCircuits' => $featuredCircuits,
+            'featuredCircuits' => $circuitRepository->getFeatured(),
             'destinations' => $destinationRepository->getHighlights(),
             'testimonials' => $reviewRepository->getLatest(),
             'metrics' => $insightRepository->getMetrics(),
             'sellingPoints' => $this->sellingPoints(),
             'travelPillars' => $this->travelPillars(),
         ]);
-    }
-
-    private function buildHeroSlides(array $siteSettings, array $circuits): array
-    {
-        $slides = [];
-        foreach ($circuits as $circuit) {
-            if (!is_array($circuit)) {
-                continue;
-            }
-
-            $images = $this->extractCircuitImages($circuit);
-            if (empty($images)) {
-                continue;
-            }
-
-            $label = trim((string) ($circuit['nombre'] ?? $circuit['title'] ?? ''));
-            $description = trim((string) ($circuit['resumen'] ?? $circuit['descripcion'] ?? ''));
-            $altText = $label !== '' ? $label : null;
-
-            foreach ($images as $image) {
-                $slides[] = [
-                    'image' => $image,
-                    'label' => $label !== '' ? $label : null,
-                    'description' => $description !== '' ? $description : null,
-                    'altText' => $altText,
-                    'isVisible' => true,
-                ];
-
-                if (count($slides) >= 5) {
-                    break 2;
-                }
-            }
-        }
-
-        if (empty($slides)) {
-            $rawSlides = $siteSettings['heroSlides'] ?? [];
-            if (is_array($rawSlides)) {
-                foreach ($rawSlides as $slide) {
-                    if (is_string($slide)) {
-                        $slide = ['image' => $slide];
-                    }
-
-                    if (!is_array($slide)) {
-                        continue;
-                    }
-
-                    $image = isset($slide['image']) ? trim((string) $slide['image']) : '';
-                    if ($image === '') {
-                        continue;
-                    }
-
-                    $slides[] = array_merge(
-                        [
-                            'image' => $image,
-                            'isVisible' => !isset($slide['isVisible']) || (bool) $slide['isVisible'],
-                        ],
-                        $slide
-                    );
-                }
-            }
-        }
-
-        return array_values(array_filter(
-            $slides,
-            static function ($slide): bool {
-                if (!is_array($slide)) {
-                    return false;
-                }
-
-                if (isset($slide['isVisible']) && !$slide['isVisible']) {
-                    return false;
-                }
-
-                $image = isset($slide['image']) ? trim((string) $slide['image']) : '';
-
-                return $image !== '';
-            }
-        ));
-    }
-
-    private function extractCircuitImages(array $circuit): array
-    {
-        $images = [];
-
-        if (!empty($circuit['galeria']) && is_array($circuit['galeria'])) {
-            foreach ($circuit['galeria'] as $item) {
-                if (!is_string($item)) {
-                    continue;
-                }
-
-                $trimmed = trim($item);
-                if ($trimmed !== '') {
-                    $images[] = $trimmed;
-                }
-            }
-        }
-
-        if (empty($images) && !empty($circuit['gallery']) && is_array($circuit['gallery'])) {
-            foreach ($circuit['gallery'] as $entry) {
-                if (is_string($entry)) {
-                    $trimmed = trim($entry);
-                    if ($trimmed !== '') {
-                        $images[] = $trimmed;
-                    }
-
-                    continue;
-                }
-
-                if (!is_array($entry)) {
-                    continue;
-                }
-
-                $candidate = $entry['src'] ?? $entry['url'] ?? $entry['image'] ?? $entry['path'] ?? null;
-                if (!is_string($candidate)) {
-                    continue;
-                }
-
-                $trimmed = trim($candidate);
-                if ($trimmed !== '') {
-                    $images[] = $trimmed;
-                }
-            }
-        }
-
-        if (empty($images)) {
-            $fallbackImage = $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? null;
-            if (is_string($fallbackImage)) {
-                $trimmed = trim($fallbackImage);
-                if ($trimmed !== '') {
-                    $images[] = $trimmed;
-                }
-            }
-        }
-
-        return array_values(array_unique($images));
     }
 
     private function sellingPoints(): array
