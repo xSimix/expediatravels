@@ -1884,6 +1884,58 @@ main {
     height: 100%;
 }
 
+.circuit-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.circuit-card__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.08);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--sky-primary);
+}
+
+.circuit-card__tag-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.circuit-card__tag-value {
+    color: var(--sky-primary);
+}
+
+.circuit-card__meta {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.circuit-card__meta-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.circuit-card__meta-value {
+    font-weight: 600;
+    color: var(--text-main);
+}
+
 .circuit-card__highlight {
     margin: 0;
     font-size: 0.92rem;
