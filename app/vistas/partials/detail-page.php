@@ -195,6 +195,25 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
                     if ($titleExperience === '' || $descriptionExperience === '') {
                         continue;
                     }
+                    $experiencePriceRaw = $experience['price'] ?? $experience['precio'] ?? $experience['priceFrom'] ?? null;
+                    $experienceCurrency = strtoupper((string) ($experience['currency'] ?? $experience['moneda'] ?? 'PEN'));
+                    $experiencePriceText = '';
+                    if (is_numeric($experiencePriceRaw)) {
+                        $symbol = match ($experienceCurrency) {
+                            'USD' => '$',
+                            'EUR' => '€',
+                            default => 'S/',
+                        };
+                        $experiencePriceText = sprintf('%s %.2f', $symbol, (float) $experiencePriceRaw);
+                    } elseif (is_string($experiencePriceRaw)) {
+                        $experiencePriceText = trim($experiencePriceRaw);
+                    }
+                    $experiencePriceNote = '';
+                    if (!empty($experience['priceNote'] ?? null)) {
+                        $experiencePriceNote = trim((string) $experience['priceNote']);
+                    } elseif (!empty($experience['notaPrecio'] ?? null)) {
+                        $experiencePriceNote = trim((string) $experience['notaPrecio']);
+                    }
                 ?>
                     <article class="detail-experience">
                         <?php if (!empty($experience['icon'])): ?>
@@ -202,6 +221,14 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
                         <?php endif; ?>
                         <h3><?= htmlspecialchars($titleExperience); ?></h3>
                         <p><?= htmlspecialchars($descriptionExperience); ?></p>
+                        <?php if ($experiencePriceText !== ''): ?>
+                            <p class="detail-experience__price">
+                                <strong>Tarifa desde:</strong> <?= htmlspecialchars($experiencePriceText); ?>
+                                <?php if ($experiencePriceNote !== ''): ?>
+                                    <span><?= htmlspecialchars($experiencePriceNote); ?></span>
+                                <?php endif; ?>
+                            </p>
+                        <?php endif; ?>
                     </article>
                 <?php endforeach; ?>
             </div>

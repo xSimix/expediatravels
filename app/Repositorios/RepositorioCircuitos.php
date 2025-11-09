@@ -13,7 +13,7 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia, c.servicios,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -53,7 +53,7 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia, c.servicios,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -220,6 +220,8 @@ class RepositorioCircuitos
                 'totalResenas' => 132,
                 'esNuevo' => true,
                 'esExclusivo' => true,
+                'precio' => 1450.00,
+                'moneda' => 'PEN',
                 'priceFrom' => 'Desde S/ 1,450 por viajero',
                 'heroImage' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80',
                 'mapImage' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80',
@@ -376,6 +378,8 @@ class RepositorioCircuitos
                 'totalResenas' => 98,
                 'esNuevo' => false,
                 'esExclusivo' => false,
+                'precio' => 680.00,
+                'moneda' => 'PEN',
                 'priceFrom' => 'Desde S/ 680 por viajero',
                 'heroImage' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80',
                 'mapImage' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=900&q=80',

@@ -125,6 +125,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td>
                                     <ul class="admin-table__list">
                                         <li><strong>Duración:</strong> <?= htmlspecialchars(mostrarDuracionCircuito($circuito['duracion']), ENT_QUOTES, 'UTF-8'); ?></li>
+                                        <li><strong>Tarifa desde:</strong> <?= htmlspecialchars(circuitosFormatearPrecio($circuito['precio'] ?? null, $circuito['moneda'] ?? 'PEN'), ENT_QUOTES, 'UTF-8'); ?></li>
                                         <?php if ($circuito['frecuencia'] !== ''): ?>
                                             <li><strong>Frecuencia:</strong> <?= htmlspecialchars($circuito['frecuencia'], ENT_QUOTES, 'UTF-8'); ?></li>
                                         <?php endif; ?>

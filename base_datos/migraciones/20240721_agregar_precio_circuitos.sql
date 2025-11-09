@@ -1,0 +1,2 @@
+ALTER TABLE circuitos
+    ADD COLUMN precio DECIMAL(10, 2) DEFAULT NULL AFTER duracion;
