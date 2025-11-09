@@ -491,17 +491,14 @@
                         }
                         $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
                         $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
-                        $circuitSummary = $experience['resumen'] ?? ($experience['summary'] ?? 'Pronto sumaremos más detalles.');
-                        $circuitIsNew = (bool) ($experience['esNuevo'] ?? false);
-                        $circuitIsExclusive = (bool) ($experience['esExclusivo'] ?? false);
-                        $circuitExperienceType = (string) ($experience['experiencia'] ?? $experience['dificultad'] ?? '');
-                        $circuitExperienceLabel = trim($circuitExperienceType) !== '' ? $circuitExperienceType : '';
-                        $circuitGroupRaw = $experience['grupo'] ?? $experience['personas'] ?? $experience['capacidad'] ?? $experience['capacidad_maxima'] ?? null;
+                        $circuitRegion = $experience['region'] ?? '';
+                        $circuitDuration = trim((string) ($experience['duracion'] ?? ($experience['duration'] ?? '')));
+                        $circuitDurationDisplay = $circuitDuration !== '' ? $circuitDuration : '1 día';
+                        $circuitGroupRaw = $experience['grupo'] ?? $experience['personas'] ?? $experience['capacidad'] ?? $experience['capacidad_maxima'] ?? $experience['group'] ?? null;
                         if (is_numeric($circuitGroupRaw)) {
-                            $circuitGroupRaw = 'Hasta ' . (int) $circuitGroupRaw . ' viajeros';
+                            $circuitGroupRaw = (int) $circuitGroupRaw . ' pax';
                         }
-                        $circuitGroup = is_string($circuitGroupRaw) ? trim($circuitGroupRaw) : '';
-                        $circuitDeparture = (string) ($experience['proximaSalida'] ?? $experience['frecuencia'] ?? '');
+                        $circuitGroupDisplay = is_string($circuitGroupRaw) && trim($circuitGroupRaw) !== '' ? trim($circuitGroupRaw) : '6 pax';
                         $ratingValueRaw = $experience['ratingPromedio'] ?? $experience['rating'] ?? $experience['calificacion'] ?? null;
                         if (is_string($ratingValueRaw) && is_numeric(str_replace(',', '.', $ratingValueRaw))) {
                             $ratingValueRaw = str_replace(',', '.', $ratingValueRaw);
@@ -512,106 +509,132 @@
                             $ratingCountRaw = preg_replace('/[^0-9]/', '', $ratingCountRaw);
                         }
                         $ratingCount = is_numeric($ratingCountRaw) ? (int) $ratingCountRaw : null;
-                        $reviewsText = null;
-                        if ($ratingValue !== null && $ratingValue > 0) {
-                            $reviewsText = number_format($ratingValue, 1, '.', ',') . ' ★';
-                            if ($ratingCount !== null && $ratingCount > 0) {
-                                $reviewsText .= ' (' . number_format($ratingCount, 0, '.', ',') . ')';
+                        $servicesRaw = $experience['servicios'] ?? [];
+                        $servicesList = array_values(array_filter(
+                            is_array($servicesRaw) ? $servicesRaw : [],
+                            static fn ($service): bool => is_string($service) && trim($service) !== ''
+                        ));
+                        $transportLabel = null;
+                        foreach ($servicesList as $service) {
+                            if (stripos($service, 'transporte') !== false || stripos($service, 'traslado') !== false) {
+                                $transportLabel = $service;
+                                break;
                             }
-                        } elseif ($ratingCount !== null && $ratingCount > 0) {
-                            $reviewsText = number_format($ratingCount, 0, '.', ',') . ' reseñas';
                         }
-                        $circuitDuration = trim((string) ($experience['duracion'] ?? ($experience['duration'] ?? '')));
-                        if ($circuitDuration === '') {
-                            $circuitDuration = 'Pronto';
+                        $transportDisplay = $transportLabel ?? ($servicesList[0] ?? 'Traslados incluidos');
+                        $highlightService = null;
+                        foreach ($servicesList as $service) {
+                            if ($service !== $transportDisplay) {
+                                $highlightService = $service;
+                                break;
+                            }
                         }
-                        $circuitExperienceDisplay = $circuitExperienceLabel !== '' ? $circuitExperienceLabel : 'Experiencia guiada';
-                        $circuitGroupDisplay = $circuitGroup !== '' ? $circuitGroup : 'Grupos reducidos';
-                        $circuitDepartureDisplay = trim($circuitDeparture) !== '' ? $circuitDeparture : 'Pronto';
-                        $reviewsDisplay = $reviewsText ?? 'Pronto';
-                        $circuitDetails = [
-                            'Duración' => $circuitDuration,
-                            'Experiencia' => $circuitExperienceDisplay,
-                            'Grupo' => $circuitGroupDisplay,
-                            'Próxima salida' => $circuitDepartureDisplay,
-                            'Reseñas' => $reviewsDisplay,
-                        ];
-                        $circuitSummaryQuickView = trim(preg_replace('/\s+/', ' ', (string) $circuitSummary));
-                        if ($circuitSummaryQuickView === '') {
-                            $circuitSummaryQuickView = 'Pronto sumaremos más detalles de este circuito.';
+                        if ($highlightService === null) {
+                            $highlightService = 'Experiencia guiada con expertos locales';
                         }
-                        $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency);
-                        $priceNoteText = $circuitPriceText !== null ? 'por persona' : '';
+                        $locationSegments = [];
                         $circuitDestinationLabel = trim((string) $circuitDestination);
+                        $circuitRegionLabel = is_string($circuitRegion) ? trim($circuitRegion) : '';
+                        if ($circuitDestinationLabel !== '') {
+                            $locationSegments[] = $circuitDestinationLabel;
+                        }
+                        if ($circuitRegionLabel !== '' && !in_array($circuitRegionLabel, $locationSegments, true)) {
+                            $locationSegments[] = $circuitRegionLabel;
+                        }
+                        $circuitLocationDisplay = !empty($locationSegments) ? implode(' · ', $locationSegments) : 'Selva Central';
+                        $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency);
+                        $priceNoteText = $circuitPriceText !== null ? $circuitDurationDisplay : '';
+                        $ratingDisplay = $ratingValue !== null ? number_format($ratingValue, 1, '.', '') : null;
+                        $ratingCountDisplay = $ratingCount !== null && $ratingCount > 0 ? number_format($ratingCount, 0, '.', ',') : null;
                     ?>
-                    <article class="travel-card" data-theme="experience">
-                        <div class="travel-card__media"<?= $circuitImage ? " style=\"background-image: url('" . htmlspecialchars($circuitImage) . "');\"" : ''; ?> aria-hidden="true">
-                            <?php if ($circuitIsNew || $circuitIsExclusive || $circuitDestinationLabel !== ''): ?>
-                                <div class="travel-card__pill-group">
-                                    <?php if ($circuitIsNew): ?>
-                                        <span class="travel-card__status">Nuevo recorrido</span>
-                                    <?php endif; ?>
-                                    <?php if ($circuitIsExclusive): ?>
-                                        <span class="travel-card__status travel-card__status--exclusive">Circuito exclusivo</span>
-                                    <?php endif; ?>
-                                    <?php if ($circuitDestinationLabel !== ''): ?>
-                                        <span class="travel-card__tag"><?= htmlspecialchars($circuitDestinationLabel); ?></span>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                        <div class="travel-card__content">
-                            <header class="travel-card__header">
-                                <span class="travel-card__category"><?= htmlspecialchars($circuitExperienceDisplay); ?></span>
-                                <?php if ($reviewsText !== null): ?>
-                                    <span class="travel-card__rating"><?= htmlspecialchars($reviewsText); ?></span>
-                                <?php endif; ?>
-                            </header>
-                            <h3 class="travel-card__title">
+                    <article class="circuit-card">
+                        <?php if ($circuitImage): ?>
+                            <img class="circuit-card__image" src="<?= htmlspecialchars($circuitImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($circuitName); ?>" loading="lazy" />
+                        <?php endif; ?>
+                        <div class="circuit-card__body">
+                            <div class="circuit-card__location">
+                                <span class="circuit-card__location-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                        <path d="M10 18s6-5.2 6-10A6 6 0 1 0 4 8c0 4.8 6 10 6 10z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                                        <circle cx="10" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4" />
+                                    </svg>
+                                </span>
+                                <span class="circuit-card__location-text"><?= htmlspecialchars($circuitLocationDisplay); ?></span>
+                            </div>
+                            <h3 class="circuit-card__title">
                                 <a href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"><?= htmlspecialchars($circuitName); ?></a>
                             </h3>
-                            <?php if (!empty($circuitDetails)): ?>
-                                <ul class="travel-card__details">
-                                    <?php foreach ($circuitDetails as $label => $value): ?>
-                                        <li>
-                                            <span><?= htmlspecialchars($label); ?></span>
-                                            <span><?= htmlspecialchars((string) $value); ?></span>
-                                        </li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php endif; ?>
+                            <ul class="circuit-card__features" aria-label="Características del circuito">
+                                <li>
+                                    <span class="circuit-card__feature-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                            <path d="M10 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M4.5 16a5.5 5.5 0 0 1 11 0" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    </span>
+                                    <span><?= htmlspecialchars($circuitGroupDisplay); ?></span>
+                                </li>
+                                <li>
+                                    <span class="circuit-card__feature-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                            <rect x="3" y="4" width="14" height="13" rx="2" stroke="currentColor" stroke-width="1.4" />
+                                            <path d="M3 8h14" stroke="currentColor" stroke-width="1.4" />
+                                            <path d="M7 2v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                                            <path d="M13 2v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                                        </svg>
+                                    </span>
+                                    <span><?= htmlspecialchars($circuitDurationDisplay); ?></span>
+                                </li>
+                                <li>
+                                    <span class="circuit-card__feature-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                            <path d="M3 11h14l1 4H2l1-4z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M5.5 11V6.5A2.5 2.5 0 0 1 8 4h4a2.5 2.5 0 0 1 2.5 2.5V11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                                            <circle cx="6" cy="15" r="1.2" fill="currentColor" />
+                                            <circle cx="14" cy="15" r="1.2" fill="currentColor" />
+                                        </svg>
+                                    </span>
+                                    <span><?= htmlspecialchars($transportDisplay); ?></span>
+                                </li>
+                            </ul>
+                            <p class="circuit-card__highlight"><?= htmlspecialchars($highlightService); ?></p>
+                            <div class="circuit-card__rating">
+                                <span class="circuit-card__stars" aria-hidden="true">
+                                    <svg viewBox="0 0 88 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                        <path d="M8 0l1.9 5.9H16l-4.8 3.5 1.8 5.9L8 12l-5.1 3.3 1.8-5.9L0 5.9h6.1L8 0z" fill="currentColor" />
+                                        <path d="M25.6 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L25.6 0z" fill="currentColor" />
+                                        <path d="M43.2 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L43.2 0z" fill="currentColor" />
+                                        <path d="M60.8 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L60.8 0z" fill="currentColor" />
+                                        <path d="M78.4 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L78.4 0z" fill="currentColor" />
+                                    </svg>
+                                </span>
+                                <span class="circuit-card__rating-text">
+                                    <?php if ($ratingDisplay !== null): ?>
+                                        <?= htmlspecialchars($ratingDisplay); ?> ★
+                                    <?php else: ?>
+                                        Sin reseñas
+                                    <?php endif; ?>
+                                    <?php if ($ratingCountDisplay !== null): ?>
+                                        <span class="circuit-card__rating-count">(<?= htmlspecialchars($ratingCountDisplay); ?> reseñas)</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
                         </div>
-                        <footer class="travel-card__footer">
-                            <div class="travel-card__pricing">
-                                <?php if ($circuitPriceText !== null): ?>
-                                    <span class="travel-card__price"><?= htmlspecialchars($circuitPriceText); ?></span>
-                                    <span class="travel-card__price-note"><?= htmlspecialchars($priceNoteText); ?></span>
-                                <?php else: ?>
-                                    <span class="travel-card__price">Pronto</span>
-                                <?php endif; ?>
+                        <footer class="circuit-card__footer">
+                            <div class="circuit-card__price-group">
+                                <span class="circuit-card__price-label">Desde</span>
+                                <div class="circuit-card__price-amount">
+                                    <?php if ($circuitPriceText !== null): ?>
+                                        <strong><?= htmlspecialchars($circuitPriceText); ?></strong>
+                                        <?php if ($priceNoteText !== ''): ?>
+                                            <span>/ <?= htmlspecialchars($priceNoteText); ?></span>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <strong>Consultar</strong>
+                                    <?php endif; ?>
+                                </div>
                             </div>
-                            <div class="travel-card__actions">
-                                <button
-                                    type="button"
-                                    class="travel-card__action travel-card__action--ghost"
-                                    data-quick-view
-                                    aria-haspopup="dialog"
-                                    data-title="<?= htmlspecialchars($circuitName, ENT_QUOTES); ?>"
-                                    data-summary="<?= htmlspecialchars($circuitSummaryQuickView, ENT_QUOTES); ?>"
-                                    data-duration="<?= htmlspecialchars($circuitDuration, ENT_QUOTES); ?>"
-                                    data-experience="<?= htmlspecialchars($circuitExperienceDisplay, ENT_QUOTES); ?>"
-                                    data-group="<?= htmlspecialchars($circuitGroupDisplay, ENT_QUOTES); ?>"
-                                    data-departure="<?= htmlspecialchars($circuitDepartureDisplay, ENT_QUOTES); ?>"
-                                    data-reviews="<?= htmlspecialchars($reviewsDisplay, ENT_QUOTES); ?>"
-                                    data-rating="<?= htmlspecialchars($ratingValue !== null ? number_format($ratingValue, 1, '.', '') : '', ENT_QUOTES); ?>"
-                                    data-price="<?= htmlspecialchars($circuitPriceText ?? 'Pronto', ENT_QUOTES); ?>"
-                                    data-price-note="<?= htmlspecialchars($priceNoteText, ENT_QUOTES); ?>"
-                                    data-link="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>"
-                                    data-image="<?= $circuitImage ? htmlspecialchars($circuitImage, ENT_QUOTES) : ''; ?>"
-                                    data-destination="<?= htmlspecialchars($circuitDestinationLabel, ENT_QUOTES); ?>"
-                                >⚡ Vista rápida</button>
-                                <a class="travel-card__action travel-card__action--primary" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">Ver circuito</a>
-                            </div>
+                            <a class="circuit-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">Ver paquete</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>

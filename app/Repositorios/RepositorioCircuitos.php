@@ -13,8 +13,9 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
+                        d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
                  LEFT JOIN destinos d ON d.id = c.destino_id
@@ -52,8 +53,9 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.dificultad, c.frecuencia, c.servicios,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
+                        d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
                  LEFT JOIN destinos d ON d.id = c.destino_id
@@ -89,6 +91,7 @@ class RepositorioCircuitos
         $summary = $circuit['resumen'] ?? $circuit['summary'] ?? $circuit['descripcion'] ?? '';
         $duration = $circuit['duracion'] ?? $circuit['duration'] ?? '';
         $destination = $circuit['destino'] ?? $circuit['location'] ?? $circuit['region'] ?? '';
+        $region = $circuit['region'] ?? '';
         $price = $circuit['precio'] ?? $circuit['precio_desde'] ?? null;
         $rawGroup = $circuit['grupo'] ?? $circuit['grupo_maximo'] ?? $circuit['capacidad'] ?? $circuit['capacidad_maxima'] ?? $circuit['group'] ?? null;
         $rawNextDeparture = $circuit['proxima_salida'] ?? $circuit['proximaSalida'] ?? $circuit['nextDeparture'] ?? $circuit['frecuencia'] ?? null;
@@ -149,6 +152,8 @@ class RepositorioCircuitos
             $reviewsCount = (int) $rawReviews;
         }
 
+        $services = $this->parseJsonList($circuit['servicios'] ?? null);
+
         return array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
             'slug' => $circuit['slug'] ?? $this->generateSlug((string) $name),
@@ -157,6 +162,7 @@ class RepositorioCircuitos
             'resumen' => (string) $summary,
             'duracion' => (string) $duration,
             'destino' => (string) $destination,
+            'region' => (string) $region,
             'precio' => is_numeric($price) ? (float) $price : null,
             'moneda' => strtoupper((string) ($circuit['moneda'] ?? 'PEN')),
             'imagen' => $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? $circuit['heroImage'] ?? null,
@@ -168,7 +174,30 @@ class RepositorioCircuitos
             'totalResenas' => $reviewsCount,
             'esNuevo' => $parseBoolean($rawIsNew),
             'esExclusivo' => $parseBoolean($rawIsExclusive),
+            'servicios' => $services,
         ]);
+    }
+
+    private function parseJsonList($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (is_string($value) && $value !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                return array_values(array_filter(
+                    array_map(
+                        static fn ($item): ?string => is_string($item) ? trim($item) : null,
+                        $decoded
+                    ),
+                    static fn ($item): bool => $item !== null && $item !== ''
+                ));
+            }
+        }
+
+        return [];
     }
 
     private function fallbackCircuits(): array
