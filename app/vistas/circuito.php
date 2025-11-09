@@ -549,61 +549,59 @@ $currentUser = $currentUser ?? null;
 
     <main class="circuit-page">
         <section class="circuit-hero">
-            <div class="circuit-hero__content">
-                <div class="circuit-hero__gallery">
-                    <div class="circuit-hero__track" data-hero-track>
-                        <?php foreach ($heroSlides as $slide): ?>
-                            <figure class="circuit-hero__slide">
-                                <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt']); ?>" loading="lazy" />
-                            </figure>
+            <div class="circuit-hero__gallery">
+                <div class="circuit-hero__track" data-hero-track>
+                    <?php foreach ($heroSlides as $slide): ?>
+                        <figure class="circuit-hero__slide">
+                            <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt']); ?>" loading="lazy" />
+                        </figure>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (count($heroSlides) > 1): ?>
+                    <button class="circuit-hero__nav circuit-hero__nav--prev" type="button" data-hero-prev aria-label="Imagen anterior">‹</button>
+                    <button class="circuit-hero__nav circuit-hero__nav--next" type="button" data-hero-next aria-label="Imagen siguiente">›</button>
+                <?php endif; ?>
+            </div>
+            <div class="circuit-hero__info">
+                <?php if ($typeLabel !== ''): ?>
+                    <span class="circuit-hero__label"><?= htmlspecialchars($typeLabel); ?></span>
+                <?php endif; ?>
+                <h1 class="circuit-hero__title"><?= htmlspecialchars($title); ?></h1>
+                <?php if ($tagline !== ''): ?>
+                    <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
+                <?php endif; ?>
+                <?php if (!empty($metaBadges)): ?>
+                    <div class="circuit-hero__meta">
+                        <?php foreach ($metaBadges as $badge): ?>
+                            <?php $badgeClasses = 'circuit-hero__badge'; ?>
+                            <?php if (!empty($badge['variant'] ?? null)): ?>
+                                <?php $badgeClasses .= ' circuit-hero__badge--' . htmlspecialchars((string) $badge['variant']); ?>
+                            <?php endif; ?>
+                            <span class="<?= $badgeClasses; ?>"><?= htmlspecialchars($badge['text']); ?></span>
                         <?php endforeach; ?>
                     </div>
-                    <?php if (count($heroSlides) > 1): ?>
-                        <button class="circuit-hero__nav circuit-hero__nav--prev" type="button" data-hero-prev aria-label="Imagen anterior">‹</button>
-                        <button class="circuit-hero__nav circuit-hero__nav--next" type="button" data-hero-next aria-label="Imagen siguiente">›</button>
-                    <?php endif; ?>
+                <?php endif; ?>
+                <div class="circuit-hero__rating">
+                    <div class="rating-stars" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;">
+                        <span class="sr-only">Calificación promedio <?= htmlspecialchars($reviewsAverageText); ?> de 5</span>
+                    </div>
+                    <div class="rating-summary">
+                        <span class="rating-summary__value"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</span>
+                        <span class="rating-summary__count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</span>
+                    </div>
                 </div>
-                <div class="circuit-hero__info">
-                    <?php if ($typeLabel !== ''): ?>
-                        <span class="circuit-hero__label"><?= htmlspecialchars($typeLabel); ?></span>
+                <?php if ($primarySummaryParagraph !== ''): ?>
+                    <p class="circuit-hero__summary"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
+                <?php endif; ?>
+                <div class="circuit-hero__actions">
+                    <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
+                        <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
+                    <?php else: ?>
+                        <a class="button button--primary" href="#reserva">Reservar ahora</a>
                     <?php endif; ?>
-                    <h1 class="circuit-hero__title"><?= htmlspecialchars($title); ?></h1>
-                    <?php if ($tagline !== ''): ?>
-                        <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
+                    <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
+                        <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
                     <?php endif; ?>
-                    <?php if (!empty($metaBadges)): ?>
-                        <div class="circuit-hero__meta">
-                            <?php foreach ($metaBadges as $badge): ?>
-                                <?php $badgeClasses = 'circuit-hero__badge'; ?>
-                                <?php if (!empty($badge['variant'] ?? null)): ?>
-                                    <?php $badgeClasses .= ' circuit-hero__badge--' . htmlspecialchars((string) $badge['variant']); ?>
-                                <?php endif; ?>
-                                <span class="<?= $badgeClasses; ?>"><?= htmlspecialchars($badge['text']); ?></span>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
-                    <div class="circuit-hero__rating">
-                        <div class="rating-stars" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;">
-                            <span class="sr-only">Calificación promedio <?= htmlspecialchars($reviewsAverageText); ?> de 5</span>
-                        </div>
-                        <div class="rating-summary">
-                            <span class="rating-summary__value"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</span>
-                            <span class="rating-summary__count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</span>
-                        </div>
-                    </div>
-                    <?php if ($primarySummaryParagraph !== ''): ?>
-                        <p class="circuit-hero__summary"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
-                    <?php endif; ?>
-                    <div class="circuit-hero__actions">
-                        <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
-                            <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
-                        <?php else: ?>
-                            <a class="button button--primary" href="#reserva">Reservar ahora</a>
-                        <?php endif; ?>
-                        <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
-                            <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
-                        <?php endif; ?>
-                    </div>
                 </div>
             </div>
         </section>
