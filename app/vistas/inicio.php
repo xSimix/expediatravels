@@ -570,7 +570,25 @@
                     ?>
                     <article class="circuit-card">
                         <?php if ($circuitImage): ?>
-                            <img class="circuit-card__image" src="<?= htmlspecialchars($circuitImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($circuitName); ?>" loading="lazy" />
+                            <div class="circuit-card__media">
+                                <img class="circuit-card__image" src="<?= htmlspecialchars($circuitImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($circuitName); ?>" loading="lazy" />
+                                <?php if ($circuitDestinationLabel !== '' || $difficultyDisplay !== ''): ?>
+                                    <div class="circuit-card__tags circuit-card__tags--overlay">
+                                        <?php if ($circuitDestinationLabel !== ''): ?>
+                                            <span class="circuit-card__tag">
+                                                <span class="circuit-card__tag-label">Destino asociado</span>
+                                                <span class="circuit-card__tag-value"><?= htmlspecialchars($circuitDestinationLabel); ?></span>
+                                            </span>
+                                        <?php endif; ?>
+                                        <?php if ($difficultyDisplay !== ''): ?>
+                                            <span class="circuit-card__tag">
+                                                <span class="circuit-card__tag-label">Dificultad</span>
+                                                <span class="circuit-card__tag-value"><?= htmlspecialchars($difficultyDisplay); ?></span>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                         <div class="circuit-card__body">
                             <div class="circuit-card__location">
@@ -618,7 +636,7 @@
                                     <span><?= htmlspecialchars($transportDisplay); ?></span>
                                 </li>
                             </ul>
-                            <?php if ($circuitDestinationLabel !== '' || $difficultyDisplay !== ''): ?>
+                            <?php if (($circuitDestinationLabel !== '' || $difficultyDisplay !== '') && !$circuitImage): ?>
                                 <div class="circuit-card__tags">
                                     <?php if ($circuitDestinationLabel !== ''): ?>
                                         <span class="circuit-card__tag">
