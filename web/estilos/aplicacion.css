@@ -467,6 +467,19 @@ body::-webkit-scrollbar-thumb:hover {
     gap: 0.75rem;
 }
 
+.detail-experience__price {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--color-slate-700, #334155);
+}
+
+.detail-experience__price span {
+    display: block;
+    margin-top: 0.25rem;
+    font-weight: 400;
+    color: var(--color-slate-500, #64748b);
+}
+
 .detail-experience__icon {
     font-size: 1.8rem;
 }

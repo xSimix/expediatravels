@@ -59,6 +59,7 @@ if ($circuitoSeleccionado === null) {
         'imagen_destacada' => '',
         'galeria' => [],
         'video_destacado_url' => '',
+        'precio' => null,
     ];
 }
 
@@ -67,6 +68,7 @@ $datos = [
     'destino_id' => $circuitoSeleccionado['destino']['id'] ?? 0,
     'destino_personalizado' => $circuitoSeleccionado['destino']['personalizado'] ?? '',
     'duracion' => $circuitoSeleccionado['duracion'] ?? '',
+    'precio' => $circuitoSeleccionado['precio'] !== null ? number_format((float) $circuitoSeleccionado['precio'], 2, '.', '') : '',
     'categoria' => $circuitoSeleccionado['categoria'] ?? 'naturaleza',
     'dificultad' => $circuitoSeleccionado['dificultad'] ?? 'relajado',
     'frecuencia' => $circuitoSeleccionado['frecuencia'] ?? '',
@@ -85,6 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['destino_id'] = isset($_POST['destino_id']) ? (int) $_POST['destino_id'] : $datos['destino_id'];
     $datos['destino_personalizado'] = trim((string) ($_POST['destino_personalizado'] ?? $datos['destino_personalizado']));
     $datos['duracion'] = trim((string) ($_POST['duracion'] ?? $datos['duracion']));
+    $datos['precio'] = trim((string) ($_POST['precio'] ?? $datos['precio']));
     $datos['categoria'] = strtolower(trim((string) ($_POST['categoria'] ?? $datos['categoria'])));
     $datos['dificultad'] = strtolower(trim((string) ($_POST['dificultad'] ?? $datos['dificultad'])));
     $datos['frecuencia'] = trim((string) ($_POST['frecuencia'] ?? $datos['frecuencia']));
@@ -123,6 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
 
     $puntosInteres = convertirListado($datos['puntos_interes']);
     $serviciosIncluidos = convertirListado($datos['servicios']);
+    $precio = circuitosParsearPrecio($datos['precio'], $errores);
 
     $destinoNombre = $datos['destino_personalizado'];
     $destinoRegion = '';
@@ -137,6 +141,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
             'destino_id' => $datos['destino_id'],
             'destino_personalizado' => $datos['destino_personalizado'],
             'duracion' => $datos['duracion'],
+            'precio' => $precio,
             'categoria' => $datos['categoria'],
             'dificultad' => $datos['dificultad'],
             'frecuencia' => $datos['frecuencia'],
@@ -256,13 +261,19 @@ require __DIR__ . '/plantilla/cabecera.php';
 
             <div class="admin-grid two-columns">
                 <div class="admin-field">
+                    <label for="precio">Tarifa desde</label>
+                    <input type="text" id="precio" name="precio" value="<?= htmlspecialchars($datos['precio'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="150.00" />
+                    <p class="admin-help">Ingresa el monto referencial por viajero (ejemplo: 150.00).</p>
+                </div>
+                <div class="admin-field">
                     <label for="frecuencia">Frecuencia de salida</label>
                     <input type="text" id="frecuencia" name="frecuencia" value="<?= htmlspecialchars($datos['frecuencia'], ENT_QUOTES, 'UTF-8'); ?>" />
                 </div>
-                <div class="admin-field">
-                    <label for="video_destacado_url">URL de video destacado</label>
-                    <input type="url" id="video_destacado_url" name="video_destacado_url" value="<?= htmlspecialchars($datos['video_destacado_url'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
+            </div>
+            <div class="admin-field">
+                <label for="video_destacado_url">URL de video destacado</label>
+                <input type="url" id="video_destacado_url" name="video_destacado_url" value="<?= htmlspecialchars($datos['video_destacado_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.youtube.com/watch?v=XXXX" />
+                <p class="admin-help">Comparte el recorrido en formato audiovisual para inspirar a los viajeros.</p>
             </div>
 
             <div class="admin-field">

@@ -59,6 +59,7 @@ CREATE TABLE circuitos (
     destino_personalizado VARCHAR(150) DEFAULT NULL,
     nombre VARCHAR(150) NOT NULL,
     duracion VARCHAR(80) NOT NULL,
+    precio DECIMAL(10, 2) DEFAULT NULL,
     categoria ENUM('naturaleza', 'cultural', 'aventura', 'gastronomico', 'bienestar') NOT NULL DEFAULT 'naturaleza',
     dificultad ENUM('relajado', 'moderado', 'intenso') NOT NULL DEFAULT 'relajado',
     frecuencia VARCHAR(120) DEFAULT NULL,

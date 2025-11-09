@@ -97,6 +97,17 @@ function normalizarCircuito(array $circuito, array $destinos): array
     $puntosInteres = prepararArrayCircuito($circuito['puntos_interes'] ?? []);
     $servicios = prepararArrayCircuito($circuito['servicios'] ?? []);
     $galeria = prepararArrayCircuito($circuito['galeria'] ?? []);
+    $precioBruto = $circuito['precio'] ?? $circuito['precio_desde'] ?? null;
+    if (is_string($precioBruto)) {
+        $precioSanitizado = preg_replace('/[^0-9,\.\-]/', '', $precioBruto);
+        if ($precioSanitizado !== null && $precioSanitizado !== '') {
+            $precioSanitizado = str_replace(',', '.', $precioSanitizado);
+            if (is_numeric($precioSanitizado)) {
+                $precioBruto = (float) $precioSanitizado;
+            }
+        }
+    }
+    $precio = is_numeric($precioBruto) ? (float) $precioBruto : null;
     $categoria = strtolower(trim((string) ($circuito['categoria'] ?? 'naturaleza')));
     $dificultad = strtolower(trim((string) ($circuito['dificultad'] ?? 'relajado')));
     $estado = strtolower(trim((string) ($circuito['estado'] ?? 'borrador')));
@@ -111,6 +122,8 @@ function normalizarCircuito(array $circuito, array $destinos): array
             'region' => $destinoRegion,
         ],
         'duracion' => trim((string) ($circuito['duracion'] ?? '')),
+        'precio' => $precio,
+        'moneda' => strtoupper(trim((string) ($circuito['moneda'] ?? 'PEN'))),
         'categoria' => $categoria,
         'dificultad' => $dificultad,
         'frecuencia' => trim((string) ($circuito['frecuencia'] ?? '')),
@@ -153,14 +166,15 @@ function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, categoria, dificultad, frecuencia, estado, descripcion, puntos_interes, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
-             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :categoria, :dificultad, :frecuencia, :estado, :descripcion, :puntos_interes, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
+            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, precio, categoria, dificultad, frecuencia, estado, descripcion, puntos_interes, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
+             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :precio, :categoria, :dificultad, :frecuencia, :estado, :descripcion, :puntos_interes, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
         );
         $statement->execute([
             ':destino_id' => $circuito['destino_id'] > 0 ? $circuito['destino_id'] : null,
             ':destino_personalizado' => $circuito['destino_personalizado'] !== '' ? $circuito['destino_personalizado'] : null,
             ':nombre' => $circuito['nombre'],
             ':duracion' => $circuito['duracion'],
+            ':precio' => $circuito['precio'] !== null ? $circuito['precio'] : null,
             ':categoria' => $circuito['categoria'],
             ':dificultad' => $circuito['dificultad'],
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
@@ -192,6 +206,7 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
                  destino_personalizado = :destino_personalizado,
                  nombre = :nombre,
                  duracion = :duracion,
+                 precio = :precio,
                  categoria = :categoria,
                  dificultad = :dificultad,
                  frecuencia = :frecuencia,
@@ -211,6 +226,7 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
             ':destino_personalizado' => $circuito['destino_personalizado'] !== '' ? $circuito['destino_personalizado'] : null,
             ':nombre' => $circuito['nombre'],
             ':duracion' => $circuito['duracion'],
+            ':precio' => $circuito['precio'] !== null ? $circuito['precio'] : null,
             ':categoria' => $circuito['categoria'],
             ':dificultad' => $circuito['dificultad'],
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
@@ -346,6 +362,50 @@ function obtenerNombreDestinoCircuito(array $circuito): string
 function mostrarDuracionCircuito(string $duracion): string
 {
     return $duracion !== '' ? $duracion : '—';
+}
+
+function circuitosFormatearPrecio(?float $precio, string $moneda = 'PEN'): string
+{
+    if ($precio === null) {
+        return '—';
+    }
+
+    $simbolos = [
+        'USD' => '$',
+        'EUR' => '€',
+        'PEN' => 'S/',
+    ];
+
+    $moneda = strtoupper($moneda);
+    $simbolo = $simbolos[$moneda] ?? $moneda;
+
+    return sprintf('%s %.2f', $simbolo, $precio);
+}
+
+function circuitosParsearPrecio(string $valor, array &$errores): ?float
+{
+    $texto = trim($valor);
+    if ($texto === '') {
+        return null;
+    }
+
+    $sinSimbolos = str_replace(['S/', 's/', '$', '€', '£', 'USD', 'PEN'], '', $texto);
+    $normalizado = str_replace(',', '.', preg_replace('/[^0-9,\.\-]/', '', $sinSimbolos));
+
+    if ($normalizado === '' || !is_numeric($normalizado)) {
+        $errores[] = 'El precio debe ser un número válido. Ejemplo: 150.00';
+
+        return null;
+    }
+
+    $precio = round((float) $normalizado, 2);
+    if ($precio < 0) {
+        $errores[] = 'El precio debe ser mayor o igual a cero.';
+
+        return null;
+    }
+
+    return $precio;
 }
 
 function categoriaCircuitoEtiqueta(string $categoria): string
