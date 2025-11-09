@@ -358,11 +358,12 @@
                     'Yanachaga' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?q=80&w=1400&auto=format&fit=crop',
                 ];
 
+                $defaultRegionName = 'Otros distinos';
                 $destinationsByRegion = [];
                 foreach ($destinations as $index => $destination) {
-                    $region = trim((string) ($destination['region'] ?? 'Otros destinos'));
+                    $region = trim((string) ($destination['region'] ?? $defaultRegionName));
                     if ($region === '') {
-                        $region = 'Otros destinos';
+                        $region = $defaultRegionName;
                     }
 
                     $destinationName = trim((string) ($destination['nombre'] ?? ''));
@@ -1108,15 +1109,18 @@
                     const items = destinationsData[region] || [];
                     cardsEl.innerHTML = items.map((item) => {
                         const title = escapeHtml(item.title);
+                        const href = escapeHtml(item.href || '#');
                         const imageMarkup = item.img ? `<img class="media" src="${escapeHtml(item.img)}" alt="${title}" />` : '';
                         const metaMarkup = item.meta ? `<div class="meta">${escapeHtml(item.meta)}</div>` : '';
                         return `
                             <article class="card" role="article">
-                                ${imageMarkup}
-                                <div class="body">
-                                    <div class="title"><span class="row">${iconPin()}</span> ${title}</div>
-                                    ${metaMarkup}
-                                </div>
+                                <a class="card__link" href="${href}">
+                                    ${imageMarkup}
+                                    <div class="body">
+                                        <div class="title"><span class="row">${iconPin()}</span> ${title}</div>
+                                        ${metaMarkup}
+                                    </div>
+                                </a>
                             </article>
                         `;
                     }).join('');
