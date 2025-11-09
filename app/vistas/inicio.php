@@ -570,7 +570,39 @@
                     ?>
                     <article class="circuit-card">
                         <?php if ($circuitImage): ?>
-                            <img class="circuit-card__image" src="<?= htmlspecialchars($circuitImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($circuitName); ?>" loading="lazy" />
+                            <div class="circuit-card__media">
+                                <img class="circuit-card__image" src="<?= htmlspecialchars($circuitImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($circuitName); ?>" loading="lazy" />
+                                <?php if ($circuitDestinationLabel !== '' || $difficultyDisplay !== ''): ?>
+                                    <div class="circuit-card__tags circuit-card__tags--overlay">
+                                        <?php if ($circuitDestinationLabel !== ''): ?>
+                                            <span class="circuit-card__tag circuit-card__tag--destination">
+                                                <span class="circuit-card__tag-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" focusable="false" role="presentation">
+                                                        <path d="M12 2.75a7.25 7.25 0 0 0-7.25 7.25c0 4.78 4.43 9.6 6.4 11.5a1.2 1.2 0 0 0 1.7 0c1.97-1.9 6.4-6.72 6.4-11.5A7.25 7.25 0 0 0 12 2.75Zm0 9.88a2.63 2.63 0 1 1 0-5.25 2.63 2.63 0 0 1 0 5.25Z" fill="currentColor" />
+                                                    </svg>
+                                                </span>
+                                                <span class="circuit-card__tag-text">
+                                                    <span class="visually-hidden">Destino asociado:</span>
+                                                    <?= htmlspecialchars($circuitDestinationLabel); ?>
+                                                </span>
+                                            </span>
+                                        <?php endif; ?>
+                                        <?php if ($difficultyDisplay !== ''): ?>
+                                            <span class="circuit-card__tag circuit-card__tag--difficulty">
+                                                <span class="circuit-card__tag-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 24 24" focusable="false" role="presentation">
+                                                        <path d="M3.5 19.25h17a1 1 0 0 0 .86-1.5l-6.5-11a1 1 0 0 0-1.72 0l-2.1 3.54-1.28-2.12a1 1 0 0 0-1.72 0l-5.25 8.87a1 1 0 0 0 .86 1.5Zm9.5-10.01L18.02 17.25H5.98l3.4-5.75 1.28 2.12a1 1 0 0 0 1.72 0Z" fill="currentColor" />
+                                                    </svg>
+                                                </span>
+                                                <span class="circuit-card__tag-text">
+                                                    <span class="visually-hidden">Dificultad:</span>
+                                                    <?= htmlspecialchars($difficultyDisplay); ?>
+                                                </span>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         <?php endif; ?>
                         <div class="circuit-card__body">
                             <div class="circuit-card__location">
@@ -618,18 +650,32 @@
                                     <span><?= htmlspecialchars($transportDisplay); ?></span>
                                 </li>
                             </ul>
-                            <?php if ($circuitDestinationLabel !== '' || $difficultyDisplay !== ''): ?>
+                            <?php if (($circuitDestinationLabel !== '' || $difficultyDisplay !== '') && !$circuitImage): ?>
                                 <div class="circuit-card__tags">
                                     <?php if ($circuitDestinationLabel !== ''): ?>
-                                        <span class="circuit-card__tag">
-                                            <span class="circuit-card__tag-label">Destino asociado</span>
-                                            <span class="circuit-card__tag-value"><?= htmlspecialchars($circuitDestinationLabel); ?></span>
+                                        <span class="circuit-card__tag circuit-card__tag--destination">
+                                            <span class="circuit-card__tag-icon" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" focusable="false" role="presentation">
+                                                    <path d="M12 2.75a7.25 7.25 0 0 0-7.25 7.25c0 4.78 4.43 9.6 6.4 11.5a1.2 1.2 0 0 0 1.7 0c1.97-1.9 6.4-6.72 6.4-11.5A7.25 7.25 0 0 0 12 2.75Zm0 9.88a2.63 2.63 0 1 1 0-5.25 2.63 2.63 0 0 1 0 5.25Z" fill="currentColor" />
+                                                </svg>
+                                            </span>
+                                            <span class="circuit-card__tag-text">
+                                                <span class="visually-hidden">Destino asociado:</span>
+                                                <?= htmlspecialchars($circuitDestinationLabel); ?>
+                                            </span>
                                         </span>
                                     <?php endif; ?>
                                     <?php if ($difficultyDisplay !== ''): ?>
-                                        <span class="circuit-card__tag">
-                                            <span class="circuit-card__tag-label">Dificultad</span>
-                                            <span class="circuit-card__tag-value"><?= htmlspecialchars($difficultyDisplay); ?></span>
+                                        <span class="circuit-card__tag circuit-card__tag--difficulty">
+                                            <span class="circuit-card__tag-icon" aria-hidden="true">
+                                                <svg viewBox="0 0 24 24" focusable="false" role="presentation">
+                                                    <path d="M3.5 19.25h17a1 1 0 0 0 .86-1.5l-6.5-11a1 1 0 0 0-1.72 0l-2.1 3.54-1.28-2.12a1 1 0 0 0-1.72 0l-5.25 8.87a1 1 0 0 0 .86 1.5Zm9.5-10.01L18.02 17.25H5.98l3.4-5.75 1.28 2.12a1 1 0 0 0 1.72 0Z" fill="currentColor" />
+                                                </svg>
+                                            </span>
+                                            <span class="circuit-card__tag-text">
+                                                <span class="visually-hidden">Dificultad:</span>
+                                                <?= htmlspecialchars($difficultyDisplay); ?>
+                                            </span>
                                         </span>
                                     <?php endif; ?>
                                 </div>
