@@ -169,10 +169,9 @@
                 <span></span>
             </button>
             <nav class="site-header__nav" aria-label="Menú principal" data-site-nav>
-                <a class="site-header__link site-header__link--active" href="#inicio">Inicio</a>
-                <a class="site-header__link" href="#destinos">Destinos</a>
-                <a class="site-header__link" href="#circuitos">Circuitos Turisticos</a>
-                <a class="site-header__link" href="#paquetes">Paquetes Turisticos</a>
+                <a class="site-header__link" href="#destinos">Destino</a>
+                <a class="site-header__link" href="#circuitos">Circuito</a>
+                <a class="site-header__link" href="#paquetes">Paquetes</a>
                 <a class="site-header__link" href="#contacto">Contacto</a>
             </nav>
             <div class="site-header__cta">

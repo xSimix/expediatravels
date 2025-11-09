@@ -298,20 +298,20 @@
 
         <nav class="nav-bar" aria-label="Menú principal">
             <a class="nav-item" href="#">
-                <div class="nav-icon">🏠</div>
-                Inicio
-            </a>
-            <a class="nav-item" href="#">
                 <div class="nav-icon">🧭</div>
-                Explorar
+                Destino
             </a>
             <a class="nav-item" href="#">
-                <div class="nav-icon">🗓️</div>
-                Reservas
+                <div class="nav-icon">🛣️</div>
+                Circuito
             </a>
             <a class="nav-item" href="#">
-                <div class="nav-icon">👤</div>
-                Perfil
+                <div class="nav-icon">🎒</div>
+                Paquetes
+            </a>
+            <a class="nav-item" href="#">
+                <div class="nav-icon">✉️</div>
+                Contacto
             </a>
         </nav>
 
