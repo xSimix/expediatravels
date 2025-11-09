@@ -218,176 +218,227 @@ require __DIR__ . '/plantilla/cabecera.php';
     <?php endif; ?>
 
     <section class="admin-card">
-        <form method="post" class="admin-grid">
+        <form method="post" class="admin-form">
             <input type="hidden" name="paquete_id" value="<?= (int) $paqueteId; ?>" />
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="nombre">Nombre del paquete *</label>
-                    <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($datos['nombre'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-                <div class="admin-field">
-                    <label for="estado">Estado</label>
-                    <select id="estado" name="estado">
-                        <?php foreach ($estadosPermitidos as $clave => $etiqueta): ?>
-                            <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-            </div>
 
-            <div class="admin-grid three-columns">
-                <div class="admin-field">
-                    <label for="duracion">Duración *</label>
-                    <input type="text" id="duracion" name="duracion" required value="<?= htmlspecialchars($datos['duracion'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-                <div class="admin-field">
-                    <label for="moneda">Moneda</label>
-                    <select id="moneda" name="moneda">
-                        <?php foreach ($monedasPermitidas as $codigo => $simbolo): ?>
-                            <option value="<?= htmlspecialchars($codigo, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['moneda'] === $codigo ? 'selected' : ''; ?>><?= htmlspecialchars($codigo . ' · ' . $simbolo, ENT_QUOTES, 'UTF-8'); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="admin-field">
-                    <label for="precio_desde">Precio desde</label>
-                    <input type="text" id="precio_desde" name="precio_desde" value="<?= htmlspecialchars($datos['precio_desde'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-            </div>
-
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="cupos_min">Cupo mínimo</label>
-                    <input type="number" id="cupos_min" name="cupos_min" min="0" value="<?= htmlspecialchars($datos['cupos_min'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-                <div class="admin-field">
-                    <label for="cupos_max">Cupo máximo</label>
-                    <input type="number" id="cupos_max" name="cupos_max" min="0" value="<?= htmlspecialchars($datos['cupos_max'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-            </div>
-
-            <div class="admin-field">
-                <label for="descripcion_breve">Descripción breve</label>
-                <textarea id="descripcion_breve" name="descripcion_breve" rows="3"><?= htmlspecialchars($datos['descripcion_breve'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-            </div>
-            <div class="admin-field">
-                <label for="descripcion_detallada">Descripción detallada</label>
-                <textarea id="descripcion_detallada" name="descripcion_detallada" rows="5"><?= htmlspecialchars($datos['descripcion_detallada'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-            </div>
-            <div class="admin-grid two-columns">
-                <div class="admin-field media-picker" data-media-picker data-multiple="false">
-                    <label for="imagen_portada">Imagen de portada</label>
-                    <div class="media-picker__input">
-                        <input type="text" id="imagen_portada" name="imagen_portada" value="<?= htmlspecialchars($datos['imagen_portada'], ENT_QUOTES, 'UTF-8'); ?>" data-media-input />
-                        <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
-                        <label class="admin-button secondary">
-                            <span>Subir nueva</span>
-                            <input type="file" accept="image/*" data-media-upload hidden />
-                        </label>
-                    </div>
-                    <div class="media-picker__preview" data-media-preview data-empty-text="Sin imagen de portada" data-empty="<?= $datos['imagen_portada'] === '' ? 'true' : 'false'; ?>">
-                        <?php if ($datos['imagen_portada'] !== ''): ?>
-                            <img src="<?= htmlspecialchars($datos['imagen_portada'], ENT_QUOTES, 'UTF-8'); ?>" alt="Previsualización de portada" />
-                        <?php else: ?>
-                            Sin imagen de portada
-                        <?php endif; ?>
-                    </div>
-                </div>
-                <div class="admin-field media-picker" data-media-picker data-multiple="false">
-                    <label for="imagen_destacada">Imagen destacada</label>
-                    <div class="media-picker__input">
-                        <input type="text" id="imagen_destacada" name="imagen_destacada" value="<?= htmlspecialchars($datos['imagen_destacada'], ENT_QUOTES, 'UTF-8'); ?>" data-media-input />
-                        <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
-                        <label class="admin-button secondary">
-                            <span>Subir nueva</span>
-                            <input type="file" accept="image/*" data-media-upload hidden />
-                        </label>
-                    </div>
-                    <div class="media-picker__preview" data-media-preview data-empty-text="Sin imagen destacada" data-empty="<?= $datos['imagen_destacada'] === '' ? 'true' : 'false'; ?>">
-                        <?php if ($datos['imagen_destacada'] !== ''): ?>
-                            <img src="<?= htmlspecialchars($datos['imagen_destacada'], ENT_QUOTES, 'UTF-8'); ?>" alt="Previsualización destacada" />
-                        <?php else: ?>
-                            Sin imagen destacada
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="video_destacado_url">URL de video destacado</label>
-                    <input type="url" id="video_destacado_url" name="video_destacado_url" value="<?= htmlspecialchars($datos['video_destacado_url'], ENT_QUOTES, 'UTF-8'); ?>" />
-                </div>
-            </div>
-
-            <div class="admin-field media-picker" data-media-picker data-multiple="true" data-field="galeria">
-                <span class="admin-field__label">Galería del paquete</span>
-                <div class="media-picker__selected" data-media-selected data-field="galeria">
-                    <?php foreach ($datos['galeria'] as $imagenGaleria): ?>
-                        <?php $etiquetaGaleria = basename((string) $imagenGaleria) ?: $imagenGaleria; ?>
-                        <div class="media-chip" data-media-item>
-                            <input type="hidden" name="galeria[]" value="<?= htmlspecialchars($imagenGaleria, ENT_QUOTES, 'UTF-8'); ?>" />
-                            <span class="media-chip__label" title="<?= htmlspecialchars($imagenGaleria, ENT_QUOTES, 'UTF-8'); ?>"><?= htmlspecialchars($etiquetaGaleria, ENT_QUOTES, 'UTF-8'); ?></span>
-                            <button type="button" class="media-chip__remove" data-media-remove aria-label="Quitar">×</button>
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">💼</span>
+                    <span>Información comercial</span>
+                </h2>
+                <p class="admin-section__description">Actualiza estado, duración y precios para mantener la oferta al día.</p>
+                <div class="admin-section__content admin-grid">
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="nombre">Nombre del paquete *</label>
+                            <input type="text" id="nombre" name="nombre" required value="<?= htmlspecialchars($datos['nombre'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Escapada Oxapampa 3D/2N" />
                         </div>
-                    <?php endforeach; ?>
-                </div>
-                <div class="media-picker__actions">
-                    <button type="button" class="admin-button secondary" data-media-open>Agregar desde la biblioteca</button>
-                    <label class="admin-button secondary">
-                        <span>Subir imágenes</span>
-                        <input type="file" accept="image/*" multiple data-media-upload hidden />
-                    </label>
+                        <div class="admin-field">
+                            <label for="estado">Estado</label>
+                            <select id="estado" name="estado">
+                                <?php foreach ($estadosPermitidos as $clave => $etiqueta): ?>
+                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid three-columns">
+                        <div class="admin-field">
+                            <label for="duracion">Duración *</label>
+                            <input type="text" id="duracion" name="duracion" required value="<?= htmlspecialchars($datos['duracion'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="3 días / 2 noches" />
+                        </div>
+                        <div class="admin-field">
+                            <label for="moneda">Moneda</label>
+                            <select id="moneda" name="moneda">
+                                <?php foreach ($monedasPermitidas as $codigo => $simbolo): ?>
+                                    <option value="<?= htmlspecialchars($codigo, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['moneda'] === $codigo ? 'selected' : ''; ?>><?= htmlspecialchars($codigo . ' · ' . $simbolo, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="admin-field">
+                            <label for="precio_desde">Precio desde</label>
+                            <input type="text" id="precio_desde" name="precio_desde" value="<?= htmlspecialchars($datos['precio_desde'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="599.00" />
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="cupos_min">Cupo mínimo</label>
+                            <input type="number" id="cupos_min" name="cupos_min" min="0" value="<?= htmlspecialchars($datos['cupos_min'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="6" />
+                        </div>
+                        <div class="admin-field">
+                            <label for="cupos_max">Cupo máximo</label>
+                            <input type="number" id="cupos_max" name="cupos_max" min="0" value="<?= htmlspecialchars($datos['cupos_max'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="18" />
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="beneficios">Beneficios destacados</label>
-                    <textarea id="beneficios" name="beneficios" rows="4"><?= htmlspecialchars($datos['beneficios'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                </div>
-                <div class="admin-field">
-                    <label for="salidas">Fechas de salida</label>
-                    <textarea id="salidas" name="salidas" rows="4"><?= htmlspecialchars($datos['salidas'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                </div>
-            </div>
-
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="incluye">Incluye</label>
-                    <textarea id="incluye" name="incluye" rows="5"><?= htmlspecialchars($datos['incluye'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                </div>
-                <div class="admin-field">
-                    <label for="no_incluye">No incluye</label>
-                    <textarea id="no_incluye" name="no_incluye" rows="5"><?= htmlspecialchars($datos['no_incluye'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">📝</span>
+                    <span>Relato del paquete</span>
+                </h2>
+                <p class="admin-section__description">Mantén actualizadas las descripciones que verán los viajeros.</p>
+                <div class="admin-section__content admin-grid">
+                    <div class="admin-field">
+                        <label for="descripcion_breve">Descripción breve</label>
+                        <textarea id="descripcion_breve" name="descripcion_breve" rows="3" placeholder="Resumen comercial para la ficha del paquete."><?= htmlspecialchars($datos['descripcion_breve'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    </div>
+                    <div class="admin-field">
+                        <label for="descripcion_detallada">Descripción detallada</label>
+                        <textarea id="descripcion_detallada" name="descripcion_detallada" rows="5" placeholder="Detalla itinerario, servicios, recomendaciones y condiciones."><?= htmlspecialchars($datos['descripcion_detallada'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    </div>
                 </div>
             </div>
 
-            <div class="admin-grid two-columns">
-                <div class="admin-field">
-                    <label for="destinos">Destinos asociados *</label>
-                    <select id="destinos" name="destinos[]" multiple size="5">
-                        <?php foreach ($destinosDisponibles as $destino): ?>
-                            <option value="<?= (int) $destino['id']; ?>" <?= in_array((int) $destino['id'], $datos['destinos'], true) ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="admin-field">
-                    <span class="admin-field__label">Circuitos incluidos *</span>
-                    <?php if (empty($circuitosDisponibles)): ?>
-                        <p class="admin-help">Aún no hay circuitos registrados. Crea al menos uno para asociarlo al paquete.</p>
-                    <?php else: ?>
-                        <div class="admin-checkbox-group">
-                            <?php foreach ($circuitosDisponibles as $circuito): ?>
-                                <label class="admin-checkbox">
-                                    <input type="checkbox" name="circuitos[]" value="<?= (int) $circuito['id']; ?>" <?= in_array((int) $circuito['id'], $datos['circuitos'], true) ? 'checked' : ''; ?> />
-                                    <span>
-                                        <?= htmlspecialchars($circuito['nombre'], ENT_QUOTES, 'UTF-8'); ?>
-                                        <small><?= htmlspecialchars($circuito['duracion'], ENT_QUOTES, 'UTF-8'); ?></small>
-                                    </span>
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">🖼️</span>
+                    <span>Recursos multimedia</span>
+                </h2>
+                <p class="admin-section__description">Gestiona imágenes, videos y galerías para mantener el paquete atractivo.</p>
+                <div class="admin-section__content admin-grid">
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field media-picker" data-media-picker data-multiple="false">
+                            <label for="imagen_portada">Imagen de portada</label>
+                            <div class="media-picker__input">
+                                <input type="text" id="imagen_portada" name="imagen_portada" value="<?= htmlspecialchars($datos['imagen_portada'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="/almacenamiento/medios/paquete-portada.jpg" data-media-input />
+                                <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
+                                <label class="admin-button secondary">
+                                    <span>Subir nueva</span>
+                                    <input type="file" accept="image/*" data-media-upload hidden />
                                 </label>
+                            </div>
+                            <div class="media-picker__preview" data-media-preview data-empty-text="Sin imagen de portada" data-empty="<?= $datos['imagen_portada'] === '' ? 'true' : 'false'; ?>">
+                                <?php if ($datos['imagen_portada'] !== ''): ?>
+                                    <img src="<?= htmlspecialchars($datos['imagen_portada'], ENT_QUOTES, 'UTF-8'); ?>" alt="Previsualización de portada" />
+                                <?php else: ?>
+                                    Sin imagen de portada
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        <div class="admin-field media-picker" data-media-picker data-multiple="false">
+                            <label for="imagen_destacada">Imagen destacada</label>
+                            <div class="media-picker__input">
+                                <input type="text" id="imagen_destacada" name="imagen_destacada" value="<?= htmlspecialchars($datos['imagen_destacada'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="/almacenamiento/medios/paquete-destacado.jpg" data-media-input />
+                                <button type="button" class="admin-button secondary" data-media-open>Seleccionar de la biblioteca</button>
+                                <label class="admin-button secondary">
+                                    <span>Subir nueva</span>
+                                    <input type="file" accept="image/*" data-media-upload hidden />
+                                </label>
+                            </div>
+                            <div class="media-picker__preview" data-media-preview data-empty-text="Sin imagen destacada" data-empty="<?= $datos['imagen_destacada'] === '' ? 'true' : 'false'; ?>">
+                                <?php if ($datos['imagen_destacada'] !== ''): ?>
+                                    <img src="<?= htmlspecialchars($datos['imagen_destacada'], ENT_QUOTES, 'UTF-8'); ?>" alt="Previsualización destacada" />
+                                <?php else: ?>
+                                    Sin imagen destacada
+                                <?php endif; ?>
+                            </div>
+                            <p class="admin-help">Se muestra en tarjetas y material promocional del paquete.</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="video_destacado_url">URL de video destacado</label>
+                            <input type="url" id="video_destacado_url" name="video_destacado_url" value="<?= htmlspecialchars($datos['video_destacado_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://www.youtube.com/watch?v=XXXX" />
+                        </div>
+                    </div>
+
+                    <div class="admin-field media-picker" data-media-picker data-multiple="true" data-field="galeria">
+                        <span class="admin-field__label">Galería del paquete</span>
+                        <div class="media-picker__selected" data-media-selected data-field="galeria">
+                            <?php foreach ($datos['galeria'] as $imagenGaleria): ?>
+                                <?php $etiquetaGaleria = basename((string) $imagenGaleria) ?: $imagenGaleria; ?>
+                                <div class="media-chip" data-media-item>
+                                    <input type="hidden" name="galeria[]" value="<?= htmlspecialchars($imagenGaleria, ENT_QUOTES, 'UTF-8'); ?>" />
+                                    <span class="media-chip__label" title="<?= htmlspecialchars($imagenGaleria, ENT_QUOTES, 'UTF-8'); ?>"><?= htmlspecialchars($etiquetaGaleria, ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <button type="button" class="media-chip__remove" data-media-remove aria-label="Quitar">×</button>
+                                </div>
                             <?php endforeach; ?>
                         </div>
-                    <?php endif; ?>
+                        <div class="media-picker__actions">
+                            <button type="button" class="admin-button secondary" data-media-open>Agregar desde la biblioteca</button>
+                            <label class="admin-button secondary">
+                                <span>Subir imágenes</span>
+                                <input type="file" accept="image/*" multiple data-media-upload hidden />
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">🎯</span>
+                    <span>Beneficios y condiciones</span>
+                </h2>
+                <p class="admin-section__description">Resume ventajas, fechas y políticas para ayudar a tomar decisiones.</p>
+                <div class="admin-section__content admin-grid">
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="beneficios">Beneficios destacados</label>
+                            <textarea id="beneficios" name="beneficios" rows="4" placeholder="Atención personalizada&#10;Seguro de viaje&#10;Guía bilingüe"><?= htmlspecialchars($datos['beneficios'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                            <p class="admin-help">Escribe un beneficio por línea.</p>
+                        </div>
+                        <div class="admin-field">
+                            <label for="salidas">Fechas de salida</label>
+                            <textarea id="salidas" name="salidas" rows="4" placeholder="2024-07-15&#10;2024-08-05"><?= htmlspecialchars($datos['salidas'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                            <p class="admin-help">Formato sugerido AAAA-MM-DD. Una fecha por línea.</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="incluye">Incluye</label>
+                            <textarea id="incluye" name="incluye" rows="5" placeholder="Transporte turístico&#10;Hospedaje con desayuno&#10;Circuito guiado"><?= htmlspecialchars($datos['incluye'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        </div>
+                        <div class="admin-field">
+                            <label for="no_incluye">No incluye</label>
+                            <textarea id="no_incluye" name="no_incluye" rows="5" placeholder="Alimentación no mencionada&#10;Gastos personales"><?= htmlspecialchars($datos['no_incluye'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">🧭</span>
+                    <span>Destinos y circuitos asociados</span>
+                </h2>
+                <p class="admin-section__description">Selecciona los destinos y circuitos que componen la experiencia.</p>
+                <div class="admin-section__content admin-grid">
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="destinos">Destinos asociados *</label>
+                            <select id="destinos" name="destinos[]" multiple size="5">
+                                <?php foreach ($destinosDisponibles as $destino): ?>
+                                    <option value="<?= (int) $destino['id']; ?>" <?= in_array((int) $destino['id'], $datos['destinos'], true) ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="admin-help">Mantén presionada la tecla Ctrl o Cmd para seleccionar múltiples opciones.</p>
+                        </div>
+                        <div class="admin-field">
+                            <span class="admin-field__label">Circuitos incluidos *</span>
+                            <?php if (empty($circuitosDisponibles)): ?>
+                                <p class="admin-help">Aún no hay circuitos registrados. Crea al menos uno para asociarlo al paquete.</p>
+                            <?php else: ?>
+                                <div class="admin-checkbox-group">
+                                    <?php foreach ($circuitosDisponibles as $circuito): ?>
+                                        <label class="admin-checkbox">
+                                            <input type="checkbox" name="circuitos[]" value="<?= (int) $circuito['id']; ?>" <?= in_array((int) $circuito['id'], $datos['circuitos'], true) ? 'checked' : ''; ?> />
+                                            <span>
+                                                <?= htmlspecialchars($circuito['nombre'], ENT_QUOTES, 'UTF-8'); ?>
+                                                <small><?= htmlspecialchars($circuito['duracion'], ENT_QUOTES, 'UTF-8'); ?></small>
+                                            </span>
+                                        </label>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
 
