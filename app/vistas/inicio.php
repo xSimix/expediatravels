@@ -542,6 +542,27 @@
                             $locationSegments[] = $circuitRegionLabel;
                         }
                         $circuitLocationDisplay = !empty($locationSegments) ? implode(' · ', $locationSegments) : 'Selva Central';
+                        $difficultyDisplay = '';
+                        $difficultyRaw = trim((string) ($experience['dificultad'] ?? $experience['experiencia'] ?? ''));
+                        $difficultyLabels = [
+                            'relajado' => 'Relajado',
+                            'moderado' => 'Moderado',
+                            'intenso' => 'Intenso',
+                            'activo' => 'Activo',
+                        ];
+                        $difficultyKey = strtolower($difficultyRaw);
+                        if (isset($difficultyLabels[$difficultyKey])) {
+                            $difficultyDisplay = $difficultyLabels[$difficultyKey];
+                        } else {
+                            $difficultyDisplay = $difficultyRaw !== '' ? ucfirst($difficultyRaw) : '';
+                        }
+                        $nextDepartureDisplay = '';
+                        $nextDepartureRaw = $experience['proximaSalida'] ?? $experience['proxima_salida'] ?? $experience['nextDeparture'] ?? $experience['frecuencia'] ?? '';
+                        if ($nextDepartureRaw instanceof \DateTimeInterface) {
+                            $nextDepartureDisplay = $nextDepartureRaw->format('d M Y');
+                        } else {
+                            $nextDepartureDisplay = is_string($nextDepartureRaw) ? trim($nextDepartureRaw) : '';
+                        }
                         $circuitPriceText = $formatCurrency($circuitPrice, $circuitCurrency);
                         $priceNoteText = $circuitPriceText !== null ? $circuitDurationDisplay : '';
                         $ratingDisplay = $ratingValue !== null ? number_format($ratingValue, 1, '.', '') : null;
@@ -597,6 +618,28 @@
                                     <span><?= htmlspecialchars($transportDisplay); ?></span>
                                 </li>
                             </ul>
+                            <?php if ($circuitDestinationLabel !== '' || $difficultyDisplay !== ''): ?>
+                                <div class="circuit-card__tags">
+                                    <?php if ($circuitDestinationLabel !== ''): ?>
+                                        <span class="circuit-card__tag">
+                                            <span class="circuit-card__tag-label">Destino asociado</span>
+                                            <span class="circuit-card__tag-value"><?= htmlspecialchars($circuitDestinationLabel); ?></span>
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ($difficultyDisplay !== ''): ?>
+                                        <span class="circuit-card__tag">
+                                            <span class="circuit-card__tag-label">Dificultad</span>
+                                            <span class="circuit-card__tag-value"><?= htmlspecialchars($difficultyDisplay); ?></span>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($nextDepartureDisplay !== ''): ?>
+                                <p class="circuit-card__meta">
+                                    <span class="circuit-card__meta-label">Próxima salida:</span>
+                                    <span class="circuit-card__meta-value"><?= htmlspecialchars($nextDepartureDisplay); ?></span>
+                                </p>
+                            <?php endif; ?>
                             <p class="circuit-card__highlight"><?= htmlspecialchars($highlightService); ?></p>
                             <div class="circuit-card__rating">
                                 <span class="circuit-card__stars" aria-hidden="true">
