@@ -634,7 +634,7 @@
                                     <?php endif; ?>
                                 </div>
                             </div>
-                            <a class="circuit-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">Ver paquete</a>
+                            <a class="circuit-card__cta" href="<?= htmlspecialchars($circuitHref, ENT_QUOTES); ?>">Ver</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>
@@ -749,12 +749,12 @@
                                     <?php if ($originalPriceText !== null): ?>
                                         <span class="travel-card__price-original"><?= htmlspecialchars($originalPriceText); ?></span>
                                     <?php endif; ?>
-                                    <span class="travel-card__price-note">por persona</span>
+                                    <span class="travel-card__price-note">p/p</span>
                                 <?php else: ?>
                                     <span class="travel-card__price">Pronto</span>
                                 <?php endif; ?>
                             </div>
-                            <a class="travel-card__cta" href="<?= htmlspecialchars($packageHref, ENT_QUOTES); ?>">VER PAQUETE</a>
+                            <a class="travel-card__cta" href="<?= htmlspecialchars($packageHref, ENT_QUOTES); ?>">Ver</a>
                         </footer>
                     </article>
                 <?php endforeach; ?>
