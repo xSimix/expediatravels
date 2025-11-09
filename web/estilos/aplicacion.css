@@ -97,6 +97,120 @@ body::-webkit-scrollbar-thumb:hover {
     z-index: 0;
 }
 
+.circuit-hero {
+    margin: 0;
+    border-radius: 0;
+    padding: clamp(2.5rem, 7vw, 5.5rem) clamp(1.5rem, 6vw, 5rem) clamp(4rem, 8vw, 6rem);
+    min-height: clamp(520px, 70vh, 680px);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    position: relative;
+    isolation: isolate;
+    background: #0f172a;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+.circuit-hero .detail-hero__overlay {
+    background: linear-gradient(120deg, rgba(15, 23, 42, 0.88) 12%, rgba(30, 64, 175, 0.6) 48%, rgba(14, 165, 233, 0.35) 88%);
+    pointer-events: none;
+    z-index: 1;
+}
+
+.circuit-hero__slider {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.circuit-hero__track {
+    display: flex;
+    height: 100%;
+    transition: transform 600ms cubic-bezier(0.22, 0.61, 0.36, 1);
+    will-change: transform;
+}
+
+.circuit-hero__slide {
+    flex: 0 0 calc(100% / 3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 clamp(0.4rem, 1.5vw, 0.85rem);
+}
+
+.circuit-hero__slide figure {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.28);
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(10px);
+}
+
+.circuit-hero__slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.circuit-hero__dots {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1.5rem, 4vw, 2.75rem);
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.65rem;
+    z-index: 2;
+}
+
+.circuit-hero__dot {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    background: rgba(15, 23, 42, 0.45);
+    box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.45);
+    cursor: pointer;
+    transition: transform 220ms ease, background-color 220ms ease, border-color 220ms ease;
+}
+
+.circuit-hero__dot.is-active,
+.circuit-hero__dot:hover {
+    background: #ffffff;
+    border-color: #ffffff;
+    transform: scale(1.15);
+}
+
+.circuit-hero__dot:focus-visible {
+    outline: 3px solid rgba(167, 243, 208, 0.85);
+    outline-offset: 2px;
+}
+
+.circuit-hero__content {
+    position: relative;
+    z-index: 2;
+    width: min(1200px, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 320px);
+    gap: clamp(2rem, 4vw, 3.5rem);
+    align-items: center;
+}
+
+.circuit-hero__content .detail-hero__content {
+    max-width: min(640px, 100%);
+    gap: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.circuit-hero__content .detail-hero__map {
+    align-self: stretch;
+}
+
 .detail-hero__content,
 .detail-hero__map {
     position: relative;
@@ -591,6 +705,39 @@ body::-webkit-scrollbar-thumb:hover {
     }
 }
 
+@media (max-width: 1280px) {
+    .circuit-hero__content {
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
+        gap: clamp(1.75rem, 4vw, 3rem);
+    }
+}
+
+@media (max-width: 1024px) {
+    .circuit-hero {
+        padding: clamp(2rem, 7vw, 4.5rem) clamp(1.5rem, 6vw, 3.5rem) clamp(3.5rem, 10vw, 4.75rem);
+    }
+
+    .circuit-hero__slide {
+        flex: 0 0 calc(100% / 2);
+    }
+
+    .circuit-hero__content {
+        grid-template-columns: minmax(0, 1fr);
+        gap: clamp(1.75rem, 6vw, 2.75rem);
+    }
+
+    .circuit-hero__content .detail-hero__content {
+        max-width: 100%;
+    }
+
+    .circuit-hero__content .detail-hero__map {
+        order: initial;
+        margin-top: 2rem;
+        max-width: min(360px, 100%);
+        justify-self: flex-start;
+    }
+}
+
 @media (max-width: 768px) {
     .detail-page {
         padding-top: calc(var(--header-height) + 1.5rem);
@@ -618,6 +765,44 @@ body::-webkit-scrollbar-thumb:hover {
 
     .detail-timeline__badge {
         justify-self: flex-start;
+    }
+
+    .circuit-hero {
+        margin: 0;
+        border-radius: 0;
+        padding: clamp(1.75rem, 8vw, 3rem) clamp(1rem, 7vw, 2.25rem) clamp(3.25rem, 12vw, 4.5rem);
+    }
+
+    .circuit-hero__slide {
+        flex: 0 0 100%;
+        padding: 0 clamp(0.35rem, 5vw, 0.6rem);
+    }
+
+    .circuit-hero__dots {
+        bottom: clamp(1.2rem, 6vw, 2.1rem);
+    }
+
+    .circuit-hero__content {
+        gap: clamp(1.5rem, 7vw, 2.5rem);
+    }
+
+    .circuit-hero__content .detail-hero__content {
+        gap: clamp(1.25rem, 6vw, 2rem);
+    }
+}
+
+@media (max-width: 640px) {
+    .circuit-hero__slide {
+        padding: 0 clamp(0.25rem, 5vw, 0.5rem);
+    }
+
+    .circuit-hero__dots {
+        gap: 0.5rem;
+    }
+
+    .circuit-hero__dot {
+        width: 0.75rem;
+        height: 0.75rem;
     }
 }
 
@@ -3567,7 +3752,7 @@ body.has-modal-open {
 }
 
 .circuit-hero .detail-hero__content {
-    gap: clamp(1.25rem, 3vw, 2rem);
+    gap: clamp(1.5rem, 3.5vw, 2.5rem);
 }
 
 .circuit-hero__rating {
