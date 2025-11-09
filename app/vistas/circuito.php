@@ -32,7 +32,6 @@ if (empty($itinerary) && !empty($detail['itinerary_detallado'])) {
 }
 $experiences = is_array($detail['experiences'] ?? null) ? $detail['experiences'] : [];
 $essentials = is_array($detail['essentials'] ?? null) ? $detail['essentials'] : [];
-$gallery = is_array($detail['gallery'] ?? null) ? $detail['gallery'] : [];
 $related = is_array($detail['related'] ?? null) ? $detail['related'] : [];
 $services = is_array($detail['servicios'] ?? null) ? $detail['servicios'] : [];
 
@@ -78,6 +77,7 @@ $ctaSecondaryLabel = $cta['secondaryLabel'] ?? '';
 $ctaSecondaryHref = $cta['secondaryHref'] ?? '';
 
 $heroStyle = $heroImage !== '' ? 'background-image: url(' . htmlspecialchars($heroImage, ENT_QUOTES) . ');' : '';
+$heroSectionStyle = $heroStyle !== '' ? ' style="' . $heroStyle . '"' : '';
 $summaryParagraphs = [];
 if (trim((string) $summary) !== '') {
     $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
@@ -106,99 +106,104 @@ if (is_string($labelColor)) {
 <body class="page page--detail">
     <?php $activeNav = 'experiencias'; include __DIR__ . '/partials/site-header.php'; ?>
     <main class="detail-page circuit-page">
-        <section class="detail-hero circuit-hero" style="<?= $heroStyle; ?>">
+        <section class="detail-hero circuit-hero"<?= $heroSectionStyle; ?>>
             <div class="detail-hero__overlay"></div>
-            <div class="detail-hero__content">
-                <div class="detail-hero__badge<?= $badgeModifier; ?>">
-                    <?= htmlspecialchars($typeLabel); ?>
-                </div>
-                <h1 class="detail-hero__title"><?= htmlspecialchars($title); ?></h1>
-                <?php if ($tagline !== ''): ?>
-                    <p class="detail-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
-                <?php endif; ?>
-                <?php if ($rating !== null || $reviews !== null): ?>
-                    <div class="circuit-hero__rating">
-                        <?php if ($rating !== null): ?>
-                            <span class="circuit-hero__rating-value">★ <?= htmlspecialchars(number_format($rating, 1)); ?></span>
-                        <?php endif; ?>
-                        <?php if ($reviews !== null): ?>
-                            <span class="circuit-hero__rating-reviews"><?= htmlspecialchars((string) $reviews); ?> opiniones</span>
-                        <?php endif; ?>
+        </section>
+
+        <section class="circuit-intro">
+            <div class="circuit-intro__layout">
+                <div class="circuit-intro__content detail-hero__content">
+                    <div class="detail-hero__badge<?= $badgeModifier; ?>">
+                        <?= htmlspecialchars($typeLabel); ?>
                     </div>
-                <?php endif; ?>
-                <div class="circuit-hero__meta">
-                    <?php if ($location !== ''): ?>
-                        <span><strong>Ubicación:</strong> <?= htmlspecialchars($location); ?></span>
+                    <h1 class="detail-hero__title"><?= htmlspecialchars($title); ?></h1>
+                    <?php if ($tagline !== ''): ?>
+                        <p class="detail-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
                     <?php endif; ?>
-                    <?php if ($duration !== ''): ?>
-                        <span><strong>Duración:</strong> <?= htmlspecialchars($duration); ?></span>
-                    <?php endif; ?>
-                    <?php if ($frequency !== ''): ?>
-                        <span><strong>Próxima salida:</strong> <?= htmlspecialchars($frequency); ?></span>
-                    <?php endif; ?>
-                    <?php if ($group !== ''): ?>
-                        <span><strong>Grupo ideal:</strong> <?= htmlspecialchars($group); ?></span>
-                    <?php endif; ?>
-                    <?php if ($experienceLevel !== ''): ?>
-                        <span><strong>Intensidad:</strong> <?= htmlspecialchars($experienceLevel); ?></span>
-                    <?php endif; ?>
-                </div>
-                <?php if (!empty($chips)): ?>
-                    <ul class="detail-hero__chips">
-                        <?php foreach ($chips as $chip):
-                            $chipText = trim((string) $chip);
-                            if ($chipText === '') {
-                                continue;
-                            }
-                        ?>
-                            <li><?= htmlspecialchars($chipText); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                <?php endif; ?>
-                <div class="circuit-hero__cta">
-                    <?php if ($priceFrom !== ''): ?>
-                        <div class="circuit-hero__price">
-                            <span class="circuit-hero__price-label">Tarifa referencial</span>
-                            <span class="circuit-hero__price-value"><?= htmlspecialchars($priceFrom); ?></span>
+                    <?php if ($rating !== null || $reviews !== null): ?>
+                        <div class="circuit-hero__rating">
+                            <?php if ($rating !== null): ?>
+                                <span class="circuit-hero__rating-value">★ <?= htmlspecialchars(number_format($rating, 1)); ?></span>
+                            <?php endif; ?>
+                            <?php if ($reviews !== null): ?>
+                                <span class="circuit-hero__rating-reviews"><?= htmlspecialchars((string) $reviews); ?> opiniones</span>
+                            <?php endif; ?>
                         </div>
                     <?php endif; ?>
-                    <div class="circuit-hero__buttons">
-                        <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
-                            <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>">
-                                <?= htmlspecialchars($ctaPrimaryLabel); ?>
-                            </a>
+                    <div class="circuit-hero__meta">
+                        <?php if ($location !== ''): ?>
+                            <span><strong>Ubicación:</strong> <?= htmlspecialchars($location); ?></span>
                         <?php endif; ?>
-                        <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
-                            <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>">
-                                <?= htmlspecialchars($ctaSecondaryLabel); ?>
-                            </a>
+                        <?php if ($duration !== ''): ?>
+                            <span><strong>Duración:</strong> <?= htmlspecialchars($duration); ?></span>
                         <?php endif; ?>
+                        <?php if ($frequency !== ''): ?>
+                            <span><strong>Próxima salida:</strong> <?= htmlspecialchars($frequency); ?></span>
+                        <?php endif; ?>
+                        <?php if ($group !== ''): ?>
+                            <span><strong>Grupo ideal:</strong> <?= htmlspecialchars($group); ?></span>
+                        <?php endif; ?>
+                        <?php if ($experienceLevel !== ''): ?>
+                            <span><strong>Intensidad:</strong> <?= htmlspecialchars($experienceLevel); ?></span>
+                        <?php endif; ?>
+                    </div>
+                    <?php if (!empty($chips)): ?>
+                        <ul class="detail-hero__chips">
+                            <?php foreach ($chips as $chip):
+                                $chipText = trim((string) $chip);
+                                if ($chipText === '') {
+                                    continue;
+                                }
+                            ?>
+                                <li><?= htmlspecialchars($chipText); ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
+                    <div class="circuit-hero__cta">
+                        <?php if ($priceFrom !== ''): ?>
+                            <div class="circuit-hero__price">
+                                <span class="circuit-hero__price-label">Tarifa referencial</span>
+                                <span class="circuit-hero__price-value"><?= htmlspecialchars($priceFrom); ?></span>
+                            </div>
+                        <?php endif; ?>
+                        <div class="circuit-hero__buttons">
+                            <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
+                                <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>">
+                                    <?= htmlspecialchars($ctaPrimaryLabel); ?>
+                                </a>
+                            <?php endif; ?>
+                            <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
+                                <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>">
+                                    <?= htmlspecialchars($ctaSecondaryLabel); ?>
+                                </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
+                <?php if ($mapImage !== ''): ?>
+                    <aside class="circuit-intro__map detail-hero__map" aria-label="Mapa de referencia">
+                        <div class="detail-hero__map-card">
+                            <img src="<?= htmlspecialchars($mapImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($mapLabel); ?>" loading="lazy" />
+                            <?php if (!empty($stats)): ?>
+                                <dl class="detail-hero__stats">
+                                    <?php foreach ($stats as $stat):
+                                        $label = $stat['label'] ?? '';
+                                        $value = $stat['value'] ?? '';
+                                        if ($label === '' || $value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <div class="detail-hero__stat">
+                                            <dt><?= htmlspecialchars($label); ?></dt>
+                                            <dd><?= htmlspecialchars($value); ?></dd>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </dl>
+                            <?php endif; ?>
+                        </div>
+                    </aside>
+                <?php endif; ?>
             </div>
-            <?php if ($mapImage !== ''): ?>
-                <aside class="detail-hero__map" aria-label="Mapa de referencia">
-                    <div class="detail-hero__map-card">
-                        <img src="<?= htmlspecialchars($mapImage, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($mapLabel); ?>" loading="lazy" />
-                        <?php if (!empty($stats)): ?>
-                            <dl class="detail-hero__stats">
-                                <?php foreach ($stats as $stat):
-                                    $label = $stat['label'] ?? '';
-                                    $value = $stat['value'] ?? '';
-                                    if ($label === '' || $value === '') {
-                                        continue;
-                                    }
-                                ?>
-                                    <div class="detail-hero__stat">
-                                        <dt><?= htmlspecialchars($label); ?></dt>
-                                        <dd><?= htmlspecialchars($value); ?></dd>
-                                    </div>
-                                <?php endforeach; ?>
-                            </dl>
-                        <?php endif; ?>
-                    </div>
-                </aside>
-            <?php endif; ?>
         </section>
 
         <section class="circuit-overview">
