@@ -5,9 +5,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 use Aplicacion\BaseDatos\Conexion;
+use Aplicacion\Repositorios\RepositorioReservasCircuitos;
 
 $errores = [];
 $reservas = [];
+$reservasCircuitos = [];
 
 try {
     $pdo = Conexion::obtener();
@@ -24,6 +26,13 @@ try {
     $reservas = $statement->fetchAll(PDO::FETCH_ASSOC) ?: [];
 } catch (PDOException $exception) {
     $errores[] = 'No se pudo conectar con la base de datos de reservas. Inténtalo nuevamente más tarde.';
+}
+
+try {
+    $repoCircuitos = new RepositorioReservasCircuitos();
+    $reservasCircuitos = $repoCircuitos->obtenerTodas();
+} catch (Throwable $exception) {
+    $errores[] = 'No se pudo obtener el listado de reservas de circuitos.';
 }
 
 $statusEtiquetas = [
@@ -130,6 +139,72 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <span class="admin-badge <?= $claseEstado; ?>"><?= htmlspecialchars($etiquetaEstado, ENT_QUOTES, 'UTF-8'); ?></span>
                                 </td>
                                 <td><?= htmlspecialchars($creadoEnTexto, ENT_QUOTES, 'UTF-8'); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section class="admin-card admin-card--flush">
+        <h2 class="admin-card__title">Reservas de circuitos</h2>
+        <?php if (empty($reservasCircuitos)): ?>
+            <p class="admin-empty">Aún no hay reservas registradas para circuitos.</p>
+        <?php else: ?>
+            <div class="admin-table-wrapper">
+                <table class="admin-table" aria-label="Reservas de circuitos">
+                    <thead>
+                        <tr>
+                            <th>Circuito</th>
+                            <th>Contacto</th>
+                            <th>Fecha solicitada</th>
+                            <th>Personas</th>
+                            <th>Mensaje</th>
+                            <th>Registrada</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($reservasCircuitos as $reservaCircuito): ?>
+                            <?php
+                                $fechaSalidaCircuito = $reservaCircuito['fecha_salida'] ?? null;
+                                $fechaSalidaTexto = '—';
+                                if (!empty($fechaSalidaCircuito)) {
+                                    try {
+                                        $fechaSalidaTexto = (new DateTimeImmutable((string) $fechaSalidaCircuito))->format('d/m/Y');
+                                    } catch (Exception $exception) {
+                                        $fechaSalidaTexto = (string) $fechaSalidaCircuito;
+                                    }
+                                }
+                                $creadoCircuito = $reservaCircuito['creado_en'] ?? null;
+                                $creadoCircuitoTexto = formatearMarcaTiempo($creadoCircuito !== null ? (string) $creadoCircuito : null);
+                            ?>
+                            <tr>
+                                <td>
+                                    <strong><?= htmlspecialchars($reservaCircuito['titulo'] ?? 'Circuito', ENT_QUOTES, 'UTF-8'); ?></strong>
+                                    <?php if (!empty($reservaCircuito['slug'])): ?>
+                                        <p class="admin-table__meta">Slug: <?= htmlspecialchars($reservaCircuito['slug'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <p class="admin-table__user"><?= htmlspecialchars($reservaCircuito['nombre'] ?? 'Viajero', ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php if (!empty($reservaCircuito['correo'])): ?>
+                                        <p class="admin-table__meta">Correo: <?= htmlspecialchars($reservaCircuito['correo'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php endif; ?>
+                                    <?php if (!empty($reservaCircuito['telefono'])): ?>
+                                        <p class="admin-table__meta">Tel: <?= htmlspecialchars($reservaCircuito['telefono'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($fechaSalidaTexto, ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?= (int) ($reservaCircuito['cantidad_personas'] ?? 1); ?></td>
+                                <td>
+                                    <?php if (!empty($reservaCircuito['mensaje'])): ?>
+                                        <p class="admin-table__meta" style="white-space: pre-wrap;"><?= htmlspecialchars($reservaCircuito['mensaje'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                    <?php else: ?>
+                                        <span class="admin-table__meta">—</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= htmlspecialchars($creadoCircuitoTexto, ENT_QUOTES, 'UTF-8'); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
