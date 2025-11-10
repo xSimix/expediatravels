@@ -14,6 +14,7 @@ class RepositorioCircuitos
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
+                        c.galeria,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -54,6 +55,7 @@ class RepositorioCircuitos
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
+                        c.galeria,
                         COALESCE(c.destino_personalizado, d.nombre) AS destino,
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -153,6 +155,14 @@ class RepositorioCircuitos
         }
 
         $services = $this->parseJsonList($circuit['servicios'] ?? null);
+        $gallery = $this->parseImageList($circuit['galeria'] ?? $circuit['gallery'] ?? null, (string) $name);
+        $heroImage = $circuit['heroImage'] ?? $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? null;
+        if ($heroImage === null && !empty($gallery)) {
+            $firstImage = $gallery[0];
+            if (is_array($firstImage) && !empty($firstImage['src'])) {
+                $heroImage = $firstImage['src'];
+            }
+        }
 
         return array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
@@ -165,7 +175,9 @@ class RepositorioCircuitos
             'region' => (string) $region,
             'precio' => is_numeric($price) ? (float) $price : null,
             'moneda' => strtoupper((string) ($circuit['moneda'] ?? 'PEN')),
-            'imagen' => $circuit['imagen'] ?? $circuit['imagen_destacada'] ?? $circuit['imagen_portada'] ?? $circuit['heroImage'] ?? null,
+            'imagen' => $heroImage,
+            'heroImage' => $heroImage,
+            'gallery' => $gallery,
             'frecuencia' => isset($circuit['frecuencia']) ? (string) $circuit['frecuencia'] : $nextDepartureText,
             'proximaSalida' => $nextDepartureText,
             'grupo' => $groupText,
@@ -198,6 +210,67 @@ class RepositorioCircuitos
         }
 
         return [];
+    }
+
+    private function parseImageList($value, string $fallbackAlt = ''): array
+    {
+        $items = [];
+
+        if (is_array($value)) {
+            $items = $value;
+        } elseif (is_string($value) && trim($value) !== '') {
+            $decoded = json_decode($value, true);
+            if (is_array($decoded)) {
+                $items = $decoded;
+            } else {
+                $items = preg_split('/\r\n|\r|\n/', trim($value)) ?: [];
+            }
+        }
+
+        $images = [];
+        foreach ($items as $item) {
+            if (is_string($item)) {
+                $src = trim($item);
+                if ($src === '') {
+                    continue;
+                }
+                $images[] = [
+                    'src' => $src,
+                    'alt' => $fallbackAlt,
+                ];
+                continue;
+            }
+
+            if (!is_array($item)) {
+                continue;
+            }
+
+            $src = $item['src'] ?? $item['url'] ?? $item['image'] ?? null;
+            if (is_string($src)) {
+                $src = trim($src);
+            } else {
+                $src = '';
+            }
+            if ($src === '') {
+                continue;
+            }
+
+            $alt = $item['alt'] ?? $item['label'] ?? $item['title'] ?? '';
+            if (!is_string($alt)) {
+                $alt = '';
+            }
+            $alt = trim($alt);
+            if ($alt === '') {
+                $alt = $fallbackAlt;
+            }
+
+            $images[] = [
+                'src' => $src,
+                'alt' => $alt,
+            ];
+        }
+
+        return $images;
     }
 
     private function fallbackCircuits(): array
