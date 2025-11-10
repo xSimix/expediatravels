@@ -484,19 +484,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <?php
                         $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
                     ?>
-                    <div class="circuit-hero__actions">
-                        <?php if ($featuredVideoEmbedUrl !== ''): ?>
-                            <button
-                                type="button"
-                                class="button button--primary"
-                                data-video-modal-open
-                                data-video-src="<?= htmlspecialchars($featuredVideoEmbedUrl, ENT_QUOTES); ?>"
-                            >🎬 Ver video</button>
-                        <?php else: ?>
-                            <span class="circuit-hero__video-placeholder">Próximamente podrás descubrir este circuito en video.</span>
-                        <?php endif; ?>
-                        <a class="button button--ghost" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">🧭 Reservar Circuito</a>
-                    </div>
+                    
                 </div>
             </div>
         </section>
