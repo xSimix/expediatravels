@@ -8,6 +8,8 @@ use PDOException;
 
 class RepositorioCircuitos
 {
+    private array $extrasCache = [];
+
     public function getFeatured(int $limit = 6): array
     {
         try {
@@ -164,7 +166,7 @@ class RepositorioCircuitos
             }
         }
 
-        return array_merge($circuit, [
+        $base = array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
             'slug' => $circuit['slug'] ?? $this->generateSlug((string) $name),
             'nombre' => (string) $name,
@@ -188,6 +190,114 @@ class RepositorioCircuitos
             'esExclusivo' => $parseBoolean($rawIsExclusive),
             'servicios' => $services,
         ]);
+
+        $circuitId = (int) ($base['id'] ?? 0);
+        if ($circuitId > 0) {
+            $extras = $this->loadCircuitExtras($circuitId);
+            if (!empty($extras['includes'])) {
+                $base['servicios'] = $extras['includes'];
+            }
+            if (!empty($extras['includes']) || !empty($extras['excludes'])) {
+                $essentials = [];
+                if (!empty($extras['includes'])) {
+                    $essentials[] = ['title' => 'Incluye', 'items' => $extras['includes']];
+                }
+                if (!empty($extras['excludes'])) {
+                    $essentials[] = ['title' => 'No incluye', 'items' => $extras['excludes']];
+                }
+                $base['essentials'] = $essentials;
+            }
+            if (!empty($extras['itinerary'])) {
+                $base['itinerario'] = $extras['itinerary'];
+            }
+            if (!empty($extras['markers'])) {
+                $base['marcadores'] = $extras['markers'];
+            }
+        }
+
+        return $base;
+    }
+
+    private function loadCircuitExtras(int $circuitId): array
+    {
+        if (isset($this->extrasCache[$circuitId])) {
+            return $this->extrasCache[$circuitId];
+        }
+
+        $extras = [
+            'includes' => [],
+            'excludes' => [],
+            'itinerary' => [],
+            'markers' => [],
+        ];
+
+        try {
+            $pdo = Conexion::obtener();
+
+            $servicesStmt = $pdo->prepare(
+                'SELECT cs.tipo, sc.nombre
+                 FROM circuito_servicios cs
+                 JOIN servicios_catalogo sc ON sc.id = cs.servicio_id
+                 WHERE cs.circuito_id = :id
+                 ORDER BY cs.tipo, sc.nombre'
+            );
+            $servicesStmt->execute([':id' => $circuitId]);
+            foreach ($servicesStmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+                $nombre = trim((string) ($row['nombre'] ?? ''));
+                if ($nombre === '') {
+                    continue;
+                }
+                $tipo = ($row['tipo'] ?? '') === 'excluido' ? 'excludes' : 'includes';
+                $extras[$tipo][] = $nombre;
+            }
+
+            $itineraryStmt = $pdo->prepare(
+                'SELECT dia, hora, titulo, descripcion
+                 FROM circuito_itinerarios
+                 WHERE circuito_id = :id
+                 ORDER BY orden, id'
+            );
+            $itineraryStmt->execute([':id' => $circuitId]);
+            foreach ($itineraryStmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+                $titulo = trim((string) ($row['titulo'] ?? ''));
+                $descripcion = trim((string) ($row['descripcion'] ?? ''));
+                if ($titulo === '' && $descripcion === '') {
+                    continue;
+                }
+                $extras['itinerary'][] = [
+                    'dia' => trim((string) ($row['dia'] ?? '')),
+                    'hora' => trim((string) ($row['hora'] ?? '')),
+                    'titulo' => $titulo,
+                    'descripcion' => $descripcion,
+                ];
+            }
+
+            $markersStmt = $pdo->prepare(
+                'SELECT titulo, descripcion, latitud, longitud
+                 FROM circuito_marcadores
+                 WHERE circuito_id = :id
+                 ORDER BY orden, id'
+            );
+            $markersStmt->execute([':id' => $circuitId]);
+            foreach ($markersStmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
+                $titulo = trim((string) ($row['titulo'] ?? ''));
+                $latitud = isset($row['latitud']) ? (float) $row['latitud'] : null;
+                $longitud = isset($row['longitud']) ? (float) $row['longitud'] : null;
+                if ($titulo === '' || $latitud === null || $longitud === null) {
+                    continue;
+                }
+                $extras['markers'][] = [
+                    'titulo' => $titulo,
+                    'descripcion' => trim((string) ($row['descripcion'] ?? '')),
+                    'latitud' => $latitud,
+                    'longitud' => $longitud,
+                ];
+            }
+        } catch (PDOException $exception) {
+            // Mantiene silencioso el fallo para utilizar datos de respaldo si es necesario.
+        }
+
+        return $this->extrasCache[$circuitId] = $extras;
     }
 
     private function parseJsonList($value): array
