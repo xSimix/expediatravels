@@ -203,6 +203,8 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.75;
+  color: #ff7800;
+  font-weight: bold;
 }
 
 .circuit-hero__summary {

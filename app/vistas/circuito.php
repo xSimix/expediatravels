@@ -442,9 +442,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <?php if ($typeLabel !== ''): ?>
                         <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
                     <?php endif; ?>
-                    <?php if ($tagline !== ''): ?>
-                        <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
-                    <?php endif; ?>
                     <div class="circuit-hero__meta">
                         <div class="circuit-hero__rating">
                             <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
@@ -467,9 +464,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             </ul>
                         <?php endif; ?>
                     </div>
-                    <?php if ($primarySummaryParagraph !== ''): ?>
-                        <p class="circuit-hero__summary"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
-                    <?php endif; ?>
+
                     <?php if ($priceFrom !== '' || $frequency !== ''): ?>
                         <div class="circuit-hero__info-grid" id="video-destacado">
                             <?php if ($priceFrom !== ''): ?>
