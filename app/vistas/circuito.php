@@ -75,21 +75,42 @@ $factsList = array_map(
     $facts
 );
 
-$heroHighlights = [];
-if ($duration !== '') {
-    $heroHighlights[] = ['icon' => '🗓️', 'label' => 'Duración', 'value' => $duration];
-}
-if ($group !== '') {
-    $heroHighlights[] = ['icon' => '👥', 'label' => 'Grupo', 'value' => $group];
-}
-if ($experienceLevel !== '') {
-    $heroHighlights[] = ['icon' => '⭐', 'label' => 'Experiencia', 'value' => $experienceLevel];
-}
-if ($frequency !== '') {
-    $heroHighlights[] = ['icon' => '🗺️', 'label' => 'Próxima salida', 'value' => $frequency];
-}
-if ($location !== '') {
-    $heroHighlights[] = ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location];
+$heroHighlights = [
+    ['icon' => '🗓️', 'label' => 'Duración', 'value' => $duration !== '' ? $duration : 'Por definir'],
+    ['icon' => '⭐', 'label' => 'Experiencia', 'value' => $experienceLevel !== '' ? $experienceLevel : 'Por definir'],
+    ['icon' => '🗺️', 'label' => 'Próxima salida', 'value' => $frequency !== '' ? $frequency : 'Por definir'],
+    ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location !== '' ? $location : 'Por definir'],
+];
+
+$featuredVideoRaw = $detail['featuredVideoUrl']
+    ?? ($detail['videoDestacadoUrl']
+        ?? ($detail['video_destacado_url']
+            ?? ($detail['videoDestacado'] ?? ($detail['video_destacado'] ?? ''))));
+$featuredVideoUrl = is_string($featuredVideoRaw) ? trim($featuredVideoRaw) : '';
+$featuredVideoEmbedUrl = '';
+
+if ($featuredVideoUrl !== '') {
+    $youtubeId = null;
+    if (preg_match('~(?:youtube\.com/(?:watch\?v=|embed/|v/|shorts/)|youtu\.be/)([A-Za-z0-9_-]{11})~', $featuredVideoUrl, $matches)) {
+        $youtubeId = $matches[1];
+    } else {
+        $parsedUrl = parse_url($featuredVideoUrl);
+        if (is_array($parsedUrl) && isset($parsedUrl['host']) && str_contains($parsedUrl['host'], 'youtube.com')) {
+            $query = $parsedUrl['query'] ?? '';
+            if ($query !== '') {
+                parse_str($query, $params);
+                if (isset($params['v']) && is_string($params['v']) && $params['v'] !== '') {
+                    $youtubeId = substr($params['v'], 0, 11);
+                }
+            }
+        }
+    }
+
+    if ($youtubeId !== null) {
+        $featuredVideoEmbedUrl = 'https://www.youtube.com/embed/' . $youtubeId . '?rel=0';
+    } else {
+        $featuredVideoEmbedUrl = $featuredVideoUrl;
+    }
 }
 
 $priceFromRaw = $detail['priceFrom'] ?? ($detail['price_from'] ?? '');
@@ -373,18 +394,6 @@ $contactEmails = $normalizeList($contact['emails'] ?? ($siteSettings['contactEma
 $contactAddresses = $normalizeList($contact['addresses'] ?? ($siteSettings['contactAddresses'] ?? null));
 $contactLocations = $normalizeList($contact['locations'] ?? ($siteSettings['contactLocations'] ?? null));
 
-$bookingBenefits = [];
-if (!empty($services)) {
-    $bookingBenefits = array_slice($normalizeList($services), 0, 3);
-}
-if (empty($bookingBenefits)) {
-    $bookingBenefits = [
-        'Reservas flexibles y confirmación en menos de 24h.',
-        'Asistencia de especialistas locales durante todo el viaje.',
-        'Pagos seguros y protección de datos garantizada.',
-    ];
-}
-
 $breadcrumbs = [
     ['label' => 'Inicio', 'href' => 'index.php'],
     ['label' => 'Circuitos', 'href' => 'explorar.php'],
@@ -465,7 +474,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <?php if ($ctaPrimaryLabel !== '' && $ctaPrimaryHref !== ''): ?>
                             <a class="button button--primary" href="<?= htmlspecialchars($ctaPrimaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaPrimaryLabel); ?></a>
                         <?php else: ?>
-                            <a class="button button--primary" href="#reserva">Reserva tu lugar</a>
+                            <a class="button button--primary" href="#reserva">Ver video destacado</a>
                         <?php endif; ?>
                         <?php if ($ctaSecondaryLabel !== '' && $ctaSecondaryHref !== ''): ?>
                             <a class="button button--ghost" href="<?= htmlspecialchars($ctaSecondaryHref, ENT_QUOTES); ?>"><?= htmlspecialchars($ctaSecondaryLabel); ?></a>
@@ -473,51 +482,33 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </div>
                 </div>
                 <aside class="circuit-hero__aside" id="reserva">
-                    <div class="booking-card">
-                        <h2>Reserva tu aventura</h2>
-                        <?php if ($priceFrom !== ''): ?>
-                            <p class="booking-card__price"><?= htmlspecialchars($priceFrom); ?></p>
-                        <?php endif; ?>
-                        <?php if ($frequency !== ''): ?>
-                            <p class="booking-card__note">Próxima salida: <strong><?= htmlspecialchars($frequency); ?></strong></p>
-                        <?php endif; ?>
-                        <form class="booking-form" method="post" action="api/reservas-circuitos.php" data-reservation-form>
-                            <input type="hidden" name="slug" value="<?= htmlspecialchars($slug, ENT_QUOTES); ?>" />
-                            <input type="hidden" name="titulo" value="<?= htmlspecialchars($title, ENT_QUOTES); ?>" />
-                            <label>
-                                <span>Nombre completo *</span>
-                                <input type="text" name="nombre" required autocomplete="name" />
-                            </label>
-                            <label>
-                                <span>Correo electrónico *</span>
-                                <input type="email" name="correo" required autocomplete="email" />
-                            </label>
-                            <label>
-                                <span>Teléfono de contacto</span>
-                                <input type="tel" name="telefono" autocomplete="tel" placeholder="Opcional" />
-                            </label>
-                            <div class="booking-form__row">
-                                <label>
-                                    <span>Fecha preferida</span>
-                                    <input type="date" name="fecha" />
-                                </label>
-                                <label>
-                                    <span>Personas</span>
-                                    <input type="number" name="cantidad_personas" min="1" value="1" />
-                                </label>
+                    <div class="featured-video-card">
+                        <h2>Video destacado</h2>
+                        <?php if ($featuredVideoEmbedUrl !== ''): ?>
+                            <div class="featured-video-card__ratio">
+                                <iframe
+                                    src="<?= htmlspecialchars($featuredVideoEmbedUrl, ENT_QUOTES); ?>"
+                                    title="Video destacado de <?= htmlspecialchars($title); ?>"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    loading="lazy"
+                                ></iframe>
                             </div>
-                            <label>
-                                <span>Mensaje adicional</span>
-                                <textarea name="mensaje" rows="3" placeholder="Cuéntanos qué esperas de este viaje"></textarea>
-                            </label>
-                            <button class="button button--primary" type="submit" data-loading>Solicitar información</button>
-                            <div class="form-status" data-reservation-status></div>
-                        </form>
-                        <ul class="booking-card__benefits">
-                            <?php foreach ($bookingBenefits as $benefit): ?>
-                                <li><?= htmlspecialchars($benefit); ?></li>
-                            <?php endforeach; ?>
-                        </ul>
+                        <?php else: ?>
+                            <div class="featured-video-card__placeholder">
+                                <p>Próximamente podrás descubrir este circuito en video.</p>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($priceFrom !== '' || $frequency !== ''): ?>
+                            <div class="featured-video-card__details">
+                                <?php if ($priceFrom !== ''): ?>
+                                    <p class="featured-video-card__price"><?= htmlspecialchars($priceFrom); ?></p>
+                                <?php endif; ?>
+                                <?php if ($frequency !== ''): ?>
+                                    <p class="featured-video-card__note">Próxima salida: <strong><?= htmlspecialchars($frequency); ?></strong></p>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </aside>
             </div>
