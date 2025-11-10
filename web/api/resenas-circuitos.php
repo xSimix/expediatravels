@@ -25,7 +25,7 @@ if (!is_array($payload)) {
 $nombre = trim((string) ($payload['nombre'] ?? ''));
 $correo = trim((string) ($payload['correo'] ?? ''));
 $comentario = trim((string) ($payload['comentario'] ?? ''));
-$rating = (int) ($payload['rating'] ?? 5);
+$rating = (int) ($payload['rating'] ?? 10);
 $slug = trim((string) ($payload['slug'] ?? ''));
 $titulo = trim((string) ($payload['titulo'] ?? ''));
 
@@ -43,8 +43,8 @@ if ($slug === '') {
     $errores['slug'] = 'No se pudo identificar el circuito seleccionado.';
 }
 
-if ($rating < 1 || $rating > 5) {
-    $errores['rating'] = 'Selecciona una calificación entre 1 y 5 estrellas.';
+if ($rating < 1 || $rating > 10) {
+    $errores['rating'] = 'Selecciona una calificación entre 1 y 10 puntos.';
 }
 
 if ($comentario === '') {
