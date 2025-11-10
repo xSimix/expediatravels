@@ -3,12 +3,20 @@
 
   const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-  const heroTrack = doc.querySelector('[data-hero-track]');
+  const heroGallery = doc.querySelector('[data-hero-gallery]');
+  const heroTrack = heroGallery ? heroGallery.querySelector('[data-hero-track]') : null;
   if (heroTrack) {
-    const slides = Array.from(heroTrack.children);
+    const slides = Array.from(heroTrack.querySelectorAll('[data-hero-slide]'));
     const prevButton = doc.querySelector('[data-hero-prev]');
     const nextButton = doc.querySelector('[data-hero-next]');
+    const lightbox = doc.querySelector('[data-lightbox]');
+    const lightboxImage = lightbox ? lightbox.querySelector('[data-lightbox-image]') : null;
+    const lightboxClose = lightbox ? lightbox.querySelector('[data-lightbox-close]') : null;
+    const lightboxBackdrop = lightbox ? lightbox.querySelector('[data-lightbox-backdrop]') : null;
     let index = 0;
+    let autoTimer = null;
+    const autoDelay = 5000;
+    let lastFocusedSlide = null;
 
     const getColumns = () => {
       const raw = getComputedStyle(heroTrack).getPropertyValue('--hero-columns');
@@ -16,27 +24,154 @@
       return Number.isNaN(parsed) || parsed <= 0 ? 1 : parsed;
     };
 
-    const update = () => {
+    const getMaxIndex = () => {
       const columns = getColumns();
-      const maxIndex = Math.max(0, Math.ceil(slides.length / columns) - 1);
-      index = clamp(index, 0, maxIndex);
+      return Math.max(0, Math.ceil(slides.length / columns) - 1);
+    };
+
+    const syncNavigation = () => {
+      const maxIndex = getMaxIndex();
+      const isStatic = maxIndex === 0;
+      if (prevButton) {
+        prevButton.disabled = isStatic || index === 0;
+      }
+      if (nextButton) {
+        nextButton.disabled = isStatic || index >= maxIndex;
+      }
+    };
+
+    const goTo = (target, { wrap = false } = {}) => {
+      const maxIndex = getMaxIndex();
+      if (maxIndex === 0) {
+        index = 0;
+      } else if (wrap) {
+        if (target > maxIndex) {
+          index = 0;
+        } else if (target < 0) {
+          index = maxIndex;
+        } else {
+          index = target;
+        }
+      } else {
+        index = clamp(target, 0, maxIndex);
+      }
       heroTrack.style.setProperty('--hero-offset', `${index * 100}%`);
-      if (prevButton) prevButton.disabled = index === 0;
-      if (nextButton) nextButton.disabled = index >= maxIndex;
+      syncNavigation();
+    };
+
+    const stopAuto = () => {
+      if (autoTimer) {
+        window.clearInterval(autoTimer);
+        autoTimer = null;
+      }
+    };
+
+    const startAuto = () => {
+      if (autoTimer || getMaxIndex() === 0) {
+        return;
+      }
+      autoTimer = window.setInterval(() => {
+        goTo(index + 1, { wrap: true });
+      }, autoDelay);
+    };
+
+    const restartAuto = () => {
+      stopAuto();
+      startAuto();
     };
 
     prevButton?.addEventListener('click', () => {
-      index -= 1;
-      update();
+      goTo(index - 1);
+      restartAuto();
     });
 
     nextButton?.addEventListener('click', () => {
-      index += 1;
-      update();
+      goTo(index + 1);
+      restartAuto();
     });
 
-    window.addEventListener('resize', update);
-    update();
+    window.addEventListener('resize', () => {
+      goTo(index);
+      restartAuto();
+    });
+
+    heroGallery?.addEventListener('mouseenter', stopAuto);
+    heroGallery?.addEventListener('mouseleave', startAuto);
+    heroGallery?.addEventListener('focusin', stopAuto);
+    heroGallery?.addEventListener('focusout', startAuto);
+
+    const openLightbox = (slide, src, alt) => {
+      if (!lightbox || !lightboxImage) {
+        return;
+      }
+      lightboxImage.src = src;
+      lightboxImage.alt = alt || '';
+      lightbox.hidden = false;
+      requestAnimationFrame(() => {
+        lightbox.classList.add('is-open');
+        lightboxClose?.focus({ preventScroll: true });
+      });
+      doc.body.classList.add('has-lightbox-open');
+      lastFocusedSlide = slide;
+      stopAuto();
+    };
+
+    const closeLightbox = () => {
+      if (!lightbox || lightbox.hidden) {
+        return;
+      }
+      lightbox.classList.remove('is-open');
+      const finalize = () => {
+        lightbox.hidden = true;
+        lightbox.removeEventListener('transitionend', finalize);
+      };
+      lightbox.addEventListener('transitionend', finalize, { once: true });
+      window.setTimeout(finalize, 320);
+      doc.body.classList.remove('has-lightbox-open');
+      if (lastFocusedSlide) {
+        lastFocusedSlide.focus({ preventScroll: true });
+        lastFocusedSlide = null;
+      }
+      startAuto();
+    };
+
+    heroTrack.addEventListener('click', (event) => {
+      const slide = event.target.closest('[data-hero-slide]');
+      if (!slide) {
+        return;
+      }
+      const src = slide.dataset.lightboxSrc || slide.querySelector('img')?.getAttribute('src');
+      if (!src) {
+        return;
+      }
+      const alt = slide.dataset.lightboxAlt || slide.querySelector('img')?.getAttribute('alt') || '';
+      openLightbox(slide, src, alt);
+    });
+
+    slides.forEach((slide) => {
+      slide.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          const src = slide.dataset.lightboxSrc || slide.querySelector('img')?.getAttribute('src');
+          if (!src) {
+            return;
+          }
+          const alt = slide.dataset.lightboxAlt || slide.querySelector('img')?.getAttribute('alt') || '';
+          openLightbox(slide, src, alt);
+        }
+      });
+    });
+
+    lightboxClose?.addEventListener('click', closeLightbox);
+    lightboxBackdrop?.addEventListener('click', closeLightbox);
+    doc.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeLightbox();
+      }
+    });
+
+    goTo(index);
+    startAuto();
   }
 
   const selectionInputs = doc.querySelectorAll('[data-selection-source]');

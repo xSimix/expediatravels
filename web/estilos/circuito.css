@@ -9,6 +9,10 @@
   --circuit-radius: 20px;
 }
 
+body.has-lightbox-open {
+  overflow: hidden;
+}
+
 .page--circuit {
   background: var(--circuit-bg);
   color: var(--circuit-ink);
@@ -57,6 +61,13 @@
 .circuit-hero__slide {
   flex: 0 0 calc(100% / var(--hero-columns));
   padding: 4px;
+  cursor: zoom-in;
+  transition: transform 0.25s ease;
+}
+
+.circuit-hero__slide:focus-within,
+.circuit-hero__slide:hover {
+  transform: translateY(-2px);
 }
 
 .circuit-hero__slide img {
@@ -64,6 +75,71 @@
   height: 320px;
   object-fit: cover;
   border-radius: calc(var(--circuit-radius) - 6px);
+}
+
+.circuit-lightbox {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(16px, 5vw, 48px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 999;
+}
+
+.circuit-lightbox.is-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.circuit-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(4px);
+}
+
+.circuit-lightbox__content {
+  position: relative;
+  max-width: min(100%, 960px);
+  margin: 0;
+  border-radius: var(--circuit-radius);
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.45);
+}
+
+.circuit-lightbox__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  background: #0f172a;
+}
+
+.circuit-lightbox__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.75);
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s ease;
+}
+
+.circuit-lightbox__close:hover,
+.circuit-lightbox__close:focus-visible {
+  background: rgba(15, 23, 42, 0.95);
 }
 
 .circuit-hero__nav {
