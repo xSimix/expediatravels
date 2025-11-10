@@ -23,9 +23,228 @@
   padding-bottom: clamp(4rem, 8vw, 6rem);
 }
 
-.circuit-page > *:not(.circuit-hero) {
+.circuit-page > *:not(.circuit-hero):not(.tour-hero) {
   width: min(1180px, 92vw);
   margin: 0 auto;
+}
+
+.tour-hero {
+  position: relative;
+  margin: 0 calc(50% - 50vw);
+  background: #0f172a;
+  background-image: var(--tour-hero-image);
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  padding: clamp(4rem, 10vw, 6.5rem) 0 clamp(3rem, 8vw, 5rem);
+}
+
+.tour-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(15, 23, 42, 0.82) 12%, rgba(37, 99, 235, 0.68) 52%, rgba(14, 165, 233, 0.42) 92%);
+}
+
+.tour-hero__container {
+  position: relative;
+  z-index: 1;
+  width: min(1200px, 92vw);
+  display: grid;
+  gap: clamp(2rem, 5vw, 3rem);
+}
+
+.tour-hero__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.tour-hero__title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tour-hero h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 5vw, 3.8rem);
+  line-height: 1.05;
+}
+
+.tour-hero__type-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 0.95rem;
+  align-self: flex-start;
+}
+
+.tour-hero__labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.tour-hero__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.6);
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+}
+
+.tour-hero__label--review {
+  background: linear-gradient(120deg, rgba(250, 204, 21, 0.92), rgba(249, 115, 22, 0.9));
+  color: #0f172a;
+}
+
+.tour-hero__label--departure {
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.tour-hero__tagline {
+  margin: 0;
+  font-size: 1.15rem;
+  max-width: 780px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.info-boxes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  width: 60%;
+  margin: 0 auto 40px auto;
+}
+
+.info-box {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+}
+
+.info-box__icon {
+  font-size: 1.6rem;
+}
+
+.info-box__content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-box__label {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.info-box strong {
+  font-size: 1.35rem;
+  color: #ffffff;
+}
+
+.tour-hero__cta {
+  display: flex;
+  justify-content: center;
+}
+
+.tour-hero__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 1rem 2.8rem;
+  border-radius: 999px;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(120deg, #2563eb, #0ea5e9);
+  box-shadow: 0 18px 40px rgba(14, 165, 233, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tour-hero__button:hover,
+.tour-hero__button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 48px rgba(14, 165, 233, 0.45);
+}
+
+.tour-hero__button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 4px;
+}
+
+.tour-hero__button--disabled,
+.tour-hero__button--disabled:hover,
+.tour-hero__button--disabled:focus-visible {
+  background: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow: none;
+  cursor: default;
+  transform: none;
+  outline: none;
+}
+
+@media (max-width: 1024px) {
+  .info-boxes {
+    width: 80%;
+  }
+}
+
+@media (max-width: 820px) {
+  .tour-hero {
+    padding: clamp(3rem, 12vw, 5rem) 0 clamp(2.5rem, 8vw, 4rem);
+  }
+
+  .tour-hero__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tour-hero__labels {
+    justify-content: flex-start;
+  }
+
+  .tour-hero__tagline {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .info-boxes {
+    width: 100%;
+    grid-template-columns: 1fr;
+    margin: 0 auto 32px auto;
+  }
+
+  .tour-hero__button {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .circuit-hero {

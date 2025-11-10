@@ -7,11 +7,14 @@ if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
     $siteFavicon = null;
 }
 
-$title = trim((string) ($detail['title'] ?? ($detail['nombre'] ?? 'Circuito turístico')));
+$title = trim((string) ($detail['title'] ?? ($detail['nombre'] ?? '')));
 if ($title === '') {
-    $title = 'Circuito turístico';
+    $title = 'Tour sin nombre';
 }
-$typeLabel = trim((string) ($detail['type'] ?? ($detail['categoria'] ?? 'Circuito')));
+$typeLabel = trim((string) ($detail['type_tag'] ?? ($detail['type'] ?? ($detail['categoria'] ?? ''))));
+if ($typeLabel === '') {
+    $typeLabel = 'Circuito';
+}
 $tagline = trim((string) ($detail['tagline'] ?? ($detail['resumen'] ?? '')));
 $summaryRaw = $detail['summary'] ?? ($detail['descripcion_larga'] ?? ($detail['descripcion'] ?? ''));
 $summary = is_string($summaryRaw) ? trim($summaryRaw) : '';
@@ -75,13 +78,6 @@ $factsList = array_map(
     $facts
 );
 
-$heroHighlights = [
-    ['icon' => '🗓️', 'label' => 'Duración', 'value' => $duration !== '' ? $duration : 'Por definir'],
-    ['icon' => '⭐', 'label' => 'Experiencia', 'value' => $experienceLevel !== '' ? $experienceLevel : 'Por definir'],
-    ['icon' => '🗺️', 'label' => 'Próxima salida', 'value' => $frequency !== '' ? $frequency : 'Por definir'],
-    ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location !== '' ? $location : 'Por definir'],
-];
-
 $featuredVideoRaw = $detail['featuredVideoUrl']
     ?? ($detail['videoDestacadoUrl']
         ?? ($detail['video_destacado_url']
@@ -113,25 +109,335 @@ if ($featuredVideoUrl !== '') {
     }
 }
 
-$priceFromRaw = $detail['priceFrom'] ?? ($detail['price_from'] ?? '');
-$priceFrom = is_string($priceFromRaw) ? trim($priceFromRaw) : '';
-$price = $detail['precio'] ?? ($detail['price'] ?? null);
-$currency = strtoupper((string) ($detail['moneda'] ?? ($detail['currency'] ?? 'PEN')));
-if ($priceFrom === '' && is_numeric($price)) {
-    $symbol = match ($currency) {
-        'USD' => '$',
-        'EUR' => '€',
-        'GBP' => '£',
-        default => 'S/',
-    };
-    $priceFrom = sprintf('Desde %s %s', $symbol, number_format((float) $price, 2, '.', ','));
-}
-
 $cta = is_array($detail['cta'] ?? null) ? $detail['cta'] : [];
 $ctaPrimaryLabel = trim((string) ($cta['primaryLabel'] ?? ''));
 $ctaPrimaryHref = trim((string) ($cta['primaryHref'] ?? ''));
 $ctaSecondaryLabel = trim((string) ($cta['secondaryLabel'] ?? ''));
 $ctaSecondaryHref = trim((string) ($cta['secondaryHref'] ?? ''));
+
+$bookingUrlRaw = $detail['booking_url'] ?? ($detail['bookingUrl'] ?? null);
+$bookingUrl = is_string($bookingUrlRaw) ? trim($bookingUrlRaw) : '';
+if ($bookingUrl === '' && $ctaPrimaryHref !== '') {
+    $bookingUrl = $ctaPrimaryHref;
+} elseif ($bookingUrl === '' && $ctaSecondaryHref !== '') {
+    $bookingUrl = $ctaSecondaryHref;
+}
+$bookingUrl = $bookingUrl !== '' ? $bookingUrl : null;
+
+$formatPeruvianCurrency = static function ($value) use (&$formatPeruvianCurrency): ?string {
+    if ($value instanceof \Stringable) {
+        $value = (string) $value;
+    }
+
+    if (is_array($value)) {
+        foreach (['amount', 'precio', 'price', 'valor', 'from'] as $key) {
+            if (array_key_exists($key, $value)) {
+                $formatted = $formatPeruvianCurrency($value[$key]);
+                if ($formatted !== null) {
+                    return $formatted;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    if (is_numeric($value)) {
+        return 'S/ ' . number_format((float) $value, 2, '.', '');
+    }
+
+    if (is_string($value)) {
+        $normalized = trim($value);
+        if ($normalized === '') {
+            return null;
+        }
+
+        $normalizedLower = function_exists('mb_strtolower') ? mb_strtolower($normalized, 'UTF-8') : strtolower($normalized);
+        $fragmentsToRemove = ['desde', 'aprox.', 'aprox', 's/.', 's/ ', 's/'];
+        foreach ($fragmentsToRemove as $fragment) {
+            $normalizedLower = str_replace($fragment, ' ', $normalizedLower);
+        }
+        $normalizedLower = preg_replace('/pen|usd|soles?|\s+/u', ' ', $normalizedLower) ?? '';
+        $filtered = preg_replace('/[^0-9,.-]/', '', $normalizedLower) ?? '';
+        $filtered = trim($filtered);
+        if ($filtered === '') {
+            return null;
+        }
+
+        if (str_contains($filtered, ',') && str_contains($filtered, '.')) {
+            $filtered = str_replace(',', '', $filtered);
+        } elseif (str_contains($filtered, ',')) {
+            $filtered = str_replace(',', '.', $filtered);
+        }
+
+        if (!is_numeric($filtered)) {
+            return null;
+        }
+
+        return 'S/ ' . number_format((float) $filtered, 2, '.', '');
+    }
+
+    if (is_int($value) || is_float($value)) {
+        return 'S/ ' . number_format((float) $value, 2, '.', '');
+    }
+
+    return null;
+};
+
+$priceCandidates = [
+    $detail['price_from'] ?? null,
+    $detail['priceFrom'] ?? null,
+    $detail['precio_desde'] ?? null,
+    $detail['precio'] ?? null,
+];
+$priceFrom = '—';
+foreach ($priceCandidates as $candidate) {
+    if ($candidate === null || $candidate === '') {
+        continue;
+    }
+
+    $formatted = $formatPeruvianCurrency($candidate);
+    if ($formatted !== null) {
+        $priceFrom = $formatted;
+        break;
+    }
+}
+
+$timezoneLima = new \DateTimeZone('America/Lima');
+$nowInLima = new \DateTimeImmutable('now', $timezoneLima);
+$dayNames = [
+    1 => 'Lunes',
+    2 => 'Martes',
+    3 => 'Miércoles',
+    4 => 'Jueves',
+    5 => 'Viernes',
+    6 => 'Sábado',
+    7 => 'Domingo',
+];
+
+$normalizeAccents = static function (string $text): string {
+    $lower = function_exists('mb_strtolower') ? mb_strtolower($text, 'UTF-8') : strtolower($text);
+    return strtr($lower, [
+        'á' => 'a',
+        'é' => 'e',
+        'í' => 'i',
+        'ó' => 'o',
+        'ú' => 'u',
+        'ü' => 'u',
+        'ñ' => 'n',
+    ]);
+};
+
+$parseDepartureDate = static function ($value) use ($timezoneLima, $normalizeAccents): ?\DateTimeImmutable {
+    if ($value instanceof \DateTimeInterface) {
+        return (new \DateTimeImmutable($value->format('Y-m-d H:i:s'), $timezoneLima))
+            ->setTime((int) $value->format('H'), (int) $value->format('i'), (int) $value->format('s'));
+    }
+
+    if (is_numeric($value)) {
+        try {
+            return (new \DateTimeImmutable('@' . (int) $value))->setTimezone($timezoneLima);
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    if (!is_string($value)) {
+        return null;
+    }
+
+    $value = trim($value);
+    if ($value === '') {
+        return null;
+    }
+
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        $date = \DateTimeImmutable::createFromFormat('Y-m-d H:i', $value . ' 12:00', $timezoneLima);
+        return $date ?: null;
+    }
+
+    if (preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+        $date = \DateTimeImmutable::createFromFormat('d/m/Y H:i', $value . ' 12:00', $timezoneLima);
+        return $date ?: null;
+    }
+
+    try {
+        return new \DateTimeImmutable($value, $timezoneLima);
+    } catch (\Exception) {
+        $normalizedMonths = $value;
+        $months = [
+            'enero' => 'january',
+            'febrero' => 'february',
+            'marzo' => 'march',
+            'abril' => 'april',
+            'mayo' => 'may',
+            'junio' => 'june',
+            'julio' => 'july',
+            'agosto' => 'august',
+            'setiembre' => 'september',
+            'septiembre' => 'september',
+            'octubre' => 'october',
+            'noviembre' => 'november',
+            'diciembre' => 'december',
+            'ene' => 'jan',
+            'feb' => 'feb',
+            'mar' => 'mar',
+            'abr' => 'apr',
+            'may' => 'may',
+            'jun' => 'jun',
+            'jul' => 'jul',
+            'ago' => 'aug',
+            'set' => 'sep',
+            'sep' => 'sep',
+            'oct' => 'oct',
+            'nov' => 'nov',
+            'dic' => 'dec',
+        ];
+        foreach ($months as $spanish => $english) {
+            if (stripos($normalizedMonths, $spanish) !== false) {
+                $normalizedMonths = preg_replace('/' . preg_quote($spanish, '/') . '/i', $english, $normalizedMonths);
+            }
+        }
+
+        try {
+            return new \DateTimeImmutable($normalizedMonths, $timezoneLima);
+        } catch (\Exception) {
+            return null;
+        }
+    }
+};
+
+$resolveNextDepartureDay = static function ($departures) use (&$resolveNextDepartureDay, $parseDepartureDate, $dayNames, $nowInLima, $normalizeAccents): ?string {
+    if ($departures === null || $departures === '') {
+        return null;
+    }
+
+    if ($departures instanceof \DateTimeInterface) {
+        $parsed = $parseDepartureDate($departures);
+        if ($parsed !== null && $parsed >= $nowInLima) {
+            return $dayNames[(int) $parsed->format('N')];
+        }
+
+        return null;
+    }
+
+    if (is_array($departures)) {
+        $dates = [];
+        foreach ($departures as $item) {
+            $candidate = null;
+            if (is_array($item)) {
+                foreach (['date', 'fecha', 'datetime', 'fecha_salida', 'departure'] as $key) {
+                    if (array_key_exists($key, $item)) {
+                        $candidate = $parseDepartureDate($item[$key]);
+                        if ($candidate !== null) {
+                            break;
+                        }
+                    }
+                }
+            } else {
+                $candidate = $parseDepartureDate($item);
+            }
+
+            if ($candidate !== null && $candidate >= $nowInLima) {
+                $dates[] = $candidate;
+            }
+        }
+
+        if (!empty($dates)) {
+            usort($dates, static fn (\DateTimeImmutable $a, \DateTimeImmutable $b) => $a <=> $b);
+            $next = $dates[0];
+
+            return $dayNames[(int) $next->format('N')];
+        }
+
+        return null;
+    }
+
+    if (is_string($departures)) {
+        $trimmed = trim($departures);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $decoded = json_decode($trimmed, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return $resolveNextDepartureDay($decoded);
+        }
+
+        if (preg_match('/[,;\|\n]/', $trimmed)) {
+            $parts = preg_split('/[,;\|\n]+/', $trimmed) ?: [];
+            if (!empty($parts)) {
+                return $resolveNextDepartureDay($parts);
+            }
+        }
+
+        $parsed = $parseDepartureDate($trimmed);
+        if ($parsed !== null && $parsed >= $nowInLima) {
+            return $dayNames[(int) $parsed->format('N')];
+        }
+
+        $normalized = $normalizeAccents($trimmed);
+        $dayKeywords = [
+            'lunes' => 1,
+            'martes' => 2,
+            'miercoles' => 3,
+            'jueves' => 4,
+            'viernes' => 5,
+            'sabado' => 6,
+            'domingo' => 7,
+        ];
+        $todayNumber = (int) $nowInLima->format('N');
+        $closestDay = null;
+        $closestDiff = 8;
+        foreach ($dayKeywords as $keyword => $dayNumber) {
+            if (str_contains($normalized, $keyword)) {
+                $diff = ($dayNumber - $todayNumber + 7) % 7;
+                if ($diff === 0 && str_contains($normalized, 'proximo')) {
+                    $diff = 7;
+                }
+
+                if ($diff < $closestDiff) {
+                    $closestDiff = $diff;
+                    $closestDay = $dayNumber;
+                }
+            }
+        }
+
+        if ($closestDay !== null) {
+            return $dayNames[$closestDay];
+        }
+    }
+
+    return null;
+};
+
+$rawDepartures = $detail['departures']
+    ?? ($detail['salidas']
+        ?? ($detail['fechas_salida']
+            ?? ($detail['fechasSalidas']
+                ?? ($detail['nextDeparture'] ?? null))));
+if ($rawDepartures === null || $rawDepartures === '') {
+    $rawDepartures = $detail['frecuencia'] ?? ($detail['proximaSalida'] ?? ($detail['proxima_salida'] ?? null));
+}
+$nextDepartureDay = $resolveNextDepartureDay($rawDepartures);
+if ($nextDepartureDay === null && $frequency !== '') {
+    $nextDepartureDay = $resolveNextDepartureDay($frequency);
+}
+if ($nextDepartureDay === null) {
+    $nextDepartureDay = 'Consultar';
+}
+
+$heroInfoBoxes = [
+    ['icon' => '📆', 'label' => 'Duración', 'value' => $duration !== '' ? $duration : '—'],
+    ['icon' => '⭐', 'label' => 'Experiencia', 'value' => $experienceLevel !== '' ? $experienceLevel : '—'],
+    ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location !== '' ? $location : '—'],
+    ['icon' => '💰', 'label' => 'Desde', 'value' => $priceFrom !== '—' ? $priceFrom : '—'],
+];
+
+$heroRatingValue = $reviewsAverage !== null ? $reviewsAverage : 5.0;
+$heroRatingCount = max(0, (int) $reviewsCountSummary);
+$heroRatingText = sprintf('⭐ %s (%s opiniones)', number_format($heroRatingValue, 1, '.', ''), number_format($heroRatingCount));
+$nextDepartureLabel = '📅 Próxima salida: ' . $nextDepartureDay;
 
 $summaryParagraphs = [];
 if ($summary !== '') {
@@ -421,66 +727,39 @@ $pageTitle = $title . ' — ' . $siteTitle;
     <?php $activeNav = 'circuitos'; include __DIR__ . '/partials/site-header.php'; ?>
 
     <main class="circuit-page">
-        <section class="circuit-hero" style="--hero-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');">
-            <div class="circuit-hero__overlay"></div>
-            <div class="circuit-hero__inner">
-                <div class="circuit-hero__content">
-                    <h1><?= htmlspecialchars($title); ?></h1>
-                    <?php if ($typeLabel !== ''): ?>
-                        <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
-                    <?php endif; ?>
-                    <div class="circuit-hero__meta">
-
-                        <?php if (!empty($heroHighlights)): ?>
-                            <ul class="circuit-hero__stats">
-                                <?php foreach (array_slice($heroHighlights, 0, 4) as $stat): ?>
-                                    <li>
-                                        <span class="circuit-hero__stat-icon" aria-hidden="true"><?= $stat['icon']; ?></span>
-                                        <div>
-                                            <span class="circuit-hero__stat-label"><?= htmlspecialchars($stat['label']); ?></span>
-                                            <strong><?= htmlspecialchars($stat['value']); ?></strong>
-                                        </div>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php endif; ?>
+        <section class="tour-hero" style="--tour-hero-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');">
+            <div class="tour-hero__overlay" aria-hidden="true"></div>
+            <div class="tour-hero__container">
+                <div class="tour-hero__header">
+                    <div class="tour-hero__title-group">
+                        <h1><?= htmlspecialchars($title); ?></h1>
+                        <span class="tour-hero__type-tag"><?= htmlspecialchars($typeLabel); ?></span>
                     </div>
-
-                    <?php if ($priceFrom !== '' || $frequency !== ''): ?>
-                        <div class="circuit-hero__info-grid" id="video-destacado">
-                            <?php if ($priceFrom !== ''): ?>
-                                <article class="circuit-hero__info-card">
-                                    <span class="circuit-hero__info-label">Desde</span>
-                                    <strong><?= htmlspecialchars($priceFrom); ?></strong>
-                                </article>
-                            <?php endif; ?>
-                            <?php if ($frequency !== ''): ?>
-                                <article class="circuit-hero__info-card">
-                                    <span class="circuit-hero__info-label">Próxima salida</span>
-                                    <strong><?= htmlspecialchars($frequency); ?></strong>
-                                </article>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
-                    <aside class="circuit-hero__reviews-card" aria-label="Calificación del circuito">
-                        <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
-                        <div class="circuit-hero__reviews-card-body">
-                            <p class="circuit-hero__reviews-card-score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
-                            <p class="circuit-hero__reviews-card-count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
-                        </div>
-                    </aside>
-                    <?php
-                        $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
-                    ?>
-
-                    <div class="circuit-hero__cta" data-reserve-cta>
-                        <a class="circuit-hero__cta-button" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">Reservar ahora</a>
-                        <div class="circuit-hero__cta-hint">
-                            <span class="circuit-hero__cta-arrow" aria-hidden="true">↓</span>
-                            <span>Descripción del circuito</span>
-                            <span class="visually-hidden">Desplázate para conocer la descripción del circuito</span>
-                        </div>
+                    <div class="tour-hero__labels">
+                        <span class="tour-hero__label tour-hero__label--review"><?= htmlspecialchars($heroRatingText); ?></span>
+                        <span class="tour-hero__label tour-hero__label--departure"><?= htmlspecialchars($nextDepartureLabel); ?></span>
                     </div>
+                </div>
+                <?php if ($tagline !== ''): ?>
+                    <p class="tour-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
+                <?php endif; ?>
+                <div class="info-boxes" role="list">
+                    <?php foreach ($heroInfoBoxes as $infoBox): ?>
+                        <div class="info-box" role="listitem">
+                            <span class="info-box__icon" aria-hidden="true"><?= $infoBox['icon']; ?></span>
+                            <div class="info-box__content">
+                                <span class="info-box__label"><?= htmlspecialchars($infoBox['label']); ?></span>
+                                <strong><?= htmlspecialchars($infoBox['value']); ?></strong>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <div class="tour-hero__cta">
+                    <?php if ($bookingUrl !== null): ?>
+                        <a class="tour-hero__button" href="<?= htmlspecialchars($bookingUrl, ENT_QUOTES); ?>">🚌 Reservar Ahora</a>
+                    <?php else: ?>
+                        <button class="tour-hero__button tour-hero__button--disabled" type="button" disabled>🚌 Temporalmente no disponible</button>
+                    <?php endif; ?>
                 </div>
             </div>
         </section>
