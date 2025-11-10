@@ -285,12 +285,14 @@
   const updateReviewSummary = (payload) => {
     const average = Number(payload.average || 0).toFixed(1);
     const count = Number(payload.count || 0);
-    const stars = doc.querySelector('[data-review-stars]');
+    const stars = doc.querySelectorAll('[data-review-stars]');
     const starsSecondary = doc.querySelector('[data-review-stars-secondary]');
     const averageEls = doc.querySelectorAll('[data-review-average], [data-review-average-secondary]');
     const countEls = doc.querySelectorAll('[data-review-count], [data-review-count-secondary]');
 
-    stars?.style.setProperty('--rating', average);
+    stars.forEach((node) => {
+      node.style.setProperty('--rating', average);
+    });
     starsSecondary?.style.setProperty('--rating', average);
 
     averageEls.forEach((node) => {

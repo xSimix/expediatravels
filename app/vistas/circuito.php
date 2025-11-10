@@ -425,19 +425,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
             <div class="circuit-hero__overlay"></div>
             <div class="circuit-hero__inner">
                 <div class="circuit-hero__content">
-                    <nav class="circuit-breadcrumbs" aria-label="Ruta de navegación">
-                        <ol>
-                            <?php foreach ($breadcrumbs as $index => $crumb): ?>
-                                <li>
-                                    <?php if ($crumb['href'] !== '#' && $index !== count($breadcrumbs) - 1): ?>
-                                        <a href="<?= htmlspecialchars($crumb['href'], ENT_QUOTES); ?>"><?= htmlspecialchars($crumb['label']); ?></a>
-                                    <?php else: ?>
-                                        <span aria-current="page"><?= htmlspecialchars($crumb['label']); ?></span>
-                                    <?php endif; ?>
-                                </li>
-                            <?php endforeach; ?>
-                        </ol>
-                    </nav>
                     <h1><?= htmlspecialchars($title); ?></h1>
                     <?php if ($typeLabel !== ''): ?>
                         <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
@@ -484,12 +471,40 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <?php
                         $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
                     ?>
-                    
+
+                    <div class="circuit-hero__cta" data-reserve-cta>
+                        <a class="circuit-hero__cta-button" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">Reservar ahora</a>
+                        <div class="circuit-hero__cta-hint">
+                            <span class="circuit-hero__cta-arrow" aria-hidden="true">↓</span>
+                            <span>Descripción del circuito</span>
+                            <span class="visually-hidden">Desplázate para conocer la descripción del circuito</span>
+                        </div>
+                    </div>
                 </div>
+                <aside class="circuit-hero__reviews-card" aria-label="Calificación del circuito">
+                    <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
+                    <div class="circuit-hero__reviews-card-body">
+                        <p class="circuit-hero__reviews-card-score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
+                        <p class="circuit-hero__reviews-card-count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
+                    </div>
+                </aside>
             </div>
         </section>
 
         <div class="circuit-body">
+            <nav class="circuit-breadcrumbs" aria-label="Ruta de navegación">
+                <ol>
+                    <?php foreach ($breadcrumbs as $index => $crumb): ?>
+                        <li>
+                            <?php if ($crumb['href'] !== '#' && $index !== count($breadcrumbs) - 1): ?>
+                                <a href="<?= htmlspecialchars($crumb['href'], ENT_QUOTES); ?>"><?= htmlspecialchars($crumb['label']); ?></a>
+                            <?php else: ?>
+                                <span aria-current="page"><?= htmlspecialchars($crumb['label']); ?></span>
+                            <?php endif; ?>
+                        </li>
+                    <?php endforeach; ?>
+                </ol>
+            </nav>
             <div class="circuit-main">
                 <section class="circuit-section" id="descripcion">
                     <header class="section-header">
