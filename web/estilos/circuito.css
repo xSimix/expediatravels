@@ -15,11 +15,16 @@
 }
 
 .circuit-page {
-  width: min(1180px, 92vw);
+  width: 100%;
   margin: 0 auto 96px;
-  padding-top: 96px;
+  padding-top: 0;
   display: grid;
   gap: 40px;
+}
+
+.circuit-page > *:not(.circuit-hero) {
+  width: min(1180px, 92vw);
+  margin-inline: auto;
 }
 
 .circuit-hero {
@@ -27,6 +32,10 @@
   gap: 32px;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   align-items: stretch;
+  width: 100vw;
+  margin: 0 calc(50% - 50vw);
+  padding: clamp(32px, 8vw, 64px) clamp(24px, 6vw, 96px) 0;
+  box-sizing: border-box;
 }
 
 .circuit-hero__gallery {
@@ -864,9 +873,12 @@
 }
 
 @media (max-width: 640px) {
-  .circuit-page {
+  .circuit-page > *:not(.circuit-hero) {
     width: min(100%, 94vw);
-    padding-top: 72px;
+  }
+
+  .circuit-hero {
+    padding: clamp(40px, 12vw, 64px) clamp(16px, 6vw, 32px) 0;
   }
 
   .circuit-hero__track {
