@@ -14,7 +14,7 @@ class RepositorioIdeas
             $destinos = (int) $pdo->query('SELECT COUNT(*) FROM destinos')->fetchColumn();
             $paquetes = (int) $pdo->query('SELECT COUNT(*) FROM paquetes WHERE estado = "publicado"')->fetchColumn();
             $experiencias = max($paquetes * 4, 12);
-            $satisfaccion = 9.8;
+            $satisfaccion = 4.9;
 
             $promedioQuery = $pdo->query('SELECT AVG(rating) FROM resenas');
             if ($promedioQuery !== false) {
@@ -38,7 +38,7 @@ class RepositorioIdeas
             'destinos' => 5,
             'paquetes' => 5,
             'experiencias' => 24,
-            'satisfaccion' => 9.8,
+            'satisfaccion' => 4.9,
         ];
     }
 }

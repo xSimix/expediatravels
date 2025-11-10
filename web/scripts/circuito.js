@@ -259,10 +259,8 @@
 
     const stars = doc.createElement('div');
     stars.className = 'review-card__stars';
-    const scoreRaw = Number(review.rating);
-    const score = Number.isNaN(scoreRaw) ? 0 : Math.max(0, Math.min(10, scoreRaw));
-    stars.style.setProperty('--rating', score.toFixed(1));
-    stars.setAttribute('aria-label', `${score.toFixed(1)} de 10`);
+    stars.style.setProperty('--rating', Number(review.rating || 0).toFixed(1));
+    stars.setAttribute('aria-label', `${review.rating || 0} de 5`);
     header.appendChild(stars);
 
     li.appendChild(header);
@@ -370,9 +368,7 @@
 
       const formData = new FormData(reviewForm);
       const payload = Object.fromEntries(formData.entries());
-      const rawRating = Number(payload.rating || 10);
-      const sanitizedRating = Number.isNaN(rawRating) ? 10 : Math.round(rawRating);
-      payload.rating = Math.max(1, Math.min(10, sanitizedRating));
+      payload.rating = Number(payload.rating || 5);
 
       try {
         const response = await fetch(reviewForm.getAttribute('action') || (window.circuitoPageConfig?.reviewEndpoint ?? ''), {

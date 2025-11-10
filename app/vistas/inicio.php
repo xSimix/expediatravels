@@ -688,11 +688,20 @@
                             <?php endif; ?>
                             <p class="circuit-card__highlight"><?= htmlspecialchars($highlightService); ?></p>
                             <div class="circuit-card__rating">
+                                <span class="circuit-card__stars" aria-hidden="true">
+                                    <svg viewBox="0 0 88 16" xmlns="http://www.w3.org/2000/svg" fill="none">
+                                        <path d="M8 0l1.9 5.9H16l-4.8 3.5 1.8 5.9L8 12l-5.1 3.3 1.8-5.9L0 5.9h6.1L8 0z" fill="currentColor" />
+                                        <path d="M25.6 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L25.6 0z" fill="currentColor" />
+                                        <path d="M43.2 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L43.2 0z" fill="currentColor" />
+                                        <path d="M60.8 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L60.8 0z" fill="currentColor" />
+                                        <path d="M78.4 0l1.9 5.9h6.1l-4.8 3.5 1.8 5.9-5-3.3-5.1 3.3 1.8-5.9-4.9-3.5h6.1L78.4 0z" fill="currentColor" />
+                                    </svg>
+                                </span>
                                 <span class="circuit-card__rating-text">
                                     <?php if ($ratingDisplay !== null): ?>
-                                        Puntaje: <?= htmlspecialchars($ratingDisplay); ?> / 10
+                                        <?= htmlspecialchars($ratingDisplay); ?> ★
                                     <?php else: ?>
-                                        Sin puntaje
+                                        Sin reseñas
                                     <?php endif; ?>
                                     <?php if ($ratingCountDisplay !== null): ?>
                                         <span class="circuit-card__rating-count">(<?= htmlspecialchars($ratingCountDisplay); ?> reseñas)</span>
@@ -856,7 +865,7 @@
                     <span>experiencias guiadas</span>
                 </div>
                 <div class="metric">
-                    <strong><?= htmlspecialchars(number_format((float) ($metrics['satisfaccion'] ?? 9.8), 1)); ?>/10</strong>
+                    <strong><?= htmlspecialchars(number_format((float) ($metrics['satisfaccion'] ?? 4.9), 1)); ?>/5</strong>
                     <span>satisfacción promedio</span>
                 </div>
             </div>
@@ -881,8 +890,10 @@
             <div class="testimonials">
                 <?php foreach ($testimonials as $testimonial): ?>
                     <article class="testimonial">
-                        <div class="testimonial__rating" aria-label="Valoración: <?= htmlspecialchars((string) $testimonial['rating']); ?> de 10">
-                            <span class="testimonial__score">Puntaje: <?= htmlspecialchars((string) $testimonial['rating']); ?> / 10</span>
+                        <div class="testimonial__rating" aria-label="Valoración: <?= htmlspecialchars((string) $testimonial['rating']); ?> de 5">
+                            <?php for ($i = 0; $i < 5; $i++): ?>
+                                <span class="star<?= $i < (int) $testimonial['rating'] ? ' star--filled' : ''; ?>" aria-hidden="true">★</span>
+                            <?php endfor; ?>
                         </div>
                         <p class="testimonial__comment">“<?= htmlspecialchars($testimonial['comentario']); ?>”</p>
                         <footer>
