@@ -434,9 +434,6 @@ $heroInfoBoxes = [
     ['icon' => '💰', 'label' => 'Desde', 'value' => $priceFrom !== '—' ? $priceFrom : '—'],
 ];
 
-$heroRatingValue = $reviewsAverage !== null ? $reviewsAverage : 5.0;
-$heroRatingCount = max(0, (int) $reviewsCountSummary);
-$heroRatingText = sprintf('⭐ %s (%s opiniones)', number_format($heroRatingValue, 1, '.', ''), number_format($heroRatingCount));
 $nextDepartureLabel = '📅 Próxima salida: ' . $nextDepartureDay;
 
 $summaryParagraphs = [];
@@ -662,6 +659,10 @@ if ($reviewsCountSummary === 0 && is_numeric($reviewsRaw)) {
 }
 $reviewsAverageText = $reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '—';
 $reviewsCountText = number_format($reviewsCountSummary);
+
+$heroRatingValue = $reviewsAverage !== null ? $reviewsAverage : 5.0;
+$heroRatingCount = max(0, (int) $reviewsCountSummary);
+$heroRatingText = sprintf('⭐ %s (%s opiniones)', number_format($heroRatingValue, 1, '.', ''), number_format($heroRatingCount));
 
 $reviewsListRaw = is_array($detail['reviewsList'] ?? null) ? $detail['reviewsList'] : [];
 $reviewsList = [];
