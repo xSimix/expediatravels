@@ -155,8 +155,8 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -168,6 +168,8 @@
   border-radius: var(--circuit-radius-sm);
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(6px);
+  flex: 1 1 180px;
+  min-width: 0;
 }
 
 .circuit-hero__stat-icon {

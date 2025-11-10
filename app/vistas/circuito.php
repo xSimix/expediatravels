@@ -474,7 +474,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                 </div>
                 <aside class="circuit-hero__aside" id="reserva">
                     <div class="booking-card">
-                        <h2>Reserva tu aventura</h2>
+                        <h2>video destacado</h2>
                         <?php if ($priceFrom !== ''): ?>
                             <p class="booking-card__price"><?= htmlspecialchars($priceFrom); ?></p>
                         <?php endif; ?>
