@@ -60,7 +60,7 @@ class RepositorioResenasCircuitos
                 ':titulo' => substr(trim((string) ($datos['titulo'] ?? 'Circuito')), 0, 180),
                 ':nombre' => substr(trim((string) ($datos['nombre'] ?? '')), 0, 150),
                 ':correo' => $this->normalizarCorreo($datos['correo'] ?? null),
-                ':rating' => $this->normalizarEntero($datos['rating'] ?? 10),
+                ':rating' => $this->normalizarEntero($datos['rating'] ?? 5),
                 ':comentario' => $this->normalizarComentario($datos['comentario'] ?? ''),
             ]);
 
@@ -152,7 +152,7 @@ class RepositorioResenasCircuitos
             'titulo' => (string) ($row['circuito_titulo'] ?? ''),
             'nombre' => (string) ($row['nombre'] ?? ''),
             'correo' => $row['correo'] ?? null,
-            'rating' => (int) ($row['rating'] ?? 10),
+            'rating' => (int) ($row['rating'] ?? 5),
             'comentario' => (string) ($row['comentario'] ?? ''),
             'creado_en' => $row['creado_en'] ?? null,
         ];
@@ -174,12 +174,12 @@ class RepositorioResenasCircuitos
 
     private function normalizarEntero($valor): int
     {
-        $numero = is_numeric($valor) ? (int) $valor : 10;
+        $numero = is_numeric($valor) ? (int) $valor : 5;
         if ($numero < 1) {
             return 1;
         }
-        if ($numero > 10) {
-            return 10;
+        if ($numero > 5) {
+            return 5;
         }
 
         return $numero;
