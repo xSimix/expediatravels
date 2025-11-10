@@ -7,6 +7,8 @@
   --circuit-card: #ffffff;
   --circuit-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
   --circuit-radius: 20px;
+  --circuit-border: rgba(148, 163, 184, 0.25);
+  --circuit-hero-bg: radial-gradient(circle at top left, rgba(14, 165, 233, 0.16), rgba(14, 116, 144, 0.08) 45%, rgba(15, 23, 42, 0.05) 85%);
 }
 
 body.has-lightbox-open {
@@ -21,7 +23,7 @@ body.has-lightbox-open {
 .circuit-page {
   width: 100%;
   margin: 0 auto 96px;
-  padding-top: 0;
+  padding-top: clamp(40px, 6vw, 72px);
   display: grid;
   gap: 40px;
 }
@@ -32,22 +34,26 @@ body.has-lightbox-open {
 }
 
 .circuit-hero {
+  position: relative;
   display: grid;
-  gap: 32px;
+  gap: clamp(32px, 5vw, 48px);
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   align-items: stretch;
   width: 100vw;
   margin: 0 calc(50% - 50vw);
-  padding: clamp(32px, 8vw, 64px) clamp(24px, 6vw, 96px) 0;
+  padding: clamp(48px, 10vw, 96px) clamp(24px, 6vw, 96px) clamp(40px, 7vw, 72px);
   box-sizing: border-box;
+  background: var(--circuit-hero-bg);
+  border-bottom: 1px solid var(--circuit-border);
 }
 
 .circuit-hero__gallery {
   position: relative;
   overflow: hidden;
   border-radius: var(--circuit-radius);
-  background: #0f172a;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
   box-shadow: var(--circuit-shadow);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   display: flex;
   align-items: stretch;
   min-height: clamp(320px, 48vw, 600px);
@@ -86,6 +92,7 @@ body.has-lightbox-open {
   height: 100%;
   object-fit: cover;
   border-radius: calc(var(--circuit-radius) - 6px);
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.15);
 }
 
 .circuit-lightbox {
@@ -189,25 +196,27 @@ body.has-lightbox-open {
 
 .circuit-hero__info {
   display: grid;
-  gap: 16px;
-  background: linear-gradient(135deg, rgba(14, 165, 233, 0.12), rgba(34, 197, 94, 0.08));
-  padding: 32px;
+  gap: clamp(18px, 3vw, 24px);
+  background: rgba(255, 255, 255, 0.9);
+  padding: clamp(28px, 4vw, 36px);
   border-radius: var(--circuit-radius);
   box-shadow: var(--circuit-shadow);
+  border: 1px solid var(--circuit-border);
+  backdrop-filter: blur(14px);
 }
 
 .circuit-hero__label {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(14, 165, 233, 0.15);
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(99, 102, 241, 0.15));
   color: var(--circuit-brand-dark);
-  font-weight: 600;
-  padding: 6px 14px;
+  font-weight: 700;
+  padding: 8px 18px;
   border-radius: 999px;
   text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.05em;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
 }
 
 .circuit-hero__title {
@@ -218,8 +227,9 @@ body.has-lightbox-open {
 
 .circuit-hero__tagline {
   margin: 0;
-  color: var(--circuit-muted);
-  font-size: 1rem;
+  color: #1e293b;
+  font-size: 1.05rem;
+  line-height: 1.6;
 }
 
 .circuit-hero__meta {
@@ -232,17 +242,19 @@ body.has-lightbox-open {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #0c4a6e;
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--circuit-ink);
   font-weight: 600;
   font-size: 0.85rem;
+  border: 1px solid var(--circuit-border);
 }
 
 .circuit-hero__badge--price {
-  background: #dcfce7;
-  color: #065f46;
+  background: rgba(34, 197, 94, 0.18);
+  color: #166534;
+  border-color: rgba(34, 197, 94, 0.35);
 }
 
 .circuit-hero__rating {
@@ -287,14 +299,16 @@ body.has-lightbox-open {
 
 .circuit-hero__summary {
   margin: 0;
-  color: var(--circuit-ink);
-  font-size: 1rem;
+  color: var(--circuit-muted);
+  font-size: 1.02rem;
+  line-height: 1.6;
 }
 
 .circuit-hero__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
+  margin-top: 4px;
 }
 
 .button {
