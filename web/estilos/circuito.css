@@ -57,11 +57,13 @@
 }
 
 .tour-hero__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin: auto;
+    flex-direction: column;
 }
 
 .tour-hero__title-group {
