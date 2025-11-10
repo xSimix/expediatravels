@@ -438,10 +438,10 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <?php endforeach; ?>
                         </ol>
                     </nav>
+                    <h1><?= htmlspecialchars($title); ?></h1>
                     <?php if ($typeLabel !== ''): ?>
                         <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
                     <?php endif; ?>
-                    <h1><?= htmlspecialchars($title); ?></h1>
                     <?php if ($tagline !== ''): ?>
                         <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
                     <?php endif; ?>
@@ -470,49 +470,36 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <?php if ($primarySummaryParagraph !== ''): ?>
                         <p class="circuit-hero__summary"><?= htmlspecialchars($primarySummaryParagraph); ?></p>
                     <?php endif; ?>
-                    <div class="circuit-hero__video" id="video-destacado">
-                        <div class="circuit-hero__video-card">
-                            <header>
-                                <h2>Video destacado</h2>
-                                <?php if ($priceFrom !== '' || $frequency !== ''): ?>
-                                    <p class="circuit-hero__video-meta">
-                                        <?php if ($priceFrom !== ''): ?>
-                                            <span class="circuit-hero__video-price"><?= htmlspecialchars($priceFrom); ?></span>
-                                        <?php endif; ?>
-                                        <?php if ($frequency !== ''): ?>
-                                            <span class="circuit-hero__video-frequency">Próxima salida: <strong><?= htmlspecialchars($frequency); ?></strong></span>
-                                        <?php endif; ?>
-                                    </p>
-                                <?php endif; ?>
-                            </header>
-                            <?php if ($featuredVideoEmbedUrl !== ''): ?>
-                                <div class="circuit-hero__video-frame">
-                                    <iframe
-                                        src="<?= htmlspecialchars($featuredVideoEmbedUrl, ENT_QUOTES); ?>"
-                                        title="Video destacado de <?= htmlspecialchars($title); ?>"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                        allowfullscreen
-                                        loading="lazy"
-                                    ></iframe>
-                                </div>
-                            <?php else: ?>
-                                <div class="circuit-hero__video-placeholder">
-                                    <p>Próximamente podrás descubrir este circuito en video.</p>
-                                </div>
+                    <?php if ($priceFrom !== '' || $frequency !== ''): ?>
+                        <div class="circuit-hero__info-grid" id="video-destacado">
+                            <?php if ($priceFrom !== ''): ?>
+                                <article class="circuit-hero__info-card">
+                                    <span class="circuit-hero__info-label">Desde</span>
+                                    <strong><?= htmlspecialchars($priceFrom); ?></strong>
+                                </article>
+                            <?php endif; ?>
+                            <?php if ($frequency !== ''): ?>
+                                <article class="circuit-hero__info-card">
+                                    <span class="circuit-hero__info-label">Próxima salida</span>
+                                    <strong><?= htmlspecialchars($frequency); ?></strong>
+                                </article>
                             <?php endif; ?>
                         </div>
-                    </div>
+                    <?php endif; ?>
                     <?php
-                        $videoHref = $featuredVideoEmbedUrl !== '' ? $featuredVideoEmbedUrl : '#video-destacado';
-                        $videoTarget = $featuredVideoEmbedUrl !== '' ? '_blank' : '_self';
                         $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
                     ?>
                     <div class="circuit-hero__actions">
-                        <a
-                            class="button button--primary"
-                            href="<?= htmlspecialchars($videoHref, ENT_QUOTES); ?>"
-                            <?php if ($videoTarget === '_blank'): ?>target="_blank" rel="noopener"<?php endif; ?>
-                        >🎬 Ver Video</a>
+                        <?php if ($featuredVideoEmbedUrl !== ''): ?>
+                            <button
+                                type="button"
+                                class="button button--primary"
+                                data-video-modal-open
+                                data-video-src="<?= htmlspecialchars($featuredVideoEmbedUrl, ENT_QUOTES); ?>"
+                            >🎬 Ver video</button>
+                        <?php else: ?>
+                            <span class="circuit-hero__video-placeholder">Próximamente podrás descubrir este circuito en video.</span>
+                        <?php endif; ?>
                         <a class="button button--ghost" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">🧭 Reservar Circuito</a>
                     </div>
                 </div>
@@ -791,6 +778,27 @@ $pageTitle = $title . ' — ' . $siteTitle;
     </main>
 
     <?php include __DIR__ . '/partials/site-footer.php'; ?>
+    <?php if ($featuredVideoEmbedUrl !== ''): ?>
+        <div class="circuit-video-modal" data-video-modal hidden data-video-src="<?= htmlspecialchars($featuredVideoEmbedUrl, ENT_QUOTES); ?>">
+            <div class="circuit-video-modal__backdrop" data-video-modal-close></div>
+            <div class="circuit-video-modal__dialog" data-video-modal-dialog role="dialog" aria-modal="true" aria-labelledby="video-modal-title" tabindex="-1">
+                <button type="button" class="circuit-video-modal__close" aria-label="Cerrar video" data-video-modal-close>×</button>
+                <div class="circuit-video-modal__body">
+                    <h2 id="video-modal-title">Video de <?= htmlspecialchars($title); ?></h2>
+                    <div class="circuit-video-modal__frame">
+                        <iframe
+                            src=""
+                            title="Video de <?= htmlspecialchars($title); ?>"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                            loading="lazy"
+                            data-video-modal-frame
+                        ></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
     <?php include __DIR__ . '/partials/auth-modal.php'; ?>
     <script>
         window.circuitoPageConfig = {
@@ -798,6 +806,9 @@ $pageTitle = $title . ' — ' . $siteTitle;
             reservationEndpoint: 'api/reservas-circuitos.php'
         };
     </script>
+    <?php if ($featuredVideoEmbedUrl !== ''): ?>
+        <script src="scripts/circuit-video-modal.js" defer></script>
+    <?php endif; ?>
     <script src="scripts/circuito.js" defer></script>
     <script src="scripts/modal-autenticacion.js" defer></script>
     <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
