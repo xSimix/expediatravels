@@ -545,7 +545,7 @@ $currentUser = $currentUser ?? null;
     <?php $activeNav = 'circuitos'; include __DIR__ . '/partials/site-header.php'; ?>
 
     <main class="circuit-page">
-        <section class="circuit-hero">
+        <section class="circuit-hero" style="margin-top: 0;">
             <div class="circuit-hero__gallery" data-hero-gallery>
                 <div class="circuit-hero__track" data-hero-track>
                     <?php foreach ($heroSlides as $slide): ?>
