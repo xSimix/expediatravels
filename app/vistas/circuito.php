@@ -462,6 +462,13 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <?php endif; ?>
                         </div>
                     <?php endif; ?>
+                    <aside class="circuit-hero__reviews-card" aria-label="Calificación del circuito">
+                        <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
+                        <div class="circuit-hero__reviews-card-body">
+                            <p class="circuit-hero__reviews-card-score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
+                            <p class="circuit-hero__reviews-card-count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
+                        </div>
+                    </aside>
                     <?php
                         $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
                     ?>
@@ -475,13 +482,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         </div>
                     </div>
                 </div>
-                <aside class="circuit-hero__reviews-card" aria-label="Calificación del circuito">
-                    <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
-                    <div class="circuit-hero__reviews-card-body">
-                        <p class="circuit-hero__reviews-card-score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
-                        <p class="circuit-hero__reviews-card-count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
-                    </div>
-                </aside>
             </div>
         </section>
 
