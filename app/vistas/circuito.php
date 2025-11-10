@@ -457,32 +457,29 @@ foreach ($reviewsListRaw as $review) {
 }
 
 $heroSlides = [];
-if ($heroImage !== '') {
-    $heroSlides[] = ['src' => $heroImage, 'alt' => $title];
-}
 foreach ($galleryItems as $image) {
-    $heroSlides[] = $image;
-}
-$uniqueSlides = [];
-foreach ($heroSlides as $slide) {
-    $srcSlide = $slide['src'] ?? '';
+    $srcSlide = trim((string) ($image['src'] ?? ''));
     if ($srcSlide === '') {
         continue;
     }
-    $uniqueSlides[$srcSlide] = [
+    $altSlide = trim((string) ($image['alt'] ?? $title));
+    $heroSlides[$srcSlide] = [
         'src' => $srcSlide,
-        'alt' => $slide['alt'] ?? $title,
+        'alt' => $altSlide !== '' ? $altSlide : $title,
     ];
 }
-$heroSlides = array_values($uniqueSlides);
+$heroSlides = array_values($heroSlides);
+if (empty($heroSlides) && $heroImage !== '') {
+    $heroSlides[] = [
+        'src' => $heroImage,
+        'alt' => $title,
+    ];
+}
 if (empty($heroSlides)) {
     $heroSlides[] = [
         'src' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80',
         'alt' => $title,
     ];
-}
-while (count($heroSlides) < 3) {
-    $heroSlides[] = $heroSlides[count($heroSlides) % max(1, count($heroSlides))];
 }
 
 $mapMarkers = [];
@@ -549,11 +546,11 @@ $currentUser = $currentUser ?? null;
 
     <main class="circuit-page">
         <section class="circuit-hero">
-            <div class="circuit-hero__gallery">
+            <div class="circuit-hero__gallery" data-hero-gallery>
                 <div class="circuit-hero__track" data-hero-track>
                     <?php foreach ($heroSlides as $slide): ?>
-                        <figure class="circuit-hero__slide">
-                            <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt']); ?>" loading="lazy" />
+                        <figure class="circuit-hero__slide" data-hero-slide data-lightbox-src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" data-lightbox-alt="<?= htmlspecialchars($slide['alt'], ENT_QUOTES); ?>" role="button" tabindex="0" aria-label="Ver imagen ampliada">
+                            <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt'], ENT_QUOTES); ?>" loading="lazy" />
                         </figure>
                     <?php endforeach; ?>
                 </div>
@@ -561,6 +558,13 @@ $currentUser = $currentUser ?? null;
                     <button class="circuit-hero__nav circuit-hero__nav--prev" type="button" data-hero-prev aria-label="Imagen anterior">‹</button>
                     <button class="circuit-hero__nav circuit-hero__nav--next" type="button" data-hero-next aria-label="Imagen siguiente">›</button>
                 <?php endif; ?>
+            </div>
+            <div class="circuit-lightbox" data-lightbox hidden>
+                <div class="circuit-lightbox__backdrop" data-lightbox-backdrop></div>
+                <figure class="circuit-lightbox__content">
+                    <button class="circuit-lightbox__close" type="button" data-lightbox-close aria-label="Cerrar imagen">×</button>
+                    <img class="circuit-lightbox__image" src="" alt="" data-lightbox-image loading="lazy" />
+                </figure>
             </div>
             <div class="circuit-hero__info">
                 <?php if ($typeLabel !== ''): ?>
