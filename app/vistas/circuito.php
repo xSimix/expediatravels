@@ -741,9 +741,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <span class="tour-hero__label tour-hero__label--departure"><?= htmlspecialchars($nextDepartureLabel); ?></span>
                     </div>
                 </div>
-                <?php if ($tagline !== ''): ?>
-                    <p class="tour-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
-                <?php endif; ?>
+
                 <div class="info-boxes" role="list">
                     <?php foreach ($heroInfoBoxes as $infoBox): ?>
                         <div class="info-box" role="listitem">
