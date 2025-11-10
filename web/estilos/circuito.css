@@ -57,7 +57,7 @@
   display: grid;
   gap: clamp(1.75rem, 4vw, 2.75rem);
   align-content: center;
-  justify-items: stretch;
+  justify-items: center;
 }
 
 .circuit-hero__content {
@@ -67,8 +67,8 @@
   max-width: 820px;
   margin: 0 auto;
   align-content: center;
-  justify-items: start;
-  text-align: left;
+  justify-items: center;
+  text-align: center;
 }
 
 .circuit-breadcrumbs {
@@ -117,15 +117,13 @@
 }
 
 .circuit-hero__badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.45rem 1.2rem;
+  align-self: center;
+  padding: 0.4rem 1rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(255, 180, 0, 0.95), rgba(255, 92, 0, 0.9));
+  background: linear-gradient(120deg, rgba(250, 204, 21, 0.95), rgba(249, 115, 22, 0.9));
   font-weight: 700;
-  letter-spacing: 0.08em;
-  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  font-size: 0.9rem;
   text-transform: uppercase;
 }
 
@@ -141,25 +139,50 @@
   color: rgba(255, 255, 255, 0.85);
 }
 
+.circuit-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(1.25rem, 3vw, 2rem);
+  align-items: stretch;
+  justify-content: center;
+}
+
+.circuit-hero__rating {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.circuit-hero__score {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.circuit-hero__reviews {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
 .circuit-hero__stats {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: clamp(1rem, 2.5vw, 1.25rem);
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: clamp(0.75rem, 2vw, 1rem);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .circuit-hero__stats li {
   display: flex;
-  gap: 1rem;
+  gap: 0.85rem;
   align-items: center;
-  padding: 1.15rem 1.35rem;
+  padding: 1rem 1.1rem;
   border-radius: var(--circuit-radius-sm);
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.68), rgba(30, 41, 59, 0.55));
-  box-shadow: 0 22px 40px rgba(15, 23, 42, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(6px);
+  background: rgba(15, 23, 42, 0.78);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.25);
+  border: 1px solid rgba(148, 163, 184, 0.2);
   min-width: 0;
 }
 
@@ -173,15 +196,20 @@
   font-size: 1.05rem;
 }
 
+@media (max-width: 960px) {
+  .circuit-hero__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .circuit-hero__stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .circuit-hero__stat-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  font-size: 1.3rem;
+  font-size: 1.35rem;
 }
 
 .circuit-hero__stat-label {
@@ -189,9 +217,9 @@
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  opacity: 0.8;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 700;
+  opacity: 0.75;
+  color: #ff7800;
+  font-weight: bold;
 }
 
 .circuit-hero__summary {
@@ -201,12 +229,97 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
+.circuit-hero__info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.2rem;
+  width: 100%;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.circuit-hero__info-card {
+  position: relative;
+  padding: 1.5rem 1.65rem;
+  border-radius: var(--circuit-radius-sm);
+  background: rgba(15, 23, 42, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  box-shadow: 0 26px 52px rgba(15, 23, 42, 0.32);
+  display: grid;
+  gap: 0.55rem;
+  overflow: hidden;
+}
+
+.circuit-hero__info-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.35), rgba(14, 165, 233, 0.25));
+  opacity: 0.5;
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+.circuit-hero__info-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  pointer-events: none;
+}
+
+.circuit-hero__info-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.circuit-hero__info-label {
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 600;
+}
+
+.circuit-hero__reviews-card {
+  background: rgba(255, 255, 255, 0.96);
+  color: var(--circuit-ink);
+  border-radius: var(--circuit-radius-sm);
+  padding: 1.5rem 1.75rem;
+  box-shadow: 0 28px 52px rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(8px);
+  display: grid;
+  gap: 0.85rem;
+  width: min(320px, 100%);
+  justify-self: center;
+  margin-top: clamp(1.5rem, 4vw, 2.5rem);
+  text-align: center;
+}
+
+.circuit-hero__reviews-card-body {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.circuit-hero__reviews-card-score {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.circuit-hero__reviews-card-count {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--circuit-muted);
+}
+
 .circuit-hero__cta {
   width: 100%;
   display: grid;
-  justify-items: start;
+  justify-items: center;
   gap: 0.75rem;
-  margin-top: clamp(1.5rem, 4vw, 2.25rem);
+  margin-top: clamp(1.75rem, 4vw, 2.75rem);
 }
 
 .circuit-hero__cta-button {
@@ -214,49 +327,51 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 1rem 3.2rem;
+  padding: 0.95rem 2.8rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ff4d8d, #ff7f32);
+  background: linear-gradient(120deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.95));
   color: #ffffff;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 22px 45px rgba(255, 111, 97, 0.4);
+  box-shadow: 0 22px 45px rgba(14, 116, 223, 0.45);
   transform: translateY(0);
   transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: circuit-cta-float 3.2s ease-in-out infinite;
 }
 
 .circuit-hero__cta-button:hover,
 .circuit-hero__cta-button:focus {
-  transform: translateY(-3px) scale(1.01);
-  box-shadow: 0 26px 55px rgba(255, 111, 97, 0.55);
+  animation-play-state: paused;
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 26px 55px rgba(14, 116, 223, 0.55);
 }
 
-
-.circuit-hero__cta-icon {
-  font-size: 1.3rem;
-}
-
-.circuit-hero__cta-link {
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 600;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.35);
-  display: inline-flex;
-  align-items: center;
+.circuit-hero__cta-hint {
+  display: grid;
+  justify-items: center;
   gap: 0.35rem;
-  padding-bottom: 0.1rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 }
 
-.circuit-hero__cta-link::after {
-  content: '↘';
-  font-size: 0.85em;
+.circuit-hero__cta-arrow {
+  font-size: 1.4rem;
+  animation: circuit-cta-bounce 1.8s ease-in-out infinite;
 }
 
-.circuit-hero__cta-link:hover,
-.circuit-hero__cta-link:focus {
-  color: #ffffff;
-  border-bottom-color: #ffffff;
+@keyframes circuit-cta-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 @media (max-width: 960px) {
@@ -267,100 +382,62 @@
 }
 
 @media (max-width: 640px) {
-  .circuit-hero__header-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
+  .circuit-hero__reviews-card {
+    width: 100%;
+    text-align: center;
+    margin-top: clamp(1.25rem, 5vw, 2rem);
   }
 
-  .circuit-hero__header-meta {
-    flex-wrap: wrap;
-    justify-content: flex-start;
+  .circuit-hero__reviews-card-body {
+    justify-items: center;
   }
 }
 
-.circuit-hero__header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.5rem;
-  width: 100%;
+@keyframes circuit-cta-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
 }
 
-.circuit-hero__header-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.circuit-hero__pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.65rem 1.1rem;
-  border-radius: 999px;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.circuit-hero__pill strong {
+.circuit-hero__info-card strong {
+  font-size: 1.35rem;
   color: #ffffff;
 }
 
-.circuit-hero__pill--accent {
-  background: linear-gradient(135deg, rgba(255, 111, 97, 0.2), rgba(255, 200, 99, 0.2));
-  border-color: rgba(255, 255, 255, 0.2);
-}
-
-.circuit-hero__pill-label {
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-.circuit-hero__rating-pill {
-  gap: 0.6rem;
-  background: rgba(15, 23, 42, 0.85);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.circuit-hero__rating-icon {
-  font-size: 1.2rem;
-}
-
-.circuit-hero__rating-content {
-  display: inline-flex;
+.circuit-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1rem;
 }
 
-.circuit-hero__rating-text {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.35rem;
-}
-
-.circuit-hero__rating-text strong {
-  font-size: 1.1rem;
-}
-
-.circuit-hero__rating-scale {
+.circuit-hero__video-placeholder {
   font-size: 0.95rem;
-  opacity: 0.7;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.circuit-hero__rating-count {
-  font-size: 0.95rem;
-  opacity: 0.75;
+.circuit-hero__actions .button--primary {
+  background: linear-gradient(120deg, #f97316, #facc15);
+  border: none;
+  color: #0f172a;
+  font-weight: 700;
 }
 
-.rating-stars--sm {
-  font-size: 1rem;
+.circuit-hero__actions .button--ghost {
+  border-color: rgba(255, 255, 255, 0.65);
+  color: #ffffff;
+  background: rgba(15, 23, 42, 0.35);
+}
+
+.circuit-hero__actions .button--ghost:hover,
+.circuit-hero__actions .button--ghost:focus-visible {
+  background: rgba(148, 163, 184, 0.25);
 }
 
 .video-modal-open {
@@ -931,6 +1008,11 @@
 }
 
 @media (max-width: 768px) {
+  .circuit-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   .booking-form__row {
     grid-template-columns: 1fr;
   }
