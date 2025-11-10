@@ -430,13 +430,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
                     <?php endif; ?>
                     <div class="circuit-hero__meta">
-                        <div class="circuit-hero__rating">
-                            <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
-                            <div>
-                                <p class="circuit-hero__score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
-                                <p class="circuit-hero__reviews"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
-                            </div>
-                        </div>
+
                         <?php if (!empty($heroHighlights)): ?>
                             <ul class="circuit-hero__stats">
                                 <?php foreach (array_slice($heroHighlights, 0, 4) as $stat): ?>
