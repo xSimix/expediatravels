@@ -406,3 +406,49 @@ INSERT INTO media_items (titulo, descripcion, texto_alternativo, creditos, ruta,
 VALUES
 ('Bosque neblinoso', 'Amanecer en los bosques de Oxapampa con neblina dorada.', 'Bosque iluminado por el amanecer en Oxapampa', 'Foto: Lucía Salazar', 'almacenamiento/medios/oxapampa-bosque.jpg', 'oxapampa-bosque.jpg', 'oxapampa-bosque.jpg', 'image/jpeg', 'jpg', 284512, 1600, 1067, '0f2c5f98c9ea7f1d233a7a52f7d022d2a3e2b1d3', '2024-07-01 09:00:00'),
 ('Laguna el Oconal', 'Reflejos perfectos en la Laguna El Oconal durante el atardecer.', 'Laguna con reflejo de montañas y cielo dorado', 'Foto: Jorge Huamán', 'almacenamiento/medios/laguna-oconal.jpg', 'laguna-oconal.jpg', 'laguna-oconal.jpg', 'image/jpeg', 'jpg', 315440, 1600, 1067, '9e320fb2d4b79e3c47691d9961c3c2de3c8a6d4f', '2024-07-02 18:20:00');
+
+-- Servicios disponibles para circuitos.
+INSERT INTO servicios_catalogo (nombre, tipo, descripcion, activo)
+VALUES
+    ('Transporte turístico', 'incluido', 'Traslado terrestre para todo el circuito.', 1),
+    ('Guía especializado', 'incluido', 'Guías bilingües certificados.', 1),
+    ('Entradas a atractivos', 'incluido', 'Tickets de ingreso a sitios turísticos.', 1),
+    ('Alimentación durante el circuito', 'incluido', 'Almuerzo o snacks indicados en el itinerario.', 1),
+    ('Guía local', 'incluido', 'Acompañamiento de guías nativos de la zona.', 1),
+    ('Degustaciones programadas', 'incluido', 'Catas o degustaciones señaladas en el itinerario.', 1),
+    ('Gastos personales', 'excluido', 'Compras o servicios fuera del programa.', 1),
+    ('Seguro de viaje', 'excluido', 'Coberturas personales adicionales.', 1),
+    ('Bebidas alcohólicas', 'excluido', 'Consumo de bebidas alcohólicas.', 1),
+    ('Actividades opcionales', 'excluido', 'Actividades no mencionadas en el itinerario.', 1),
+    ('Propinas', 'excluido', 'Propinas a guías y conductores.', 1);
+
+-- Relaciones de servicios por circuito de ejemplo.
+INSERT INTO circuito_servicios (circuito_id, servicio_id, tipo)
+SELECT c.id, s.id, s.tipo
+FROM circuitos c
+JOIN servicios_catalogo s ON s.nombre IN ('Transporte turístico', 'Guía especializado', 'Entradas a atractivos')
+WHERE c.nombre = 'Tour Perené';
+
+INSERT INTO circuito_servicios (circuito_id, servicio_id, tipo)
+SELECT c.id, s.id, s.tipo
+FROM circuitos c
+JOIN servicios_catalogo s ON s.nombre IN ('Transporte turístico', 'Guía local', 'Degustaciones programadas')
+WHERE c.nombre = 'Tour Oxapampa';
+
+-- Itinerarios de referencia.
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
+SELECT c.id, 1, 'Mañana', '08:00', 'Salida de Oxapampa', 'Recojo desde hotel y charla de seguridad.'
+FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
+SELECT c.id, 2, 'Mañana', '10:30', 'Tunqui Cueva', 'Recorrido guiado por formaciones rocosas.'
+FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
+SELECT c.id, 3, 'Tarde', '15:00', 'Catarata Río Tigre', 'Caminata corta para disfrutar del paisaje.'
+FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
+
+INSERT INTO circuito_marcadores (circuito_id, orden, titulo, descripcion, latitud, longitud)
+SELECT c.id, 1, 'Tunqui Cueva', 'Caverna iluminada con pasajes estrechos.', -10.6195, -75.4042
+FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
+INSERT INTO circuito_marcadores (circuito_id, orden, titulo, descripcion, latitud, longitud)
+SELECT c.id, 2, 'Catarata Río Tigre', 'Cascada rodeada de vegetación.', -10.5668, -75.3925
+FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';

@@ -45,6 +45,49 @@ function normalizarDestinoCircuito(array $destino): array
     ];
 }
 
+function cargarServiciosDisponibles(array $predeterminados, array &$errores): array
+{
+    $servicios = [
+        'incluido' => [],
+        'excluido' => [],
+    ];
+
+    try {
+        $pdo = Conexion::obtener();
+        $statement = $pdo->query('SELECT id, nombre, tipo, descripcion FROM servicios_catalogo WHERE activo = 1 ORDER BY tipo, nombre');
+        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) ?: [] as $servicio) {
+            $tipo = $servicio['tipo'] === 'excluido' ? 'excluido' : 'incluido';
+            $id = (int) $servicio['id'];
+            $servicios[$tipo][$id] = [
+                'id' => $id,
+                'nombre' => trim((string) $servicio['nombre']),
+                'tipo' => $tipo,
+                'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
+            ];
+        }
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudo cargar la lista de servicios desde la base de datos. Se usarán los servicios de referencia.';
+    }
+
+    if (empty($servicios['incluido']) && empty($servicios['excluido'])) {
+        foreach ($predeterminados as $servicio) {
+            $tipo = ($servicio['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
+            $id = (int) ($servicio['id'] ?? 0);
+            if ($id <= 0) {
+                continue;
+            }
+            $servicios[$tipo][$id] = [
+                'id' => $id,
+                'nombre' => trim((string) ($servicio['nombre'] ?? '')),
+                'tipo' => $tipo,
+                'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
+            ];
+        }
+    }
+
+    return $servicios;
+}
+
 function cargarCircuitos(array $predeterminados, array $destinosDisponibles, array &$errores): array
 {
     $circuitos = [];
@@ -64,8 +107,11 @@ function cargarCircuitos(array $predeterminados, array $destinosDisponibles, arr
 
     if (!empty($circuitos)) {
         $normalizados = array_map(static fn (array $circuito): array => normalizarCircuito($circuito, $destinosDisponibles), $circuitos);
+        $completos = array_map(static function (array $circuito) use (&$errores): array {
+            return adjuntarRelacionesCircuito($circuito, $errores);
+        }, $normalizados);
 
-        return ordenarCircuitos($normalizados);
+        return ordenarCircuitos($completos);
     }
 
     $predeterminadosNormalizados = array_map(static function (array $circuito) use ($destinosDisponibles): array {
@@ -94,8 +140,8 @@ function normalizarCircuito(array $circuito, array $destinos): array
         $destinoRegion = trim((string) ($destinoDatos['region'] ?? $circuito['destino_region'] ?? ''));
     }
 
-    $puntosInteres = prepararArrayCircuito($circuito['puntos_interes'] ?? []);
-    $servicios = prepararArrayCircuito($circuito['servicios'] ?? []);
+    $serviciosIncluidos = prepararArrayCircuito($circuito['servicios_incluidos'] ?? $circuito['servicios'] ?? []);
+    $serviciosExcluidos = prepararArrayCircuito($circuito['servicios_excluidos'] ?? []);
     $galeria = prepararArrayCircuito($circuito['galeria'] ?? []);
     $precioBruto = $circuito['precio'] ?? $circuito['precio_desde'] ?? null;
     if (is_string($precioBruto)) {
@@ -132,11 +178,25 @@ function normalizarCircuito(array $circuito, array $destinos): array
         'imagen_destacada' => trim((string) ($circuito['imagen_destacada'] ?? '')),
         'galeria' => $galeria,
         'video_destacado_url' => trim((string) ($circuito['video_destacado_url'] ?? $circuito['video_destacado'] ?? '')),
-        'puntos_interes' => $puntosInteres,
-        'servicios' => $servicios,
+        'servicios' => $serviciosIncluidos,
+        'servicios_incluidos' => $serviciosIncluidos,
+        'servicios_excluidos' => $serviciosExcluidos,
+        'itinerario' => prepararItinerarioCircuito($circuito['itinerario'] ?? []),
+        'marcadores' => prepararMarcadoresCircuito($circuito['marcadores'] ?? $circuito['mapa'] ?? []),
         'estado' => $estado,
         'actualizado_en' => $circuito['actualizado_en'] ?? null,
     ];
+
+    $essentials = [];
+    if (!empty($serviciosIncluidos)) {
+        $essentials[] = ['title' => 'Incluye', 'items' => $serviciosIncluidos];
+    }
+    if (!empty($serviciosExcluidos)) {
+        $essentials[] = ['title' => 'No incluye', 'items' => $serviciosExcluidos];
+    }
+    if (!empty($essentials)) {
+        $resultado['essentials'] = $essentials;
+    }
 
     $slugFuente = trim((string) ($circuito['slug'] ?? ''));
     if ($slugFuente === '') {
@@ -165,9 +225,14 @@ function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
 {
     try {
         $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        $serviciosIncluidosIds = array_map('intval', $circuito['servicios_incluidos_ids'] ?? []);
+        $serviciosIncluidosNombres = obtenerNombresServiciosPorIds($pdo, $serviciosIncluidosIds);
+
         $statement = $pdo->prepare(
-            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, precio, categoria, dificultad, frecuencia, estado, descripcion, puntos_interes, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
-             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :precio, :categoria, :dificultad, :frecuencia, :estado, :descripcion, :puntos_interes, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
+            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, precio, categoria, dificultad, frecuencia, estado, descripcion, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
+             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :precio, :categoria, :dificultad, :frecuencia, :estado, :descripcion, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
         );
         $statement->execute([
             ':destino_id' => $circuito['destino_id'] > 0 ? $circuito['destino_id'] : null,
@@ -180,16 +245,29 @@ function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
             ':estado' => $circuito['estado'],
             ':descripcion' => $circuito['descripcion'] !== '' ? $circuito['descripcion'] : null,
-            ':puntos_interes' => prepararJsonListaCircuito($circuito['puntos_interes']),
-            ':servicios' => prepararJsonListaCircuito($circuito['servicios']),
+            ':servicios' => prepararJsonListaCircuito($serviciosIncluidosNombres),
             ':imagen_portada' => $circuito['imagen_portada'] !== '' ? $circuito['imagen_portada'] : null,
             ':imagen_destacada' => $circuito['imagen_destacada'] !== '' ? $circuito['imagen_destacada'] : null,
             ':galeria' => prepararJsonListaCircuito($circuito['galeria']),
             ':video' => $circuito['video_destacado_url'] !== '' ? $circuito['video_destacado_url'] : null,
         ]);
 
-        return (int) $pdo->lastInsertId();
+        $circuitoId = (int) $pdo->lastInsertId();
+
+        sincronizarItinerarioCircuito($pdo, $circuitoId, $circuito['itinerario'] ?? []);
+        sincronizarServiciosCircuito($pdo, $circuitoId, [
+            'incluido' => $serviciosIncluidosIds,
+            'excluido' => array_map('intval', $circuito['servicios_excluidos_ids'] ?? []),
+        ]);
+        sincronizarMarcadoresCircuito($pdo, $circuitoId, $circuito['marcadores'] ?? []);
+
+        $pdo->commit();
+
+        return $circuitoId;
     } catch (\PDOException $exception) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         $errores[] = 'No se pudo guardar el circuito en la base de datos.';
     }
 
@@ -200,6 +278,11 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
 {
     try {
         $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        $serviciosIncluidosIds = array_map('intval', $circuito['servicios_incluidos_ids'] ?? []);
+        $serviciosIncluidosNombres = obtenerNombresServiciosPorIds($pdo, $serviciosIncluidosIds);
+
         $statement = $pdo->prepare(
             'UPDATE circuitos
              SET destino_id = :destino_id,
@@ -212,7 +295,6 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
                  frecuencia = :frecuencia,
                  estado = :estado,
                  descripcion = :descripcion,
-                 puntos_interes = :puntos_interes,
                  servicios = :servicios,
                  imagen_portada = :imagen_portada,
                  imagen_destacada = :imagen_destacada,
@@ -232,16 +314,27 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
             ':estado' => $circuito['estado'],
             ':descripcion' => $circuito['descripcion'] !== '' ? $circuito['descripcion'] : null,
-            ':puntos_interes' => prepararJsonListaCircuito($circuito['puntos_interes']),
-            ':servicios' => prepararJsonListaCircuito($circuito['servicios']),
+            ':servicios' => prepararJsonListaCircuito($serviciosIncluidosNombres),
             ':imagen_portada' => $circuito['imagen_portada'] !== '' ? $circuito['imagen_portada'] : null,
             ':imagen_destacada' => $circuito['imagen_destacada'] !== '' ? $circuito['imagen_destacada'] : null,
             ':galeria' => prepararJsonListaCircuito($circuito['galeria']),
             ':video' => $circuito['video_destacado_url'] !== '' ? $circuito['video_destacado_url'] : null,
         ]);
 
+        sincronizarItinerarioCircuito($pdo, $circuitoId, $circuito['itinerario'] ?? []);
+        sincronizarServiciosCircuito($pdo, $circuitoId, [
+            'incluido' => $serviciosIncluidosIds,
+            'excluido' => array_map('intval', $circuito['servicios_excluidos_ids'] ?? []),
+        ]);
+        sincronizarMarcadoresCircuito($pdo, $circuitoId, $circuito['marcadores'] ?? []);
+
+        $pdo->commit();
+
         return $statement->rowCount() > 0;
     } catch (\PDOException $exception) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         $errores[] = 'No se pudo actualizar el circuito en la base de datos.';
     }
 
@@ -283,7 +376,7 @@ function obtenerCircuitoPorId(int $circuitoId, array $destinosDisponibles, array
             $normalizado = normalizarCircuito($circuito, $destinosDisponibles);
             $normalizado['es_predeterminado'] = false;
 
-            return $normalizado;
+            return adjuntarRelacionesCircuito($normalizado, $errores);
         }
     } catch (\PDOException $exception) {
         $errores[] = 'No se pudo obtener el circuito desde la base de datos.';
@@ -298,6 +391,40 @@ function obtenerCircuitoPorId(int $circuitoId, array $destinosDisponibles, array
     }
 
     return null;
+}
+
+function adjuntarRelacionesCircuito(array $circuito, array &$errores): array
+{
+    $circuitoId = (int) ($circuito['id'] ?? 0);
+    if ($circuitoId <= 0) {
+        return $circuito;
+    }
+
+    try {
+        $pdo = Conexion::obtener();
+        $circuito['itinerario'] = obtenerItinerarioDesdeDb($pdo, $circuitoId);
+        $servicios = obtenerServiciosDesdeDb($pdo, $circuitoId);
+        $circuito['servicios_incluidos'] = $servicios['incluido']['nombres'];
+        $circuito['servicios_excluidos'] = $servicios['excluido']['nombres'];
+        $circuito['servicios_incluidos_ids'] = $servicios['incluido']['ids'];
+        $circuito['servicios_excluidos_ids'] = $servicios['excluido']['ids'];
+        $circuito['servicios'] = $servicios['incluido']['nombres'];
+        $circuito['marcadores'] = obtenerMarcadoresDesdeDb($pdo, $circuitoId);
+        $essentials = [];
+        if (!empty($circuito['servicios_incluidos'])) {
+            $essentials[] = ['title' => 'Incluye', 'items' => $circuito['servicios_incluidos']];
+        }
+        if (!empty($circuito['servicios_excluidos'])) {
+            $essentials[] = ['title' => 'No incluye', 'items' => $circuito['servicios_excluidos']];
+        }
+        if (!empty($essentials)) {
+            $circuito['essentials'] = $essentials;
+        }
+    } catch (\PDOException $exception) {
+        $errores[] = 'No se pudieron cargar los detalles extendidos del circuito.';
+    }
+
+    return $circuito;
 }
 
 function prepararArrayCircuito($valor): array
@@ -451,4 +578,327 @@ if (!function_exists('formatearMarcaTiempo')) {
             return $marca;
         }
     }
+}
+
+function prepararItinerarioCircuito($valor): array
+{
+    if (!is_array($valor)) {
+        return [];
+    }
+
+    $resultado = [];
+    foreach ($valor as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $titulo = trim((string) ($item['titulo'] ?? ''));
+        $descripcion = trim((string) ($item['descripcion'] ?? ''));
+        $dia = trim((string) ($item['dia'] ?? ''));
+        $hora = trim((string) ($item['hora'] ?? ''));
+        if ($titulo === '' && $descripcion === '') {
+            continue;
+        }
+        $resultado[] = [
+            'dia' => $dia,
+            'hora' => $hora,
+            'titulo' => $titulo,
+            'descripcion' => $descripcion,
+        ];
+    }
+
+    return $resultado;
+}
+
+function prepararMarcadoresCircuito($valor): array
+{
+    if (!is_array($valor)) {
+        return [];
+    }
+
+    $resultado = [];
+    foreach ($valor as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $titulo = trim((string) ($item['titulo'] ?? ''));
+        $latitud = isset($item['latitud']) ? (float) $item['latitud'] : null;
+        $longitud = isset($item['longitud']) ? (float) $item['longitud'] : null;
+        if ($titulo === '' || $latitud === null || $longitud === null) {
+            continue;
+        }
+        $resultado[] = [
+            'titulo' => $titulo,
+            'descripcion' => trim((string) ($item['descripcion'] ?? '')),
+            'latitud' => $latitud,
+            'longitud' => $longitud,
+        ];
+    }
+
+    return $resultado;
+}
+
+function procesarItinerarioFormulario(array $entrada): array
+{
+    $dias = isset($entrada['dia']) ? (array) $entrada['dia'] : [];
+    $horas = isset($entrada['hora']) ? (array) $entrada['hora'] : [];
+    $titulos = isset($entrada['titulo']) ? (array) $entrada['titulo'] : [];
+    $descripciones = isset($entrada['descripcion']) ? (array) $entrada['descripcion'] : [];
+
+    $total = max(count($dias), count($horas), count($titulos), count($descripciones));
+    $resultado = [];
+    for ($i = 0; $i < $total; $i++) {
+        $titulo = trim((string) ($titulos[$i] ?? ''));
+        $descripcion = trim((string) ($descripciones[$i] ?? ''));
+        $dia = trim((string) ($dias[$i] ?? ''));
+        $hora = trim((string) ($horas[$i] ?? ''));
+        if ($titulo === '' && $descripcion === '') {
+            continue;
+        }
+        $resultado[] = [
+            'dia' => $dia,
+            'hora' => $hora,
+            'titulo' => $titulo,
+            'descripcion' => $descripcion,
+        ];
+    }
+
+    return $resultado;
+}
+
+function procesarMarcadoresFormulario(array $entrada): array
+{
+    $titulos = isset($entrada['titulo']) ? (array) $entrada['titulo'] : [];
+    $descripciones = isset($entrada['descripcion']) ? (array) $entrada['descripcion'] : [];
+    $latitudes = isset($entrada['latitud']) ? (array) $entrada['latitud'] : [];
+    $longitudes = isset($entrada['longitud']) ? (array) $entrada['longitud'] : [];
+
+    $total = max(count($titulos), count($descripciones), count($latitudes), count($longitudes));
+    $resultado = [];
+    for ($i = 0; $i < $total; $i++) {
+        $titulo = trim((string) ($titulos[$i] ?? ''));
+        if ($titulo === '') {
+            continue;
+        }
+        $latitud = filter_var($latitudes[$i] ?? null, FILTER_VALIDATE_FLOAT);
+        $longitud = filter_var($longitudes[$i] ?? null, FILTER_VALIDATE_FLOAT);
+        if ($latitud === false || $longitud === false) {
+            continue;
+        }
+        $resultado[] = [
+            'titulo' => $titulo,
+            'descripcion' => trim((string) ($descripciones[$i] ?? '')),
+            'latitud' => (float) $latitud,
+            'longitud' => (float) $longitud,
+        ];
+    }
+
+    return $resultado;
+}
+
+function filtrarServiciosSeleccionados(array $serviciosDisponibles, array $seleccion, string $tipo): array
+{
+    $tipo = $tipo === 'excluido' ? 'excluido' : 'incluido';
+    $validos = [];
+    foreach ($seleccion as $id) {
+        $id = (int) $id;
+        if ($id > 0 && isset($serviciosDisponibles[$tipo][$id])) {
+            $validos[$id] = $id;
+        }
+    }
+
+    return array_values($validos);
+}
+
+function obtenerItinerarioDesdeDb(\PDO $pdo, int $circuitoId): array
+{
+    $statement = $pdo->prepare('SELECT dia, hora, titulo, descripcion FROM circuito_itinerarios WHERE circuito_id = :id ORDER BY orden, id');
+    $statement->execute([':id' => $circuitoId]);
+    $filas = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+    $resultado = [];
+    foreach ($filas as $fila) {
+        $titulo = trim((string) ($fila['titulo'] ?? ''));
+        $descripcion = trim((string) ($fila['descripcion'] ?? ''));
+        if ($titulo === '' && $descripcion === '') {
+            continue;
+        }
+        $resultado[] = [
+            'dia' => trim((string) ($fila['dia'] ?? '')),
+            'hora' => trim((string) ($fila['hora'] ?? '')),
+            'titulo' => $titulo,
+            'descripcion' => $descripcion,
+        ];
+    }
+
+    return $resultado;
+}
+
+function obtenerMarcadoresDesdeDb(\PDO $pdo, int $circuitoId): array
+{
+    $statement = $pdo->prepare('SELECT titulo, descripcion, latitud, longitud FROM circuito_marcadores WHERE circuito_id = :id ORDER BY orden, id');
+    $statement->execute([':id' => $circuitoId]);
+    $filas = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+    $resultado = [];
+    foreach ($filas as $fila) {
+        $titulo = trim((string) ($fila['titulo'] ?? ''));
+        $latitud = isset($fila['latitud']) ? (float) $fila['latitud'] : null;
+        $longitud = isset($fila['longitud']) ? (float) $fila['longitud'] : null;
+        if ($titulo === '' || $latitud === null || $longitud === null) {
+            continue;
+        }
+        $resultado[] = [
+            'titulo' => $titulo,
+            'descripcion' => trim((string) ($fila['descripcion'] ?? '')),
+            'latitud' => $latitud,
+            'longitud' => $longitud,
+        ];
+    }
+
+    return $resultado;
+}
+
+function obtenerServiciosDesdeDb(\PDO $pdo, int $circuitoId): array
+{
+    $statement = $pdo->prepare(
+        'SELECT cs.servicio_id, cs.tipo, sc.nombre
+         FROM circuito_servicios cs
+         JOIN servicios_catalogo sc ON sc.id = cs.servicio_id
+         WHERE cs.circuito_id = :id
+         ORDER BY cs.tipo, sc.nombre'
+    );
+    $statement->execute([':id' => $circuitoId]);
+    $filas = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+    $resultado = [
+        'incluido' => ['ids' => [], 'nombres' => []],
+        'excluido' => ['ids' => [], 'nombres' => []],
+    ];
+
+    foreach ($filas as $fila) {
+        $tipo = ($fila['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
+        $id = (int) ($fila['servicio_id'] ?? 0);
+        $nombre = trim((string) ($fila['nombre'] ?? ''));
+        if ($id <= 0 || $nombre === '') {
+            continue;
+        }
+        $resultado[$tipo]['ids'][] = $id;
+        $resultado[$tipo]['nombres'][] = $nombre;
+    }
+
+    return $resultado;
+}
+
+function sincronizarItinerarioCircuito(\PDO $pdo, int $circuitoId, array $itinerario): void
+{
+    $pdo->prepare('DELETE FROM circuito_itinerarios WHERE circuito_id = :id')->execute([':id' => $circuitoId]);
+
+    if (empty($itinerario)) {
+        return;
+    }
+
+    $insert = $pdo->prepare(
+        'INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
+         VALUES (:circuito_id, :orden, :dia, :hora, :titulo, :descripcion)'
+    );
+
+    $orden = 1;
+    foreach ($itinerario as $item) {
+        $titulo = trim((string) ($item['titulo'] ?? ''));
+        $descripcion = trim((string) ($item['descripcion'] ?? ''));
+        if ($titulo === '' && $descripcion === '') {
+            continue;
+        }
+        $insert->execute([
+            ':circuito_id' => $circuitoId,
+            ':orden' => $orden++,
+            ':dia' => ($item['dia'] ?? '') !== '' ? $item['dia'] : null,
+            ':hora' => ($item['hora'] ?? '') !== '' ? $item['hora'] : null,
+            ':titulo' => $titulo,
+            ':descripcion' => $descripcion !== '' ? $descripcion : null,
+        ]);
+    }
+}
+
+function sincronizarMarcadoresCircuito(\PDO $pdo, int $circuitoId, array $marcadores): void
+{
+    $pdo->prepare('DELETE FROM circuito_marcadores WHERE circuito_id = :id')->execute([':id' => $circuitoId]);
+
+    if (empty($marcadores)) {
+        return;
+    }
+
+    $insert = $pdo->prepare(
+        'INSERT INTO circuito_marcadores (circuito_id, orden, titulo, descripcion, latitud, longitud)
+         VALUES (:circuito_id, :orden, :titulo, :descripcion, :latitud, :longitud)'
+    );
+
+    $orden = 1;
+    foreach ($marcadores as $item) {
+        $titulo = trim((string) ($item['titulo'] ?? ''));
+        $latitud = isset($item['latitud']) ? (float) $item['latitud'] : null;
+        $longitud = isset($item['longitud']) ? (float) $item['longitud'] : null;
+        if ($titulo === '' || $latitud === null || $longitud === null) {
+            continue;
+        }
+        $insert->execute([
+            ':circuito_id' => $circuitoId,
+            ':orden' => $orden++,
+            ':titulo' => $titulo,
+            ':descripcion' => ($item['descripcion'] ?? '') !== '' ? $item['descripcion'] : null,
+            ':latitud' => $latitud,
+            ':longitud' => $longitud,
+        ]);
+    }
+}
+
+function sincronizarServiciosCircuito(\PDO $pdo, int $circuitoId, array $serviciosPorTipo): void
+{
+    $pdo->prepare('DELETE FROM circuito_servicios WHERE circuito_id = :id')->execute([':id' => $circuitoId]);
+
+    $insert = $pdo->prepare(
+        'INSERT INTO circuito_servicios (circuito_id, servicio_id, tipo)
+         VALUES (:circuito_id, :servicio_id, :tipo)'
+    );
+
+    foreach (['incluido', 'excluido'] as $tipo) {
+        $ids = array_values(array_unique(array_map('intval', $serviciosPorTipo[$tipo] ?? [])));
+        foreach ($ids as $id) {
+            if ($id <= 0) {
+                continue;
+            }
+            $insert->execute([
+                ':circuito_id' => $circuitoId,
+                ':servicio_id' => $id,
+                ':tipo' => $tipo,
+            ]);
+        }
+    }
+}
+
+function obtenerNombresServiciosPorIds(\PDO $pdo, array $ids): array
+{
+    $ids = array_values(array_unique(array_map('intval', $ids)));
+    if (empty($ids)) {
+        return [];
+    }
+
+    $placeholders = implode(', ', array_fill(0, count($ids), '?'));
+    $statement = $pdo->prepare("SELECT id, nombre FROM servicios_catalogo WHERE id IN ($placeholders)");
+    $statement->execute($ids);
+    $filas = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+    $mapa = [];
+    foreach ($filas as $fila) {
+        $mapa[(int) $fila['id']] = trim((string) ($fila['nombre'] ?? ''));
+    }
+
+    $resultado = [];
+    foreach ($ids as $id) {
+        if (($mapa[$id] ?? '') !== '') {
+            $resultado[] = $mapa[$id];
+        }
+    }
+
+    return $resultado;
 }

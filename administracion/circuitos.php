@@ -137,18 +137,41 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <?php if ($circuito['descripcion'] !== ''): ?>
                                         <p><?= nl2br(htmlspecialchars($circuito['descripcion'], ENT_QUOTES, 'UTF-8')); ?></p>
                                     <?php endif; ?>
-                                    <?php if (!empty($circuito['puntos_interes'])): ?>
-                                        <p class="admin-table__meta"><strong>Puntos de interés:</strong></p>
+                                    <?php if (!empty($circuito['itinerario'])): ?>
+                                        <p class="admin-table__meta"><strong>Itinerario (resumen):</strong></p>
+                                        <ol class="admin-table__list">
+                                            <?php foreach (array_slice($circuito['itinerario'], 0, 3) as $paso): ?>
+                                                <li>
+                                                    <?php $momento = trim((string) ($paso['dia'] ?? '')); ?>
+                                                    <?php $hora = trim((string) ($paso['hora'] ?? '')); ?>
+                                                    <?php if ($momento !== ''): ?>
+                                                        <strong><?= htmlspecialchars($momento, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                                    <?php endif; ?>
+                                                    <?php if ($hora !== ''): ?>
+                                                        <span><?= htmlspecialchars($hora, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($paso['titulo'])): ?>
+                                                        — <?= htmlspecialchars((string) $paso['titulo'], ENT_QUOTES, 'UTF-8'); ?>
+                                                    <?php endif; ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ol>
+                                        <?php if (count($circuito['itinerario']) > 3): ?>
+                                            <p class="admin-help">+<?= count($circuito['itinerario']) - 3; ?> actividades adicionales.</p>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($circuito['servicios_incluidos'])): ?>
+                                        <p class="admin-table__meta"><strong>Incluye:</strong></p>
                                         <ul class="admin-table__list">
-                                            <?php foreach ($circuito['puntos_interes'] as $punto): ?>
-                                                <li><?= htmlspecialchars($punto, ENT_QUOTES, 'UTF-8'); ?></li>
+                                            <?php foreach ($circuito['servicios_incluidos'] as $servicio): ?>
+                                                <li><?= htmlspecialchars($servicio, ENT_QUOTES, 'UTF-8'); ?></li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
-                                    <?php if (!empty($circuito['servicios'])): ?>
-                                        <p class="admin-table__meta"><strong>Servicios incluidos:</strong></p>
+                                    <?php if (!empty($circuito['servicios_excluidos'])): ?>
+                                        <p class="admin-table__meta"><strong>No incluye:</strong></p>
                                         <ul class="admin-table__list">
-                                            <?php foreach ($circuito['servicios'] as $servicio): ?>
+                                            <?php foreach ($circuito['servicios_excluidos'] as $servicio): ?>
                                                 <li><?= htmlspecialchars($servicio, ENT_QUOTES, 'UTF-8'); ?></li>
                                             <?php endforeach; ?>
                                         </ul>

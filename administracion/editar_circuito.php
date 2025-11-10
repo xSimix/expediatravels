@@ -9,9 +9,12 @@ require_once __DIR__ . '/includes/circuitos_util.php';
 $errores = [];
 $destinosPredeterminados = require __DIR__ . '/../app/configuracion/destinos_predeterminados.php';
 $circuitosPredeterminados = require __DIR__ . '/../app/configuracion/circuitos_predeterminados.php';
+$serviciosPredeterminados = require __DIR__ . '/../app/configuracion/servicios_circuito_predeterminados.php';
 
 $destinosDisponibles = cargarDestinosDisponibles($destinosPredeterminados, $errores);
 $circuitos = cargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
+$serviciosDisponibles = cargarServiciosDisponibles($serviciosPredeterminados, $errores);
+$googleMapsApiKey = getenv('GOOGLE_MAPS_API_KEY') ?: ($_ENV['GOOGLE_MAPS_API_KEY'] ?? '');
 
 $categoriasPermitidas = [
     'naturaleza' => 'Naturaleza y aire libre',
@@ -53,8 +56,10 @@ if ($circuitoSeleccionado === null) {
         'frecuencia' => '',
         'estado' => 'borrador',
         'descripcion' => '',
-        'puntos_interes' => [],
-        'servicios' => [],
+        'itinerario' => [],
+        'marcadores' => [],
+        'servicios_incluidos_ids' => [],
+        'servicios_excluidos_ids' => [],
         'imagen_portada' => '',
         'imagen_destacada' => '',
         'galeria' => [],
@@ -74,8 +79,10 @@ $datos = [
     'frecuencia' => $circuitoSeleccionado['frecuencia'] ?? '',
     'estado' => $circuitoSeleccionado['estado'] ?? 'borrador',
     'descripcion' => $circuitoSeleccionado['descripcion'] ?? '',
-    'puntos_interes' => implode(PHP_EOL, $circuitoSeleccionado['puntos_interes'] ?? []),
-    'servicios' => implode(PHP_EOL, $circuitoSeleccionado['servicios'] ?? []),
+    'itinerario' => $circuitoSeleccionado['itinerario'] ?? [],
+    'marcadores' => $circuitoSeleccionado['marcadores'] ?? [],
+    'servicios_incluidos_ids' => $circuitoSeleccionado['servicios_incluidos_ids'] ?? [],
+    'servicios_excluidos_ids' => $circuitoSeleccionado['servicios_excluidos_ids'] ?? [],
     'imagen_portada' => $circuitoSeleccionado['imagen_portada'] ?? '',
     'imagen_destacada' => $circuitoSeleccionado['imagen_destacada'] ?? '',
     'galeria' => $circuitoSeleccionado['galeria'] ?? [],
@@ -93,12 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['frecuencia'] = trim((string) ($_POST['frecuencia'] ?? $datos['frecuencia']));
     $datos['estado'] = strtolower(trim((string) ($_POST['estado'] ?? $datos['estado'])));
     $datos['descripcion'] = trim((string) ($_POST['descripcion'] ?? $datos['descripcion']));
-    $datos['puntos_interes'] = trim((string) ($_POST['puntos_interes'] ?? $datos['puntos_interes']));
-    $datos['servicios'] = trim((string) ($_POST['servicios'] ?? $datos['servicios']));
     $datos['imagen_portada'] = trim((string) ($_POST['imagen_portada'] ?? $datos['imagen_portada']));
     $datos['imagen_destacada'] = trim((string) ($_POST['imagen_destacada'] ?? $datos['imagen_destacada']));
     $datos['galeria'] = isset($_POST['galeria']) ? array_values(array_filter(array_map('trim', (array) $_POST['galeria']), static fn (string $valor): bool => $valor !== '')) : [];
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? $datos['video_destacado_url']));
+    $datos['itinerario'] = procesarItinerarioFormulario($_POST['itinerario'] ?? []);
+    $datos['marcadores'] = procesarMarcadoresFormulario($_POST['marcadores'] ?? []);
+    $datos['servicios_incluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_incluidos'] ?? $datos['servicios_incluidos_ids'], 'incluido');
+    $datos['servicios_excluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_excluidos'] ?? $datos['servicios_excluidos_ids'], 'excluido');
 
     if ($datos['nombre'] === '') {
         $errores[] = 'El nombre del circuito es obligatorio.';
@@ -124,8 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
         $errores[] = 'El estado indicado no es válido.';
     }
 
-    $puntosInteres = convertirListado($datos['puntos_interes']);
-    $serviciosIncluidos = convertirListado($datos['servicios']);
     $precio = circuitosParsearPrecio($datos['precio'], $errores);
 
     $destinoNombre = $datos['destino_personalizado'];
@@ -151,8 +158,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
             'imagen_destacada' => $datos['imagen_destacada'],
             'galeria' => $datos['galeria'],
             'video_destacado_url' => $datos['video_destacado_url'],
-            'puntos_interes' => $puntosInteres,
-            'servicios' => $serviciosIncluidos,
+            'itinerario' => $datos['itinerario'],
+            'marcadores' => $datos['marcadores'],
+            'servicios_incluidos_ids' => $datos['servicios_incluidos_ids'],
+            'servicios_excluidos_ids' => $datos['servicios_excluidos_ids'],
         ];
 
         $esPredeterminado = (bool) ($circuitoSeleccionado['es_predeterminado'] ?? false);
@@ -176,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
 $paginaActiva = 'circuitos_editar';
 $tituloPagina = 'Editar circuito — Panel de Control';
 $estilosExtra = ['recursos/panel-admin.css'];
-$scriptsExtra = ['recursos/media-picker.js'];
+$scriptsExtra = ['recursos/media-picker.js', 'recursos/circuitos-form.js'];
 
 require __DIR__ . '/plantilla/cabecera.php';
 ?>
@@ -308,20 +317,200 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <textarea id="descripcion" name="descripcion" rows="4" placeholder="Cuenta la historia del circuito, qué lugares cubre y la experiencia que ofrece."><?= htmlspecialchars($datos['descripcion'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                     </div>
 
+                    <div class="admin-field" data-itinerary-container>
+                        <span class="admin-field__label">Itinerario del circuito</span>
+                        <p class="admin-help">Actualiza cada bloque para mantener sincronizados los acordeones del recorrido.</p>
+                        <div class="itinerary-editor" data-itinerary-list>
+                            <?php
+                                $itinerarioActual = $datos['itinerario'];
+                                if (empty($itinerarioActual)) {
+                                    $itinerarioActual[] = ['dia' => '', 'hora' => '', 'titulo' => '', 'descripcion' => ''];
+                                }
+                            ?>
+                            <?php foreach ($itinerarioActual as $indice => $paso): ?>
+                                <div class="itinerary-item" data-itinerary-item>
+                                    <header class="itinerary-item__header">
+                                        <span class="itinerary-item__index" data-itinerary-index><?= $indice + 1; ?></span>
+                                        <button type="button" class="admin-chip admin-chip--danger" data-itinerary-remove aria-label="Eliminar bloque">×</button>
+                                    </header>
+                                    <div class="admin-grid two-columns">
+                                        <div class="admin-field">
+                                            <label>Dia / momento</label>
+                                            <input type="text" name="itinerario[dia][]" value="<?= htmlspecialchars((string) ($paso['dia'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="Día 1 · Mañana" />
+                                        </div>
+                                        <div class="admin-field">
+                                            <label>Hora</label>
+                                            <input type="text" name="itinerario[hora][]" value="<?= htmlspecialchars((string) ($paso['hora'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="08:30" />
+                                        </div>
+                                    </div>
+                                    <div class="admin-field">
+                                        <label>Título de la actividad *</label>
+                                        <input type="text" name="itinerario[titulo][]" value="<?= htmlspecialchars((string) ($paso['titulo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="Visita a Tunqui Cueva" />
+                                    </div>
+                                    <div class="admin-field">
+                                        <label>Descripción breve</label>
+                                        <textarea name="itinerario[descripcion][]" rows="2" placeholder="Recorrido guiado con cascos y linternas."><?= htmlspecialchars((string) ($paso['descripcion'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <button type="button" class="admin-button secondary" data-itinerary-add>+ Agregar bloque</button>
+                    </div>
+
                     <div class="admin-grid two-columns">
                         <div class="admin-field">
-                            <label for="puntos_interes">Puntos de interés</label>
-                            <textarea id="puntos_interes" name="puntos_interes" rows="4" placeholder="Plaza principal&#10;Catarata El Tigre&#10;Reserva de Yanachaga"><?= htmlspecialchars($datos['puntos_interes'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                            <p class="admin-help">Ingresa un punto por línea para mostrarlo como lista en la web.</p>
+                            <span class="admin-field__label">Servicios incluidos</span>
+                            <p class="admin-help">Selecciona los servicios confirmados para este circuito.</p>
+                            <?php if (empty($serviciosDisponibles['incluido'])): ?>
+                                <p class="admin-help">No hay servicios configurados en el catálogo.</p>
+                            <?php else: ?>
+                                <ul class="admin-table__list admin-table__list--options" data-services-incluidos>
+                                    <?php foreach ($serviciosDisponibles['incluido'] as $servicio): ?>
+                                        <li>
+                                            <label>
+                                                <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
+                                                <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            </label>
+                                            <?php if ($servicio['descripcion'] !== ''): ?>
+                                                <p class="admin-help"><?= htmlspecialchars($servicio['descripcion'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                            <?php endif; ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
                         </div>
                         <div class="admin-field">
-                            <label for="servicios">Servicios incluidos</label>
-                            <textarea id="servicios" name="servicios" rows="4" placeholder="Transporte turístico&#10;Guía especializado&#10;Almuerzo típico"><?= htmlspecialchars($datos['servicios'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                            <p class="admin-help">Ingresa un servicio por línea para organizarlo automáticamente.</p>
+                            <span class="admin-field__label">Servicios no incluidos</span>
+                            <p class="admin-help">Marca los conceptos que se comunican como no incluidos al viajero.</p>
+                            <?php if (empty($serviciosDisponibles['excluido'])): ?>
+                                <p class="admin-help">No hay opciones de "no incluye" registradas todavía.</p>
+                            <?php else: ?>
+                                <ul class="admin-table__list admin-table__list--options" data-services-excluidos>
+                                    <?php foreach ($serviciosDisponibles['excluido'] as $servicio): ?>
+                                        <li>
+                                            <label>
+                                                <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
+                                                <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
+                                            </label>
+                                            <?php if ($servicio['descripcion'] !== ''): ?>
+                                                <p class="admin-help"><?= htmlspecialchars($servicio['descripcion'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                            <?php endif; ?>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">🗺️</span>
+                    <span>Mapa y puntos del circuito</span>
+                </h2>
+                <p class="admin-section__description">Actualiza los marcadores para que el mapa público refleje el recorrido real.</p>
+                <div class="admin-section__content">
+                    <div class="map-manager" data-map-manager data-api-key="<?= htmlspecialchars($googleMapsApiKey, ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="map-manager__canvas" data-map-canvas aria-label="Mapa del circuito"></div>
+                        <div class="map-manager__panel">
+                            <div class="map-manager__actions">
+                                <button type="button" class="admin-button secondary" data-map-add>+ Agregar marcador manual</button>
+                                <p class="admin-help">Haz clic sobre el mapa para registrar un nuevo punto numerado o utiliza el botón para añadirlo manualmente.</p>
+                            </div>
+                            <div class="map-manager__list" data-map-list>
+                                <?php foreach ($datos['marcadores'] as $indice => $marcador): ?>
+                                    <div class="map-marker" data-map-item>
+                                        <header class="map-marker__header">
+                                            <span class="map-marker__index" data-map-index><?= $indice + 1; ?></span>
+                                            <div class="map-marker__actions">
+                                                <button type="button" class="admin-chip" data-map-focus>Ver en mapa</button>
+                                                <button type="button" class="admin-chip admin-chip--danger" data-map-remove aria-label="Eliminar marcador">×</button>
+                                            </div>
+                                        </header>
+                                        <div class="admin-field">
+                                            <label>Título *</label>
+                                            <input type="text" name="marcadores[titulo][]" value="<?= htmlspecialchars((string) ($marcador['titulo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="Tunqui Cueva" />
+                                        </div>
+                                        <div class="admin-field">
+                                            <label>Descripción</label>
+                                            <textarea name="marcadores[descripcion][]" rows="2" placeholder="Formaciones rocosas y guías locales."><?= htmlspecialchars((string) ($marcador['descripcion'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                        </div>
+                                        <div class="admin-grid two-columns">
+                                            <div class="admin-field">
+                                                <label>Latitud *</label>
+                                                <input type="number" step="0.000001" name="marcadores[latitud][]" value="<?= htmlspecialchars((string) ($marcador['latitud'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="-10.600000" />
+                                            </div>
+                                            <div class="admin-field">
+                                                <label>Longitud *</label>
+                                                <input type="number" step="0.000001" name="marcadores[longitud][]" value="<?= htmlspecialchars((string) ($marcador['longitud'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="-75.400000" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <p class="admin-help" data-map-empty <?= empty($datos['marcadores']) ? '' : 'hidden'; ?>>Aún no registras puntos para el mapa. Agrega el primero con el botón o tocando el mapa.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <template id="itinerary-item-template">
+                <div class="itinerary-item" data-itinerary-item>
+                    <header class="itinerary-item__header">
+                        <span class="itinerary-item__index" data-itinerary-index></span>
+                        <button type="button" class="admin-chip admin-chip--danger" data-itinerary-remove aria-label="Eliminar bloque">×</button>
+                    </header>
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label>Dia / momento</label>
+                            <input type="text" name="itinerario[dia][]" placeholder="Día 1 · Mañana" />
+                        </div>
+                        <div class="admin-field">
+                            <label>Hora</label>
+                            <input type="text" name="itinerario[hora][]" placeholder="08:30" />
+                        </div>
+                    </div>
+                    <div class="admin-field">
+                        <label>Título de la actividad *</label>
+                        <input type="text" name="itinerario[titulo][]" placeholder="Visita a Tunqui Cueva" />
+                    </div>
+                    <div class="admin-field">
+                        <label>Descripción breve</label>
+                        <textarea name="itinerario[descripcion][]" rows="2" placeholder="Recorrido guiado con cascos y linternas."></textarea>
+                    </div>
+                </div>
+            </template>
+
+            <template id="map-marker-template">
+                <div class="map-marker" data-map-item>
+                    <header class="map-marker__header">
+                        <span class="map-marker__index" data-map-index></span>
+                        <div class="map-marker__actions">
+                            <button type="button" class="admin-chip" data-map-focus>Ver en mapa</button>
+                            <button type="button" class="admin-chip admin-chip--danger" data-map-remove aria-label="Eliminar marcador">×</button>
+                        </div>
+                    </header>
+                    <div class="admin-field">
+                        <label>Título *</label>
+                        <input type="text" name="marcadores[titulo][]" placeholder="Tunqui Cueva" />
+                    </div>
+                    <div class="admin-field">
+                        <label>Descripción</label>
+                        <textarea name="marcadores[descripcion][]" rows="2" placeholder="Formaciones rocosas y guías locales."></textarea>
+                    </div>
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label>Latitud *</label>
+                            <input type="number" step="0.000001" name="marcadores[latitud][]" placeholder="-10.600000" />
+                        </div>
+                        <div class="admin-field">
+                            <label>Longitud *</label>
+                            <input type="number" step="0.000001" name="marcadores[longitud][]" placeholder="-75.400000" />
+                        </div>
+                    </div>
+                </div>
+            </template>
 
             <div class="admin-section">
                 <h2 class="admin-section__title">
