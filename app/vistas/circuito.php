@@ -481,9 +481,6 @@ if (empty($heroSlides)) {
         'alt' => $title,
     ];
 }
-while (count($heroSlides) < 3) {
-    $heroSlides[] = $heroSlides[count($heroSlides) % max(1, count($heroSlides))];
-}
 
 $mapMarkers = [];
 foreach ($locationsList as $loc) {
@@ -549,10 +546,10 @@ $currentUser = $currentUser ?? null;
 
     <main class="circuit-page">
         <section class="circuit-hero">
-            <div class="circuit-hero__gallery">
+            <div class="circuit-hero__gallery" data-hero-gallery>
                 <div class="circuit-hero__track" data-hero-track>
                     <?php foreach ($heroSlides as $slide): ?>
-                        <figure class="circuit-hero__slide">
+                        <figure class="circuit-hero__slide" data-hero-slide data-lightbox-src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" data-lightbox-alt="<?= htmlspecialchars($slide['alt']); ?>" role="button" tabindex="0" aria-label="Ver imagen ampliada">
                             <img src="<?= htmlspecialchars($slide['src'], ENT_QUOTES); ?>" alt="<?= htmlspecialchars($slide['alt']); ?>" loading="lazy" />
                         </figure>
                     <?php endforeach; ?>
@@ -561,6 +558,13 @@ $currentUser = $currentUser ?? null;
                     <button class="circuit-hero__nav circuit-hero__nav--prev" type="button" data-hero-prev aria-label="Imagen anterior">‹</button>
                     <button class="circuit-hero__nav circuit-hero__nav--next" type="button" data-hero-next aria-label="Imagen siguiente">›</button>
                 <?php endif; ?>
+            </div>
+            <div class="circuit-lightbox" data-lightbox hidden>
+                <div class="circuit-lightbox__backdrop" data-lightbox-backdrop></div>
+                <figure class="circuit-lightbox__content">
+                    <button class="circuit-lightbox__close" type="button" data-lightbox-close aria-label="Cerrar imagen">×</button>
+                    <img class="circuit-lightbox__image" src="" alt="" data-lightbox-image loading="lazy" />
+                </figure>
             </div>
             <div class="circuit-hero__info">
                 <?php if ($typeLabel !== ''): ?>
