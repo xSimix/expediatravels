@@ -75,13 +75,6 @@ $factsList = array_map(
     $facts
 );
 
-$heroHighlights = [
-    ['icon' => '🗓️', 'label' => 'Duración', 'value' => $duration !== '' ? $duration : 'Por definir'],
-    ['icon' => '⭐', 'label' => 'Experiencia', 'value' => $experienceLevel !== '' ? $experienceLevel : 'Por definir'],
-    ['icon' => '🗺️', 'label' => 'Próxima salida', 'value' => $frequency !== '' ? $frequency : 'Por definir'],
-    ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location !== '' ? $location : 'Por definir'],
-];
-
 $featuredVideoRaw = $detail['featuredVideoUrl']
     ?? ($detail['videoDestacadoUrl']
         ?? ($detail['video_destacado_url']
@@ -132,6 +125,23 @@ $ctaPrimaryLabel = trim((string) ($cta['primaryLabel'] ?? ''));
 $ctaPrimaryHref = trim((string) ($cta['primaryHref'] ?? ''));
 $ctaSecondaryLabel = trim((string) ($cta['secondaryLabel'] ?? ''));
 $ctaSecondaryHref = trim((string) ($cta['secondaryHref'] ?? ''));
+
+$priceDisplay = '';
+if ($priceFrom !== '') {
+    $priceDisplay = preg_replace('/^\s*desde\s+/i', '', $priceFrom);
+    if (!is_string($priceDisplay) || trim($priceDisplay) === '') {
+        $priceDisplay = $priceFrom;
+    } else {
+        $priceDisplay = trim((string) $priceDisplay);
+    }
+}
+
+$heroHighlights = [
+    ['icon' => '🕒', 'label' => 'Duración', 'value' => $duration !== '' ? $duration : 'Por definir'],
+    ['icon' => '⚡', 'label' => 'Experiencia', 'value' => $experienceLevel !== '' ? $experienceLevel : 'Por definir'],
+    ['icon' => '📍', 'label' => 'Ubicación', 'value' => $location !== '' ? $location : 'Por definir'],
+    ['icon' => '💰', 'label' => 'Desde', 'value' => $priceDisplay !== '' ? $priceDisplay : 'Por definir'],
+];
 
 $summaryParagraphs = [];
 if ($summary !== '') {
@@ -425,61 +435,59 @@ $pageTitle = $title . ' — ' . $siteTitle;
             <div class="circuit-hero__overlay"></div>
             <div class="circuit-hero__inner">
                 <div class="circuit-hero__content">
-                    <h1><?= htmlspecialchars($title); ?></h1>
-                    <?php if ($typeLabel !== ''): ?>
-                        <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
-                    <?php endif; ?>
-                    <div class="circuit-hero__meta">
-
-                        <?php if (!empty($heroHighlights)): ?>
-                            <ul class="circuit-hero__stats">
-                                <?php foreach (array_slice($heroHighlights, 0, 4) as $stat): ?>
-                                    <li>
-                                        <span class="circuit-hero__stat-icon" aria-hidden="true"><?= $stat['icon']; ?></span>
-                                        <div>
-                                            <span class="circuit-hero__stat-label"><?= htmlspecialchars($stat['label']); ?></span>
-                                            <strong><?= htmlspecialchars($stat['value']); ?></strong>
-                                        </div>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
+                    <div class="circuit-hero__header-row">
+                        <?php if ($typeLabel !== ''): ?>
+                            <span class="circuit-hero__badge"><?= htmlspecialchars($typeLabel); ?></span>
                         <?php endif; ?>
-                    </div>
-
-                    <?php if ($priceFrom !== '' || $frequency !== ''): ?>
-                        <div class="circuit-hero__info-grid" id="video-destacado">
-                            <?php if ($priceFrom !== ''): ?>
-                                <article class="circuit-hero__info-card">
-                                    <span class="circuit-hero__info-label">Desde</span>
-                                    <strong><?= htmlspecialchars($priceFrom); ?></strong>
-                                </article>
+                        <div class="circuit-hero__header-meta">
+                            <?php if ($reviewsAverage !== null || $reviewsCountSummary > 0): ?>
+                                <div class="circuit-hero__pill circuit-hero__rating-pill" aria-label="Calificación del circuito" data-review-summary>
+                                    <span class="circuit-hero__rating-icon" aria-hidden="true">⭐</span>
+                                    <div class="circuit-hero__rating-content">
+                                        <span class="rating-stars rating-stars--sm" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></span>
+                                        <span class="circuit-hero__rating-text">
+                                            <strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong>
+                                            <span class="circuit-hero__rating-scale">/ 5</span>
+                                            <span class="circuit-hero__rating-count">(<span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones)</span>
+                                        </span>
+                                    </div>
+                                </div>
                             <?php endif; ?>
                             <?php if ($frequency !== ''): ?>
-                                <article class="circuit-hero__info-card">
-                                    <span class="circuit-hero__info-label">Próxima salida</span>
+                                <div class="circuit-hero__pill circuit-hero__pill--accent">
+                                    <span class="circuit-hero__pill-label">Próxima salida:</span>
                                     <strong><?= htmlspecialchars($frequency); ?></strong>
-                                </article>
+                                </div>
                             <?php endif; ?>
                         </div>
+                    </div>
+                    <h1><?= htmlspecialchars($title); ?></h1>
+                    <?php if ($tagline !== ''): ?>
+                        <p class="circuit-hero__tagline"><?= htmlspecialchars($tagline); ?></p>
                     <?php endif; ?>
-                    <aside class="circuit-hero__reviews-card" aria-label="Calificación del circuito">
-                        <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
-                        <div class="circuit-hero__reviews-card-body">
-                            <p class="circuit-hero__reviews-card-score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
-                            <p class="circuit-hero__reviews-card-count"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
-                        </div>
-                    </aside>
+                    <?php if (!empty($heroHighlights)): ?>
+                        <ul class="circuit-hero__stats">
+                            <?php foreach (array_slice($heroHighlights, 0, 4) as $stat): ?>
+                                <li>
+                                    <span class="circuit-hero__stat-icon" aria-hidden="true"><?= $stat['icon']; ?></span>
+                                    <div>
+                                        <span class="circuit-hero__stat-label"><?= htmlspecialchars($stat['label']); ?></span>
+                                        <strong><?= htmlspecialchars($stat['value']); ?></strong>
+                                    </div>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
                     <?php
                         $reserveHref = $ctaPrimaryHref !== '' ? $ctaPrimaryHref : ($ctaSecondaryHref !== '' ? $ctaSecondaryHref : '#contacto');
                     ?>
 
                     <div class="circuit-hero__cta" data-reserve-cta>
-                        <a class="circuit-hero__cta-button" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">Reservar ahora</a>
-                        <div class="circuit-hero__cta-hint">
-                            <span class="circuit-hero__cta-arrow" aria-hidden="true">↓</span>
-                            <span>Descripción del circuito</span>
-                            <span class="visually-hidden">Desplázate para conocer la descripción del circuito</span>
-                        </div>
+                        <a class="circuit-hero__cta-button" href="<?= htmlspecialchars($reserveHref, ENT_QUOTES); ?>">
+                            <span class="circuit-hero__cta-icon" aria-hidden="true">🚌</span>
+                            <span>Reservar Ahora</span>
+                        </a>
+                        <a class="circuit-hero__cta-link" href="#descripcion">Descripción del circuito</a>
                     </div>
                 </div>
             </div>
