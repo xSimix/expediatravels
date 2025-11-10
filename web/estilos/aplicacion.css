@@ -2083,21 +2083,17 @@ main {
 .circuit-card__rating {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     font-size: 0.92rem;
     color: var(--text-main);
     font-weight: 600;
 }
 
-.circuit-card__stars {
+.circuit-card__rating-text {
     display: inline-flex;
-    width: 5.5rem;
-    color: #fbbf24;
-}
-
-.circuit-card__stars svg {
-    width: 100%;
-    height: auto;
+    align-items: baseline;
+    gap: 0.35rem;
+    flex-wrap: wrap;
 }
 
 .circuit-card__rating-count {
@@ -2283,8 +2279,9 @@ main {
 }
 
 .travel-card__rating::before {
-    content: '★';
-    color: #fbbf24;
+    content: 'Puntaje:';
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 .travel-card__title {
@@ -2952,17 +2949,19 @@ body.has-modal-open {
 }
 
 .testimonial__rating {
-    color: #facc15;
-    font-size: 1.1rem;
-    letter-spacing: 0.2rem;
+    color: var(--text-main);
+    font-size: 1rem;
+    font-weight: 600;
 }
 
-.star {
-    opacity: 0.3;
-}
-
-.star--filled {
-    opacity: 1;
+.testimonial__score {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--text-main);
 }
 
 .testimonial__comment {

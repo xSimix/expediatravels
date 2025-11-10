@@ -369,9 +369,9 @@ foreach ($reviewsListRaw as $review) {
     }
     $ratingReview = $review['rating'] ?? ($review['calificacion'] ?? ($review['calificación'] ?? null));
     if (!is_numeric($ratingReview)) {
-        $ratingReview = 5;
+        $ratingReview = 10;
     }
-    $ratingReview = max(1, min(5, (int) $ratingReview));
+    $ratingReview = max(1, min(10, (int) $ratingReview));
     $commentReview = trim((string) ($review['comentario'] ?? ($review['comment'] ?? '')));
     if ($commentReview === '') {
         $commentReview = 'Sin comentarios.';
@@ -446,7 +446,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <div class="circuit-hero__rating">
                             <div class="rating-stars rating-stars--lg" data-review-stars style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
                             <div>
-                                <p class="circuit-hero__score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
+                                <p class="circuit-hero__score"><strong data-review-average><?= htmlspecialchars($reviewsAverageText); ?></strong> / 10</p>
                                 <p class="circuit-hero__reviews"><span data-review-count><?= htmlspecialchars($reviewsCountText); ?></span> opiniones</p>
                             </div>
                         </div>
@@ -623,7 +623,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <div class="reviews__summary">
                             <div class="rating-stars rating-stars--lg" data-review-stars-secondary style="--rating: <?= htmlspecialchars($reviewsAverage !== null ? number_format($reviewsAverage, 1, '.', '') : '0'); ?>;"></div>
                             <div>
-                                <p class="reviews__average"><strong data-review-average-secondary><?= htmlspecialchars($reviewsAverageText); ?></strong> / 5</p>
+                                <p class="reviews__average"><strong data-review-average-secondary><?= htmlspecialchars($reviewsAverageText); ?></strong> / 10</p>
                                 <p class="reviews__count"><span data-review-count-secondary><?= htmlspecialchars($reviewsCountText); ?></span> opiniones totales</p>
                             </div>
                         </div>
@@ -635,7 +635,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                     <li class="review-card">
                                         <div class="review-card__header">
                                             <strong><?= htmlspecialchars($review['nombre']); ?></strong>
-                                            <div class="review-card__stars" style="--rating: <?= htmlspecialchars(number_format((float) $review['rating'], 1, '.', '')); ?>;" aria-label="<?= htmlspecialchars($review['rating']); ?> de 5"></div>
+                                            <div class="review-card__stars" style="--rating: <?= htmlspecialchars(number_format((float) $review['rating'], 1, '.', '')); ?>;" aria-label="<?= htmlspecialchars($review['rating']); ?> de 10"></div>
                                         </div>
                                         <p class="review-card__comment"><?= htmlspecialchars($review['comentario']); ?></p>
                                         <?php if (!empty($review['creado_en'])): ?>
@@ -658,10 +658,10 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                     <input type="email" name="correo" autocomplete="email" placeholder="Opcional" />
                                 </label>
                                 <label>
-                                    <span>Calificación *</span>
+                                    <span>Puntaje *</span>
                                     <select name="rating" required>
-                                        <?php for ($i = 5; $i >= 1; $i--): ?>
-                                            <option value="<?= $i; ?>"><?= $i; ?> estrella<?= $i === 1 ? '' : 's'; ?></option>
+                                        <?php for ($i = 10; $i >= 1; $i--): ?>
+                                            <option value="<?= $i; ?>"><?= $i; ?> punto<?= $i === 1 ? '' : 's'; ?></option>
                                         <?php endfor; ?>
                                     </select>
                                 </label>

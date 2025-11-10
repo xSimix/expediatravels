@@ -615,7 +615,7 @@
 }
 
 .review-card__stars {
-  --rating: 5;
+  --rating: 0;
   position: relative;
   display: inline-block;
   font-size: 1rem;
@@ -633,7 +633,7 @@
   position: absolute;
   inset: 0;
   color: #facc15;
-  width: calc(var(--rating) / 5 * 100%);
+  width: calc(var(--rating) / 10 * 100%);
   overflow: hidden;
 }
 
@@ -781,7 +781,7 @@
   position: absolute;
   inset: 0;
   color: #facc15;
-  width: calc(var(--rating) / 5 * 100%);
+  width: calc(var(--rating) / 10 * 100%);
   overflow: hidden;
 }
 
