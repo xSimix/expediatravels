@@ -1732,6 +1732,56 @@ body.modal-open {
     min-height: 2rem;
 }
 
+.service-selector__search-panel {
+    position: relative;
+}
+
+.service-selector__dropdown {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    right: 0;
+    max-height: 18rem;
+    overflow-y: auto;
+    border-radius: 14px;
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    background: #ffffff;
+    box-shadow: 0 18px 35px rgba(15, 23, 42, 0.18);
+    opacity: 0;
+    transform: translateY(-8px);
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 12;
+    padding: 0.5rem 0;
+}
+
+.service-selector__search-panel[data-open="true"] .service-selector__dropdown {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.service-selector__dropdown .admin-table__list {
+    margin: 0;
+}
+
+.service-selector__dropdown .admin-table__list--options {
+    padding-left: 0;
+}
+
+.service-selector__dropdown .service-selector__item {
+    padding: 0.6rem 1rem;
+}
+
+.service-selector__dropdown .service-selector__item:last-child {
+    border-bottom: none;
+}
+
+.service-selector__dropdown .service-selector__empty {
+    padding: 0 1rem;
+    margin-top: 0.35rem;
+}
+
 .service-selector__chips[data-empty="true"]::before {
     content: attr(data-empty-text);
     color: #94a3b8;
