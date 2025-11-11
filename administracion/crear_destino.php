@@ -23,8 +23,6 @@ $datos = [
     'video_destacado_url' => '',
     'estado' => 'activo',
     'etiquetas' => '',
-    'visible_en_busqueda' => true,
-    'visible_en_explorador' => true,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -40,8 +38,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? ''));
     $datos['estado'] = normalizarEstado($_POST['estado'] ?? 'activo');
     $datos['etiquetas'] = trim((string) ($_POST['etiquetas'] ?? ''));
-    $datos['visible_en_busqueda'] = isset($_POST['visible_en_busqueda']);
-    $datos['visible_en_explorador'] = isset($_POST['visible_en_explorador']);
 
     if ($datos['nombre'] === '') {
         $errores[] = 'Debes indicar el nombre del destino.';
@@ -69,8 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'video_destacado_url' => $datos['video_destacado_url'],
             'tags' => $etiquetas,
             'estado' => $datos['estado'],
-            'visible_en_busqueda' => $datos['visible_en_busqueda'],
-            'visible_en_explorador' => $datos['visible_en_explorador'],
         ];
 
         $identificador = crearDestinoCatalogo($nuevoDestino, $errores);
@@ -259,23 +253,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <option value="oculto" <?= $datos['estado'] === 'oculto' ? 'selected' : ''; ?>>Oculto</option>
                                 <option value="borrador" <?= $datos['estado'] === 'borrador' ? 'selected' : ''; ?>>Borrador</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <div class="admin-grid two-columns">
-                        <div class="admin-field admin-field--checkbox">
-                            <label>
-                                <input type="checkbox" name="visible_en_busqueda" value="1" <?= $datos['visible_en_busqueda'] ? 'checked' : ''; ?> />
-                                <span>Mostrar en el buscador de la página principal</span>
-                            </label>
-                            <p class="admin-help">Desmarca esta opción si aún no deseas sugerir el destino en el buscador inteligente.</p>
-                        </div>
-                        <div class="admin-field admin-field--checkbox">
-                            <label>
-                                <input type="checkbox" name="visible_en_explorador" value="1" <?= $datos['visible_en_explorador'] ? 'checked' : ''; ?> />
-                                <span>Mostrar en el explorador de experiencias</span>
-                            </label>
-                            <p class="admin-help">Controla si el destino aparecerá como categoría destacada al explorar contenidos.</p>
                         </div>
                     </div>
                 </div>

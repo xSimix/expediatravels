@@ -49,8 +49,6 @@ CREATE TABLE destinos (
     video_destacado_url VARCHAR(255) DEFAULT NULL,
     tags JSON DEFAULT NULL,
     estado ENUM('activo', 'oculto', 'borrador') NOT NULL DEFAULT 'activo',
-    visible_en_busqueda TINYINT(1) NOT NULL DEFAULT 1,
-    visible_en_explorador TINYINT(1) NOT NULL DEFAULT 1,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
