@@ -436,19 +436,13 @@ JOIN servicios_catalogo s ON s.nombre IN ('Transporte turístico', 'Guía local'
 WHERE c.nombre = 'Tour Oxapampa';
 
 -- Itinerarios de referencia.
-INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
-SELECT c.id, 1, 'Mañana', '08:00', 'Salida de Oxapampa', 'Recojo desde hotel y charla de seguridad.'
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion, ubicacion_maps)
+SELECT c.id, 1, 'Mañana', '08:00', 'Salida de Oxapampa', 'Recojo desde hotel y charla de seguridad.', ''
 FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
-INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
-SELECT c.id, 2, 'Mañana', '10:30', 'Tunqui Cueva', 'Recorrido guiado por formaciones rocosas.'
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion, ubicacion_maps)
+SELECT c.id, 2, 'Mañana', '10:30', 'Tunqui Cueva', 'Recorrido guiado por formaciones rocosas.', ''
 FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
-INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion)
-SELECT c.id, 3, 'Tarde', '15:00', 'Catarata Río Tigre', 'Caminata corta para disfrutar del paisaje.'
+INSERT INTO circuito_itinerarios (circuito_id, orden, dia, hora, titulo, descripcion, ubicacion_maps)
+SELECT c.id, 3, 'Tarde', '15:00', 'Catarata Río Tigre', 'Caminata corta para disfrutar del paisaje.', ''
 FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
 
-INSERT INTO circuito_marcadores (circuito_id, orden, titulo, descripcion, latitud, longitud)
-SELECT c.id, 1, 'Tunqui Cueva', 'Caverna iluminada con pasajes estrechos.', -10.6195, -75.4042
-FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';
-INSERT INTO circuito_marcadores (circuito_id, orden, titulo, descripcion, latitud, longitud)
-SELECT c.id, 2, 'Catarata Río Tigre', 'Cascada rodeada de vegetación.', -10.5668, -75.3925
-FROM circuitos c WHERE c.nombre = 'Tour Oxapampa';

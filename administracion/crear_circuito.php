@@ -14,8 +14,6 @@ $serviciosPredeterminados = require __DIR__ . '/../app/configuracion/servicios_c
 $destinosDisponibles = cargarDestinosDisponibles($destinosPredeterminados, $errores);
 $circuitos = cargarCircuitos($circuitosPredeterminados, $destinosDisponibles, $errores);
 $serviciosDisponibles = cargarServiciosDisponibles($serviciosPredeterminados, $errores);
-$googleMapsApiKey = getenv('GOOGLE_MAPS_API_KEY') ?: ($_ENV['GOOGLE_MAPS_API_KEY'] ?? '');
-
 $categoriasPermitidas = [
     'naturaleza' => 'Naturaleza y aire libre',
     'cultural' => 'Cultural e histórico',
@@ -48,7 +46,6 @@ $datos = [
     'estado' => 'borrador',
     'descripcion' => '',
     'itinerario' => [],
-    'marcadores' => [],
     'servicios_incluidos_ids' => [],
     'servicios_excluidos_ids' => [],
     'imagen_portada' => '',
@@ -74,7 +71,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? ''));
 
     $datos['itinerario'] = procesarItinerarioFormulario($_POST['itinerario'] ?? []);
-    $datos['marcadores'] = procesarMarcadoresFormulario($_POST['marcadores'] ?? []);
     $datos['servicios_incluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_incluidos'] ?? [], 'incluido');
     $datos['servicios_excluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_excluidos'] ?? [], 'excluido');
 
@@ -128,7 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'galeria' => $datos['galeria'],
             'video_destacado_url' => $datos['video_destacado_url'],
             'itinerario' => $datos['itinerario'],
-            'marcadores' => $datos['marcadores'],
             'servicios_incluidos_ids' => $datos['servicios_incluidos_ids'],
             'servicios_excluidos_ids' => $datos['servicios_excluidos_ids'],
         ];
@@ -281,7 +276,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                             <?php
                                 $itinerarioActual = $datos['itinerario'];
                                 if (empty($itinerarioActual)) {
-                                    $itinerarioActual[] = ['dia' => '', 'hora' => '', 'titulo' => '', 'descripcion' => ''];
+                                    $itinerarioActual[] = ['dia' => '', 'hora' => '', 'titulo' => '', 'descripcion' => '', 'ubicacion_maps' => ''];
                                 }
                             ?>
                             <?php foreach ($itinerarioActual as $indice => $paso): ?>
@@ -307,6 +302,11 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <div class="admin-field">
                                         <label>Descripción breve</label>
                                         <textarea name="itinerario[descripcion][]" rows="2" placeholder="Recorrido guiado con cascos y linternas."><?= htmlspecialchars((string) ($paso['descripcion'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                    </div>
+                                    <div class="admin-field">
+                                        <label>Ubicación en Google Maps</label>
+                                        <input type="url" name="itinerario[ubicacion_maps][]" value="<?= htmlspecialchars((string) ($paso['ubicacion_maps'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://maps.google.com/?q=-12.0464,-77.0428" />
+                                        <p class="admin-help">Pega la URL compartible de Google Maps para esta actividad.</p>
                                     </div>
                                 </div>
                             <?php endforeach; ?>
@@ -361,57 +361,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                 </div>
             </div>
 
-            <div class="admin-section">
-                <h2 class="admin-section__title">
-                    <span class="admin-section__icon" aria-hidden="true">🗺️</span>
-                    <span>Mapa y puntos del circuito</span>
-                </h2>
-                <p class="admin-section__description">Define los marcadores georreferenciados para mostrar el recorrido en Google Maps.</p>
-                <div class="admin-section__content">
-                    <div class="map-manager" data-map-manager data-api-key="<?= htmlspecialchars($googleMapsApiKey, ENT_QUOTES, 'UTF-8'); ?>">
-                        <div class="map-manager__canvas" data-map-canvas aria-label="Mapa del circuito"></div>
-                        <div class="map-manager__panel">
-                            <div class="map-manager__actions">
-                                <button type="button" class="admin-button secondary" data-map-add>+ Agregar marcador manual</button>
-                                <p class="admin-help">Haz clic en el mapa para crear un marcador numerado o utiliza el botón para añadir uno manualmente.</p>
-                            </div>
-                            <div class="map-manager__list" data-map-list>
-                                <?php foreach ($datos['marcadores'] as $indice => $marcador): ?>
-                                    <div class="map-marker" data-map-item>
-                                        <header class="map-marker__header">
-                                            <span class="map-marker__index" data-map-index><?= $indice + 1; ?></span>
-                                            <div class="map-marker__actions">
-                                                <button type="button" class="admin-chip" data-map-focus>Ver en mapa</button>
-                                                <button type="button" class="admin-chip admin-chip--danger" data-map-remove aria-label="Eliminar marcador">×</button>
-                                            </div>
-                                        </header>
-                                        <div class="admin-field">
-                                            <label>Título *</label>
-                                            <input type="text" name="marcadores[titulo][]" value="<?= htmlspecialchars((string) ($marcador['titulo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="Tunqui Cueva" />
-                                        </div>
-                                        <div class="admin-field">
-                                            <label>Descripción</label>
-                                            <textarea name="marcadores[descripcion][]" rows="2" placeholder="Formaciones rocosas y guías locales."><?= htmlspecialchars((string) ($marcador['descripcion'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
-                                        </div>
-                                        <div class="admin-grid two-columns">
-                                            <div class="admin-field">
-                                                <label>Latitud *</label>
-                                                <input type="number" step="0.000001" name="marcadores[latitud][]" value="<?= htmlspecialchars((string) ($marcador['latitud'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="-10.600000" />
-                                            </div>
-                                            <div class="admin-field">
-                                                <label>Longitud *</label>
-                                                <input type="number" step="0.000001" name="marcadores[longitud][]" value="<?= htmlspecialchars((string) ($marcador['longitud'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="-75.400000" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <p class="admin-help" data-map-empty <?= empty($datos['marcadores']) ? '' : 'hidden'; ?>>Aún no agregas puntos en el mapa. Usa el mapa o el botón para crear el primero.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <template id="itinerary-item-template">
                 <div class="itinerary-item" data-itinerary-item>
                     <header class="itinerary-item__header">
@@ -436,35 +385,10 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <label>Descripción breve</label>
                         <textarea name="itinerario[descripcion][]" rows="2" placeholder="Recorrido guiado con cascos y linternas."></textarea>
                     </div>
-                </div>
-            </template>
-
-            <template id="map-marker-template">
-                <div class="map-marker" data-map-item>
-                    <header class="map-marker__header">
-                        <span class="map-marker__index" data-map-index></span>
-                        <div class="map-marker__actions">
-                            <button type="button" class="admin-chip" data-map-focus>Ver en mapa</button>
-                            <button type="button" class="admin-chip admin-chip--danger" data-map-remove aria-label="Eliminar marcador">×</button>
-                        </div>
-                    </header>
                     <div class="admin-field">
-                        <label>Título *</label>
-                        <input type="text" name="marcadores[titulo][]" placeholder="Tunqui Cueva" />
-                    </div>
-                    <div class="admin-field">
-                        <label>Descripción</label>
-                        <textarea name="marcadores[descripcion][]" rows="2" placeholder="Formaciones rocosas y guías locales."></textarea>
-                    </div>
-                    <div class="admin-grid two-columns">
-                        <div class="admin-field">
-                            <label>Latitud *</label>
-                            <input type="number" step="0.000001" name="marcadores[latitud][]" placeholder="-10.600000" />
-                        </div>
-                        <div class="admin-field">
-                            <label>Longitud *</label>
-                            <input type="number" step="0.000001" name="marcadores[longitud][]" placeholder="-75.400000" />
-                        </div>
+                        <label>Ubicación en Google Maps</label>
+                        <input type="url" name="itinerario[ubicacion_maps][]" placeholder="https://maps.google.com/?q=-12.0464,-77.0428" />
+                        <p class="admin-help">Pega la URL compartible de Google Maps para esta actividad.</p>
                     </div>
                 </div>
             </template>
