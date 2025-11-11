@@ -314,19 +314,34 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <button type="button" class="admin-button secondary" data-itinerary-add>+ Agregar bloque</button>
                     </div>
 
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2 class="admin-section__title">
+                    <span class="admin-section__icon" aria-hidden="true">🧰</span>
+                    <span>Servicios del circuito</span>
+                </h2>
+                <p class="admin-section__description">Gestiona los servicios que se incluyen y los que quedan fuera de la operación.</p>
+                <div class="admin-section__content">
                     <div class="admin-grid two-columns">
-                        <div class="admin-field">
+                        <div class="admin-field service-selector" data-service-selector>
                             <span class="admin-field__label">Servicios incluidos</span>
                             <p class="admin-help">Selecciona los servicios que la operación incluye para los viajeros.</p>
                             <?php if (empty($serviciosDisponibles)): ?>
                                 <p class="admin-help">No hay servicios registrados en el catálogo. Añádelos desde la configuración.</p>
                             <?php else: ?>
-                                <ul class="admin-table__list admin-table__list--options" data-services-incluidos>
+                                <div class="service-selector__chips" data-service-chips data-empty-text="Aún no has seleccionado servicios."></div>
+                                <label class="service-selector__search" for="servicios_incluidos_buscar">
+                                    <span class="sr-only">Buscar servicios incluidos</span>
+                                    <input type="search" id="servicios_incluidos_buscar" class="service-selector__search-input" placeholder="Buscar servicios" data-service-search>
+                                </label>
+                                <ul class="admin-table__list admin-table__list--options" data-service-list>
                                     <?php foreach ($serviciosDisponibles as $servicio): ?>
-                                        <li>
+                                        <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                        <li class="service-selector__item" data-service-item data-service-label="<?= htmlspecialchars(trim((string) ($servicio['nombre'] . ' ' . $servicio['descripcion'])), ENT_QUOTES, 'UTF-8'); ?>">
                                             <label>
-                                                <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
-                                                <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                                <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" data-service-checkbox data-service-name="<?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
                                                 <?php if ($iconoServicio !== ''): ?>
                                                     <span class="service-option__icon"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <?php endif; ?>
@@ -338,20 +353,27 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
+                                <p class="admin-help service-selector__empty" data-service-empty hidden>No se encontraron servicios para tu búsqueda.</p>
                             <?php endif; ?>
                         </div>
-                        <div class="admin-field">
+
+                        <div class="admin-field service-selector" data-service-selector data-service-selector-variant="danger">
                             <span class="admin-field__label">Servicios no incluidos</span>
                             <p class="admin-help">Marca los servicios que el viajero deberá cubrir por su cuenta.</p>
                             <?php if (empty($serviciosDisponibles)): ?>
                                 <p class="admin-help">No hay opciones configuradas. Regístralas para facilitar la comunicación.</p>
                             <?php else: ?>
-                                <ul class="admin-table__list admin-table__list--options" data-services-excluidos>
+                                <div class="service-selector__chips" data-service-chips data-empty-text="No hay servicios marcados como no incluidos."></div>
+                                <label class="service-selector__search" for="servicios_excluidos_buscar">
+                                    <span class="sr-only">Buscar servicios no incluidos</span>
+                                    <input type="search" id="servicios_excluidos_buscar" class="service-selector__search-input" placeholder="Buscar servicios" data-service-search>
+                                </label>
+                                <ul class="admin-table__list admin-table__list--options" data-service-list>
                                     <?php foreach ($serviciosDisponibles as $servicio): ?>
-                                        <li>
+                                        <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                        <li class="service-selector__item" data-service-item data-service-label="<?= htmlspecialchars(trim((string) ($servicio['nombre'] . ' ' . $servicio['descripcion'])), ENT_QUOTES, 'UTF-8'); ?>">
                                             <label>
-                                                <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
-                                                <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                                <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" data-service-checkbox data-service-name="<?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
                                                 <?php if ($iconoServicio !== ''): ?>
                                                     <span class="service-option__icon service-option__icon--danger"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
                                                 <?php endif; ?>
@@ -363,6 +385,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         </li>
                                     <?php endforeach; ?>
                                 </ul>
+                                <p class="admin-help service-selector__empty" data-service-empty hidden>No se encontraron servicios para tu búsqueda.</p>
                             <?php endif; ?>
                         </div>
                     </div>

@@ -10,6 +10,7 @@
         }
 
         initItinerary(form);
+        initServiceSelectors(form);
     });
 
     function initItinerary(root) {
@@ -77,6 +78,116 @@
 
         addButton.addEventListener('click', () => {
             addItem();
+        });
+    }
+
+    function initServiceSelectors(root) {
+        const selectors = selectAll(root, '[data-service-selector]');
+        if (!selectors.length) {
+            return;
+        }
+
+        selectors.forEach((selector) => {
+            const list = selector.querySelector('[data-service-list]');
+            const chipsContainer = selector.querySelector('[data-service-chips]');
+            const searchInput = selector.querySelector('[data-service-search]');
+            const emptyMessage = selector.querySelector('[data-service-empty]');
+
+            if (!list || !chipsContainer) {
+                return;
+            }
+
+            const checkboxes = selectAll(list, 'input[type="checkbox"][data-service-checkbox]');
+
+            const toggleChipsEmptyState = () => {
+                if (!chipsContainer) {
+                    return;
+                }
+                const isEmpty = chipsContainer.querySelectorAll('[data-service-chip]').length === 0;
+                chipsContainer.setAttribute('data-empty', isEmpty ? 'true' : 'false');
+            };
+
+            const ensureChip = (checkbox) => {
+                const id = checkbox.value;
+                let chip = chipsContainer.querySelector(`[data-service-chip="${id}"]`);
+
+                if (checkbox.checked) {
+                    if (!chip) {
+                        chip = document.createElement('span');
+                        chip.className = 'service-chip';
+                        chip.setAttribute('data-service-chip', id);
+
+                        const label = document.createElement('span');
+                        label.className = 'service-chip__label';
+                        label.textContent = checkbox.getAttribute('data-service-name') || checkbox.value;
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.className = 'service-chip__remove';
+                        removeButton.setAttribute('aria-label', `Quitar ${label.textContent}`.trim());
+                        removeButton.setAttribute('data-service-chip-remove', id);
+                        removeButton.textContent = '×';
+
+                        chip.appendChild(label);
+                        chip.appendChild(removeButton);
+                        chipsContainer.appendChild(chip);
+                    }
+                } else if (chip) {
+                    chip.remove();
+                }
+
+                toggleChipsEmptyState();
+            };
+
+            checkboxes.forEach((checkbox) => {
+                ensureChip(checkbox);
+                checkbox.addEventListener('change', () => {
+                    ensureChip(checkbox);
+                });
+            });
+
+            toggleChipsEmptyState();
+
+            chipsContainer.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-service-chip-remove]');
+                if (!button) {
+                    return;
+                }
+
+                const id = button.getAttribute('data-service-chip-remove');
+                const target = checkboxes.find((input) => input.value === id);
+                if (target) {
+                    target.checked = false;
+                    target.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+
+            if (searchInput) {
+                const updateVisibility = () => {
+                    const query = searchInput.value.trim().toLowerCase();
+                    let visibleItems = 0;
+
+                    checkboxes.forEach((checkbox) => {
+                        const item = checkbox.closest('[data-service-item]');
+                        if (!item) {
+                            return;
+                        }
+                        const labelText = (item.getAttribute('data-service-label') || '').toLowerCase();
+                        const matches = query === '' || labelText.includes(query);
+                        item.hidden = !matches;
+                        if (matches) {
+                            visibleItems += 1;
+                        }
+                    });
+
+                    if (emptyMessage) {
+                        emptyMessage.hidden = visibleItems > 0;
+                    }
+                };
+
+                searchInput.addEventListener('input', updateVisibility);
+                updateVisibility();
+            }
         });
     }
 })();
