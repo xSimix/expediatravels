@@ -22,15 +22,10 @@ return [
         'estado' => 'activo',
         'actualizado_en' => '2024-01-04T12:00:00-05:00',
         'itinerario' => [
-            ['dia' => 'Mañana', 'hora' => '08:00', 'titulo' => 'Salida de Oxapampa', 'descripcion' => 'Recojo desde hoteles céntricos y breve charla de seguridad.'],
-            ['dia' => 'Mañana', 'hora' => '09:30', 'titulo' => 'Tunqui Cueva', 'descripcion' => 'Recorrido guiado por galerías subterráneas iluminadas.'],
-            ['dia' => 'Tarde', 'hora' => '13:00', 'titulo' => 'Almuerzo típico', 'descripcion' => 'Degustación de platos tradicionales en fundo cafetalero.'],
-            ['dia' => 'Tarde', 'hora' => '15:30', 'titulo' => 'Catarata Río Tigre', 'descripcion' => 'Caminata de dificultad media para disfrutar del salto de agua.'],
-        ],
-        'marcadores' => [
-            ['titulo' => 'Tunqui Cueva', 'descripcion' => 'Formaciones rocosas y murciélagos.', 'latitud' => -10.6195, 'longitud' => -75.4042],
-            ['titulo' => 'Fundo cafetalero', 'descripcion' => 'Degustación y almuerzo.', 'latitud' => -10.6051, 'longitud' => -75.4018],
-            ['titulo' => 'Catarata Río Tigre', 'descripcion' => 'Cascada rodeada de vegetación.', 'latitud' => -10.5668, 'longitud' => -75.3925],
+            ['dia' => 'Mañana', 'hora' => '08:00', 'titulo' => 'Salida de Oxapampa', 'descripcion' => 'Recojo desde hoteles céntricos y breve charla de seguridad.', 'ubicacion_maps' => ''],
+            ['dia' => 'Mañana', 'hora' => '09:30', 'titulo' => 'Tunqui Cueva', 'descripcion' => 'Recorrido guiado por galerías subterráneas iluminadas.', 'ubicacion_maps' => ''],
+            ['dia' => 'Tarde', 'hora' => '13:00', 'titulo' => 'Almuerzo típico', 'descripcion' => 'Degustación de platos tradicionales en fundo cafetalero.', 'ubicacion_maps' => ''],
+            ['dia' => 'Tarde', 'hora' => '15:30', 'titulo' => 'Catarata Río Tigre', 'descripcion' => 'Caminata de dificultad media para disfrutar del salto de agua.', 'ubicacion_maps' => ''],
         ],
     ],
     [
@@ -52,15 +47,10 @@ return [
         'estado' => 'activo',
         'actualizado_en' => '2024-01-04T12:00:00-05:00',
         'itinerario' => [
-            ['dia' => 'Mañana', 'hora' => '07:30', 'titulo' => 'Encuentro en Plaza Principal', 'descripcion' => 'Bienvenida y explicación del circuito.'],
-            ['dia' => 'Mañana', 'hora' => '08:00', 'titulo' => 'Laguna El Oconal', 'descripcion' => 'Paseo en bote con interpretación ambiental.'],
-            ['dia' => 'Mañana', 'hora' => '10:00', 'titulo' => 'Centro de Interpretación del Café', 'descripcion' => 'Ruta del café, cosecha y tostado.'],
-            ['dia' => 'Mediodía', 'hora' => '12:00', 'titulo' => 'Mirador La Cumbre', 'descripcion' => 'Fotografías panorámicas y tiempo libre.'],
-        ],
-        'marcadores' => [
-            ['titulo' => 'Laguna El Oconal', 'descripcion' => 'Espacio natural con aves acuáticas.', 'latitud' => -10.7398, 'longitud' => -75.2706],
-            ['titulo' => 'Centro del Café', 'descripcion' => 'Demostración de procesos.', 'latitud' => -10.7332, 'longitud' => -75.2691],
-            ['titulo' => 'Mirador La Cumbre', 'descripcion' => 'Vista de la provincia y plantaciones.', 'latitud' => -10.7311, 'longitud' => -75.2573],
+            ['dia' => 'Mañana', 'hora' => '07:30', 'titulo' => 'Encuentro en Plaza Principal', 'descripcion' => 'Bienvenida y explicación del circuito.', 'ubicacion_maps' => ''],
+            ['dia' => 'Mañana', 'hora' => '08:00', 'titulo' => 'Laguna El Oconal', 'descripcion' => 'Paseo en bote con interpretación ambiental.', 'ubicacion_maps' => ''],
+            ['dia' => 'Mañana', 'hora' => '10:00', 'titulo' => 'Centro de Interpretación del Café', 'descripcion' => 'Ruta del café, cosecha y tostado.', 'ubicacion_maps' => ''],
+            ['dia' => 'Mediodía', 'hora' => '12:00', 'titulo' => 'Mirador La Cumbre', 'descripcion' => 'Fotografías panorámicas y tiempo libre.', 'ubicacion_maps' => ''],
         ],
     ],
     [
@@ -82,15 +72,10 @@ return [
         'estado' => 'borrador',
         'actualizado_en' => '2024-01-04T12:00:00-05:00',
         'itinerario' => [
-            ['dia' => 'Mañana', 'hora' => '06:00', 'titulo' => 'Salida de Oxapampa a Pozuzo', 'descripcion' => 'Trayecto panorámico de 2 horas y media.'],
-            ['dia' => 'Mañana', 'hora' => '09:00', 'titulo' => 'Plaza de Pozuzo', 'descripcion' => 'Recorrido guiado por monumentos y museo.'],
-            ['dia' => 'Tarde', 'hora' => '13:30', 'titulo' => 'Cascada Yulitunqui', 'descripcion' => 'Trekking ligero por sendero selvático.'],
-            ['dia' => 'Tarde', 'hora' => '16:30', 'titulo' => 'Puente Emperador Guillermo', 'descripcion' => 'Visita al icónico puente colgante y retorno.'],
-        ],
-        'marcadores' => [
-            ['titulo' => 'Pozuzo Plaza', 'descripcion' => 'Centro histórico de la colonia.', 'latitud' => -10.0729, 'longitud' => -75.5416],
-            ['titulo' => 'Museo Schafferer', 'descripcion' => 'Colección histórica de la inmigración.', 'latitud' => -10.0721, 'longitud' => -75.5411],
-            ['titulo' => 'Cascada Yulitunqui', 'descripcion' => 'Cascada rodeada de bosque húmedo.', 'latitud' => -10.0398, 'longitud' => -75.4882],
+            ['dia' => 'Mañana', 'hora' => '06:00', 'titulo' => 'Salida de Oxapampa a Pozuzo', 'descripcion' => 'Trayecto panorámico de 2 horas y media.', 'ubicacion_maps' => ''],
+            ['dia' => 'Mañana', 'hora' => '09:00', 'titulo' => 'Plaza de Pozuzo', 'descripcion' => 'Recorrido guiado por monumentos y museo.', 'ubicacion_maps' => ''],
+            ['dia' => 'Tarde', 'hora' => '13:30', 'titulo' => 'Cascada Yulitunqui', 'descripcion' => 'Trekking ligero por sendero selvático.', 'ubicacion_maps' => ''],
+            ['dia' => 'Tarde', 'hora' => '16:30', 'titulo' => 'Puente Emperador Guillermo', 'descripcion' => 'Visita al icónico puente colgante y retorno.', 'ubicacion_maps' => ''],
         ],
     ],
 ];

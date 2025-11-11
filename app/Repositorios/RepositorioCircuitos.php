@@ -210,9 +210,6 @@ class RepositorioCircuitos
             if (!empty($extras['itinerary'])) {
                 $base['itinerario'] = $extras['itinerary'];
             }
-            if (!empty($extras['markers'])) {
-                $base['marcadores'] = $extras['markers'];
-            }
         }
 
         return $base;
@@ -228,7 +225,6 @@ class RepositorioCircuitos
             'includes' => [],
             'excludes' => [],
             'itinerary' => [],
-            'markers' => [],
         ];
 
         try {
@@ -252,7 +248,7 @@ class RepositorioCircuitos
             }
 
             $itineraryStmt = $pdo->prepare(
-                'SELECT dia, hora, titulo, descripcion
+                'SELECT dia, hora, titulo, descripcion, ubicacion_maps
                  FROM circuito_itinerarios
                  WHERE circuito_id = :id
                  ORDER BY orden, id'
@@ -269,30 +265,10 @@ class RepositorioCircuitos
                     'hora' => trim((string) ($row['hora'] ?? '')),
                     'titulo' => $titulo,
                     'descripcion' => $descripcion,
+                    'ubicacion_maps' => trim((string) ($row['ubicacion_maps'] ?? '')),
                 ];
             }
 
-            $markersStmt = $pdo->prepare(
-                'SELECT titulo, descripcion, latitud, longitud
-                 FROM circuito_marcadores
-                 WHERE circuito_id = :id
-                 ORDER BY orden, id'
-            );
-            $markersStmt->execute([':id' => $circuitId]);
-            foreach ($markersStmt->fetchAll(PDO::FETCH_ASSOC) ?: [] as $row) {
-                $titulo = trim((string) ($row['titulo'] ?? ''));
-                $latitud = isset($row['latitud']) ? (float) $row['latitud'] : null;
-                $longitud = isset($row['longitud']) ? (float) $row['longitud'] : null;
-                if ($titulo === '' || $latitud === null || $longitud === null) {
-                    continue;
-                }
-                $extras['markers'][] = [
-                    'titulo' => $titulo,
-                    'descripcion' => trim((string) ($row['descripcion'] ?? '')),
-                    'latitud' => $latitud,
-                    'longitud' => $longitud,
-                ];
-            }
         } catch (PDOException $exception) {
             // Mantiene silencioso el fallo para utilizar datos de respaldo si es necesario.
         }

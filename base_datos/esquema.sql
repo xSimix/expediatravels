@@ -104,24 +104,11 @@ CREATE TABLE circuito_itinerarios (
     hora VARCHAR(40) DEFAULT NULL,
     titulo VARCHAR(180) NOT NULL,
     descripcion TEXT DEFAULT NULL,
+    ubicacion_maps VARCHAR(255) DEFAULT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (circuito_id) REFERENCES circuitos(id) ON DELETE CASCADE,
     INDEX idx_circuito_itinerarios_circuito (circuito_id, orden)
-);
-
-CREATE TABLE circuito_marcadores (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    circuito_id INT NOT NULL,
-    orden INT NOT NULL,
-    titulo VARCHAR(180) NOT NULL,
-    descripcion TEXT DEFAULT NULL,
-    latitud DECIMAL(10, 7) NOT NULL,
-    longitud DECIMAL(10, 7) NOT NULL,
-    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (circuito_id) REFERENCES circuitos(id) ON DELETE CASCADE,
-    INDEX idx_circuito_marcadores_circuito (circuito_id, orden)
 );
 
 CREATE TABLE paquetes (
