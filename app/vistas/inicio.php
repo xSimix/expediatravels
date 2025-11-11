@@ -420,11 +420,43 @@
                     ['tours' => 4, 'departures' => 22, 'guests' => 9_420],
                 ];
 
+                $normalizeDestinationKey = static function ($value): string {
+                    if (is_array($value)) {
+                        $value = $value['nombre'] ?? $value['title'] ?? reset($value) ?? '';
+                    }
+
+                    $value = trim((string) $value);
+                    if ($value === '') {
+                        return '';
+                    }
+
+                    $normalized = preg_replace('/\s+/', ' ', $value);
+                    if (!is_string($normalized)) {
+                        $normalized = $value;
+                    }
+
+                    if (function_exists('mb_strtolower')) {
+                        $normalized = mb_strtolower($normalized, 'UTF-8');
+                    } else {
+                        $normalized = strtolower($normalized);
+                    }
+
+                    return $normalized;
+                };
+
                 $packagesByDestination = [];
                 foreach ($featuredPackages as $package) {
-                    $destinationKey = $package['destino'] ?? null;
-                    if ($destinationKey) {
+                    $destinationKey = $normalizeDestinationKey($package['destino'] ?? ($package['destination'] ?? null));
+                    if ($destinationKey !== '') {
                         $packagesByDestination[$destinationKey] = ($packagesByDestination[$destinationKey] ?? 0) + 1;
+                    }
+                }
+
+                $circuitsByDestination = [];
+                foreach ($featuredCircuits as $circuit) {
+                    $destinationKey = $normalizeDestinationKey($circuit['destino'] ?? ($circuit['location'] ?? null));
+                    if ($destinationKey !== '') {
+                        $circuitsByDestination[$destinationKey] = ($circuitsByDestination[$destinationKey] ?? 0) + 1;
                     }
                 }
 
@@ -454,6 +486,18 @@
                         continue;
                     }
 
+                    $normalizedDestinationKey = $normalizeDestinationKey($destinationName);
+                    if ($normalizedDestinationKey === '') {
+                        continue;
+                    }
+
+                    $linkedPackages = (int) ($packagesByDestination[$normalizedDestinationKey] ?? 0);
+                    $linkedCircuits = (int) ($circuitsByDestination[$normalizedDestinationKey] ?? 0);
+                    $linkedExperiences = $linkedPackages + $linkedCircuits;
+                    if ($linkedExperiences <= 0) {
+                        continue;
+                    }
+
                     $imageSource = $destination['imagen_destacada'] ?? $destination['imagen'] ?? null;
                     $imagePath = ($resolveMediaPath)($imageSource);
                     if ($imagePath === null && is_string($imageSource) && isset($fallbackImageMap[$imageSource])) {
@@ -469,7 +513,7 @@
                         'guests' => 9_200 + ($index * 480),
                     ];
 
-                    $toursCount = max(1, (int) ($packagesByDestination[$destinationName] ?? $stats['tours']));
+                    $toursCount = max(1, $linkedExperiences);
                     $formattedTours = str_pad((string) $toursCount, 2, '0', STR_PAD_LEFT);
                     $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
                     $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
