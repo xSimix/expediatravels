@@ -118,6 +118,7 @@
 .service-create-form__grid {
     display: grid;
     gap: 1.5rem;
+    align-items: flex-start;
 }
 
 @media (min-width: 768px) {
@@ -1657,6 +1658,7 @@ body.modal-open {
 .service-edit-modal__grid {
     display: grid;
     gap: 1.25rem;
+    align-items: flex-start;
 }
 
 @media (min-width: 768px) {

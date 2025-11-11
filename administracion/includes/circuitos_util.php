@@ -47,22 +47,20 @@ function normalizarDestinoCircuito(array $destino): array
 
 function cargarServiciosDisponibles(array $predeterminados, array &$errores): array
 {
-    $servicios = [
-        'incluido' => [],
-        'excluido' => [],
-    ];
+    $servicios = [];
 
     try {
         $pdo = Conexion::obtener();
-        $statement = $pdo->query('SELECT id, nombre, icono, tipo, descripcion FROM servicios_catalogo WHERE activo = 1 ORDER BY tipo, nombre');
+        $statement = $pdo->query('SELECT id, nombre, icono, descripcion FROM servicios_catalogo WHERE activo = 1 ORDER BY nombre');
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) ?: [] as $servicio) {
-            $tipo = $servicio['tipo'] === 'excluido' ? 'excluido' : 'incluido';
             $id = (int) $servicio['id'];
-            $servicios[$tipo][$id] = [
+            if ($id <= 0) {
+                continue;
+            }
+            $servicios[$id] = [
                 'id' => $id,
                 'nombre' => trim((string) $servicio['nombre']),
                 'icono' => trim((string) ($servicio['icono'] ?? '')),
-                'tipo' => $tipo,
                 'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
             ];
         }
@@ -70,22 +68,22 @@ function cargarServiciosDisponibles(array $predeterminados, array &$errores): ar
         $errores[] = 'No se pudo cargar la lista de servicios desde la base de datos. Se usarán los servicios de referencia.';
     }
 
-    if (empty($servicios['incluido']) && empty($servicios['excluido'])) {
+    if (empty($servicios)) {
         foreach ($predeterminados as $servicio) {
-            $tipo = ($servicio['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
             $id = (int) ($servicio['id'] ?? 0);
             if ($id <= 0) {
                 continue;
             }
-            $servicios[$tipo][$id] = [
+            $servicios[$id] = [
                 'id' => $id,
                 'nombre' => trim((string) ($servicio['nombre'] ?? '')),
                 'icono' => trim((string) ($servicio['icono'] ?? '')),
-                'tipo' => $tipo,
                 'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
             ];
         }
     }
+
+    ksort($servicios);
 
     return $servicios;
 }
@@ -642,13 +640,12 @@ function procesarItinerarioFormulario(array $entrada): array
     return $resultado;
 }
 
-function filtrarServiciosSeleccionados(array $serviciosDisponibles, array $seleccion, string $tipo): array
+function filtrarServiciosSeleccionados(array $serviciosDisponibles, array $seleccion): array
 {
-    $tipo = $tipo === 'excluido' ? 'excluido' : 'incluido';
     $validos = [];
     foreach ($seleccion as $id) {
         $id = (int) $id;
-        if ($id > 0 && isset($serviciosDisponibles[$tipo][$id])) {
+        if ($id > 0 && isset($serviciosDisponibles[$id])) {
             $validos[$id] = $id;
         }
     }

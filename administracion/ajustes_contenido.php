@@ -16,7 +16,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($accion === 'create') {
         $nombre = trim((string) ($_POST['nombre'] ?? ''));
         $icono = trim((string) ($_POST['icono'] ?? ''));
-        $tipo = ($_POST['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
         $descripcion = trim((string) ($_POST['descripcion'] ?? ''));
         $activo = isset($_POST['activo']);
 
@@ -29,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if (empty($errores)) {
-            $servicioId = $repositorioServicios->crear($nombre, $tipo, $descripcion !== '' ? $descripcion : null, $icono, $activo);
+            $servicioId = $repositorioServicios->crear($nombre, $descripcion !== '' ? $descripcion : null, $icono, $activo);
             if ($servicioId > 0) {
                 $feedback = ['type' => 'success', 'message' => 'Servicio agregado correctamente al catálogo.'];
             } else {
@@ -42,7 +41,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = isset($_POST['service_id']) ? (int) $_POST['service_id'] : 0;
         $nombre = trim((string) ($_POST['nombre'] ?? ''));
         $icono = trim((string) ($_POST['icono'] ?? ''));
-        $tipo = ($_POST['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
         $descripcion = trim((string) ($_POST['descripcion'] ?? ''));
         $activo = isset($_POST['activo']);
 
@@ -60,7 +58,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $resultado = $repositorioServicios->actualizar($id, [
                 'nombre' => $nombre,
                 'icono' => $icono,
-                'tipo' => $tipo,
                 'descripcion' => $descripcion,
                 'activo' => $activo,
             ]);
@@ -153,13 +150,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                     </div>
                     <p class="admin-help">La búsqueda se abrirá en una nueva pestaña en fontawesome.com.</p>
                 </div>
-                <div class="admin-field">
-                    <label for="nuevo_tipo">Se sugiere como</label>
-                    <select id="nuevo_tipo" name="tipo">
-                        <option value="incluido">Servicio incluido</option>
-                        <option value="excluido">Servicio no incluido</option>
-                    </select>
-                </div>
                 <div class="service-create-form__availability">
                     <label class="admin-checkbox">
                         <input type="checkbox" name="activo" value="1" checked />
@@ -189,7 +179,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <tr>
                             <th scope="col">Icono</th>
                             <th scope="col">Servicio</th>
-                            <th scope="col">Tipo sugerido</th>
                             <th scope="col">Estado</th>
                             <th scope="col" class="content-services-table__actions-heading">Acciones</th>
                         </tr>
@@ -199,7 +188,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                             $serviceId = (int) ($servicio['id'] ?? 0);
                             $serviceNombre = (string) ($servicio['nombre'] ?? '');
                             $serviceIcono = (string) ($servicio['icono'] ?? '');
-                            $serviceTipo = ($servicio['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
                             $serviceDescripcion = (string) ($servicio['descripcion'] ?? '');
                             $serviceActivo = !empty($servicio['activo']);
                             $iconPreviewId = 'icono_preview_' . $serviceId;
@@ -223,14 +211,11 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="content-services-table__tag content-services-table__tag--<?= $serviceTipo; ?>"><?= $serviceTipo === 'incluido' ? 'Incluido' : 'No incluido'; ?></span>
-                                </td>
-                                <td>
                                     <span class="content-services-table__status<?= $serviceActivo ? ' is-active' : ' is-inactive'; ?>"><?= $serviceActivo ? 'Activo' : 'Inactivo'; ?></span>
                                 </td>
                                 <td>
                                     <div class="content-services-table__actions">
-                                        <button type="button" class="admin-button" data-edit-service data-service-id="<?= $serviceId; ?>" data-service-nombre="<?= htmlspecialchars($serviceNombre, ENT_QUOTES); ?>" data-service-icono="<?= htmlspecialchars($serviceIcono, ENT_QUOTES); ?>" data-service-tipo="<?= $serviceTipo; ?>" data-service-descripcion="<?= htmlspecialchars($serviceDescripcion, ENT_QUOTES); ?>" data-service-activo="<?= $serviceActivo ? '1' : '0'; ?>" data-service-icon-preview="#<?= htmlspecialchars($iconPreviewId, ENT_QUOTES); ?>">Editar</button>
+                                        <button type="button" class="admin-button" data-edit-service data-service-id="<?= $serviceId; ?>" data-service-nombre="<?= htmlspecialchars($serviceNombre, ENT_QUOTES); ?>" data-service-icono="<?= htmlspecialchars($serviceIcono, ENT_QUOTES); ?>" data-service-descripcion="<?= htmlspecialchars($serviceDescripcion, ENT_QUOTES); ?>" data-service-activo="<?= $serviceActivo ? '1' : '0'; ?>" data-service-icon-preview="#<?= htmlspecialchars($iconPreviewId, ENT_QUOTES); ?>">Editar</button>
                                         <form method="post" class="content-services-table__delete-form" onsubmit="return confirm('¿Eliminar el servicio seleccionado?');">
                                             <input type="hidden" name="action" value="delete" />
                                             <input type="hidden" name="service_id" value="<?= $serviceId; ?>" />
@@ -297,13 +282,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <input type="search" class="icon-picker-search__input" placeholder="Buscar iconos (ej. bus)" aria-label="Buscar iconos en Font Awesome" data-icon-search-input />
                                 <button type="button" class="admin-button secondary icon-picker-search__button" data-icon-search-button data-icon-search-target="#modal_icono">Buscar en Font Awesome</button>
                             </div>
-                        </div>
-                        <div class="admin-field">
-                            <label for="modal_tipo">Se sugiere como</label>
-                            <select id="modal_tipo" name="tipo" data-service-field="tipo">
-                                <option value="incluido">Servicio incluido</option>
-                                <option value="excluido">Servicio no incluido</option>
-                            </select>
                         </div>
                         <div class="service-edit-modal__availability">
                             <label class="admin-checkbox">
