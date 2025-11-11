@@ -80,6 +80,7 @@ CREATE TABLE circuitos (
 CREATE TABLE servicios_catalogo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(150) NOT NULL,
+    icono VARCHAR(120) DEFAULT NULL,
     tipo ENUM('incluido', 'excluido') NOT NULL DEFAULT 'incluido',
     descripcion VARCHAR(255) DEFAULT NULL,
     activo TINYINT(1) NOT NULL DEFAULT 1,
