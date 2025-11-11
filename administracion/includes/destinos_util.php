@@ -196,11 +196,26 @@ function eliminarDestinoCatalogo(int $destinoId, array &$errores): bool
 {
     try {
         $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        $pdo->prepare('DELETE FROM paquete_destinos WHERE destino_id = :id')->execute([':id' => $destinoId]);
+        $pdo->prepare('UPDATE paquetes SET destino_id = NULL WHERE destino_id = :id')->execute([':id' => $destinoId]);
+        $pdo->prepare('UPDATE circuitos SET destino_id = NULL WHERE destino_id = :id')->execute([':id' => $destinoId]);
+
         $statement = $pdo->prepare('DELETE FROM destinos WHERE id = :id');
         $statement->execute([':id' => $destinoId]);
 
-        return $statement->rowCount() > 0;
+        if ($statement->rowCount() > 0) {
+            $pdo->commit();
+
+            return true;
+        }
+
+        $pdo->rollBack();
     } catch (\PDOException $exception) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         $errores[] = 'No se pudo eliminar el destino en la base de datos.';
     }
 

@@ -307,11 +307,38 @@ function paquetesEliminarPaquete(int $paqueteId, array &$errores): bool
 {
     try {
         $pdo = Conexion::obtener();
+        $pdo->beginTransaction();
+
+        $reservasStatement = $pdo->prepare('SELECT id FROM reservas WHERE paquete_id = :id');
+        $reservasStatement->execute([':id' => $paqueteId]);
+        $reservasIds = array_map('intval', $reservasStatement->fetchAll(\PDO::FETCH_COLUMN) ?: []);
+
+        if (!empty($reservasIds)) {
+            $placeholders = implode(',', array_fill(0, count($reservasIds), '?'));
+            $pagosStatement = $pdo->prepare("DELETE FROM pagos WHERE reserva_id IN ({$placeholders})");
+            $pagosStatement->execute($reservasIds);
+        }
+
+        $pdo->prepare('DELETE FROM resenas WHERE paquete_id = :id')->execute([':id' => $paqueteId]);
+        $pdo->prepare('DELETE FROM salidas_programadas WHERE paquete_id = :id')->execute([':id' => $paqueteId]);
+        $pdo->prepare('DELETE FROM reservas WHERE paquete_id = :id')->execute([':id' => $paqueteId]);
+        $pdo->prepare('DELETE FROM paquete_destinos WHERE paquete_id = :id')->execute([':id' => $paqueteId]);
+        $pdo->prepare('DELETE FROM paquete_circuitos WHERE paquete_id = :id')->execute([':id' => $paqueteId]);
+
         $statement = $pdo->prepare('DELETE FROM paquetes WHERE id = :id');
         $statement->execute([':id' => $paqueteId]);
 
-        return $statement->rowCount() > 0;
+        if ($statement->rowCount() > 0) {
+            $pdo->commit();
+
+            return true;
+        }
+
+        $pdo->rollBack();
     } catch (\PDOException $exception) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         $errores[] = 'No se pudo eliminar el paquete en la base de datos.';
     }
 
