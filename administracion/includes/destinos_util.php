@@ -16,7 +16,7 @@ function cargarDestinosCatalogo(array $predeterminados, array &$errores): array
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->query(
-            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, visible_en_busqueda, visible_en_explorador, actualizado_en
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
              FROM destinos
              ORDER BY nombre'
         );
@@ -83,8 +83,6 @@ function normalizarDestino(array $destino): array
         'video_destacado_url' => $videoDestacado,
         'tags' => $tags,
         'estado' => normalizarEstado($destino['estado'] ?? 'activo'),
-        'visible_en_busqueda' => normalizarBooleano($destino['visible_en_busqueda'] ?? true),
-        'visible_en_explorador' => normalizarBooleano($destino['visible_en_explorador'] ?? true),
         'actualizado_en' => $destino['actualizado_en'] ?? null,
     ];
 
@@ -116,8 +114,8 @@ function crearDestinoCatalogo(array $destino, array &$errores): ?int
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'INSERT INTO destinos (nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, visible_en_busqueda, visible_en_explorador)
-             VALUES (:nombre, :descripcion, :tagline, :lat, :lon, :imagen, :imagen_destacada, :region, :galeria, :video, :tags, :estado, :visible_busqueda, :visible_explorador)'
+            'INSERT INTO destinos (nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado)
+             VALUES (:nombre, :descripcion, :tagline, :lat, :lon, :imagen, :imagen_destacada, :region, :galeria, :video, :tags, :estado)'
         );
         $statement->execute([
             ':nombre' => $destino['nombre'],
@@ -132,8 +130,6 @@ function crearDestinoCatalogo(array $destino, array &$errores): ?int
             ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
             ':tags' => prepararJsonLista($destino['tags']),
             ':estado' => $destino['estado'],
-            ':visible_busqueda' => $destino['visible_en_busqueda'] ? 1 : 0,
-            ':visible_explorador' => $destino['visible_en_explorador'] ? 1 : 0,
         ]);
 
         return (int) $pdo->lastInsertId();
@@ -161,9 +157,7 @@ function actualizarDestinoCatalogo(int $destinoId, array $destino, array &$error
                  galeria = :galeria,
                  video_destacado_url = :video,
                  tags = :tags,
-                 estado = :estado,
-                 visible_en_busqueda = :visible_busqueda,
-                 visible_en_explorador = :visible_explorador
+                 estado = :estado
              WHERE id = :id'
         );
         $statement->execute([
@@ -180,8 +174,6 @@ function actualizarDestinoCatalogo(int $destinoId, array $destino, array &$error
             ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
             ':tags' => prepararJsonLista($destino['tags']),
             ':estado' => $destino['estado'],
-            ':visible_busqueda' => $destino['visible_en_busqueda'] ? 1 : 0,
-            ':visible_explorador' => $destino['visible_en_explorador'] ? 1 : 0,
         ]);
 
         return $statement->rowCount() > 0;
@@ -216,7 +208,7 @@ function obtenerDestinoPorId(int $destinoId, array $predeterminados, array &$err
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, visible_en_busqueda, visible_en_explorador, actualizado_en
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
              FROM destinos
              WHERE id = :id'
         );
@@ -293,21 +285,6 @@ function normalizarEstado($valor): string
     $permitidos = ['activo', 'oculto', 'borrador'];
 
     return in_array($estado, $permitidos, true) ? $estado : 'activo';
-}
-
-function normalizarBooleano($valor): bool
-{
-    if (is_bool($valor)) {
-        return $valor;
-    }
-
-    if (is_numeric($valor)) {
-        return (int) $valor === 1;
-    }
-
-    $texto = strtolower(trim((string) $valor));
-
-    return in_array($texto, ['1', 'true', 'sí', 'si', 'on'], true);
 }
 
 if (!function_exists('obtenerSiguienteId')) {

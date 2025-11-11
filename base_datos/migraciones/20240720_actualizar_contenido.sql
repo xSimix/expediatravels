@@ -7,9 +7,7 @@ ALTER TABLE destinos
     ADD COLUMN video_destacado_url VARCHAR(255) DEFAULT NULL AFTER galeria,
     ADD COLUMN tags JSON DEFAULT NULL AFTER video_destacado_url,
     ADD COLUMN estado ENUM('activo', 'oculto', 'borrador') NOT NULL DEFAULT 'activo' AFTER tags,
-    ADD COLUMN visible_en_busqueda TINYINT(1) NOT NULL DEFAULT 1 AFTER estado,
-    ADD COLUMN visible_en_explorador TINYINT(1) NOT NULL DEFAULT 1 AFTER visible_en_busqueda,
-    ADD COLUMN creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER visible_en_explorador,
+    ADD COLUMN creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP AFTER estado,
     ADD COLUMN actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP AFTER creado_en;
 
 ALTER TABLE destinos
