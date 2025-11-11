@@ -55,6 +55,12 @@
         $featuredCircuits = $signatureExperiences;
     }
 
+    $searchMetadata = $searchMetadata ?? ['regions' => [], 'styles' => [], 'durationOptions' => [], 'budgetOptions' => []];
+    $searchRegions = $searchMetadata['regions'] ?? [];
+    $searchStyles = $searchMetadata['styles'] ?? [];
+    $searchDurations = $searchMetadata['durationOptions'] ?? [];
+    $searchBudgets = $searchMetadata['budgetOptions'] ?? [];
+
     $slugify = static function (string $value): string {
         $normalized = iconv('UTF-8', 'ASCII//TRANSLIT', $value);
         $normalized = strtolower(trim((string) $normalized));
@@ -256,47 +262,123 @@
                 <h1 class="hero__title">Reserva tours y experiencias en Oxapampa</h1>
                 <p class="hero__subtitle">Planifica tu viaje por la Selva Central del Perú con especialistas locales: Oxapampa, Villa Rica, Pozuzo y reservas de biosfera a tu ritmo.</p>
             </div>
-            <form class="booking-form" action="explorar.php" method="get" role="search">
+            <form class="booking-form" action="explorar.php" method="get" role="search" data-hero-search>
                 <fieldset class="booking-form__tabs">
                     <legend class="visually-hidden">Tipo de servicio</legend>
                     <label class="booking-tab">
-                        <input type="radio" name="categoria" value="destinos" checked />
+                        <input type="radio" name="category" value="destinos" checked data-search-category />
                         <span>Destinos</span>
                     </label>
                     <label class="booking-tab">
-                        <input type="radio" name="categoria" value="circuitos" />
+                        <input type="radio" name="category" value="circuitos" data-search-category />
                         <span>Circuitos</span>
                     </label>
                     <label class="booking-tab">
-                        <input type="radio" name="categoria" value="paquetes" />
+                        <input type="radio" name="category" value="experiencias" data-search-category />
                         <span>Paquetes</span>
                     </label>
                 </fieldset>
-                <div class="booking-form__fields">
-                    <label class="booking-field">
-                        <span class="booking-field__label">Destino</span>
-                        <select name="destino" required>
-                            <option value="" disabled selected>Selecciona un destino</option>
-                            <option value="oxapampa">Oxapampa</option>
-                            <option value="villa-rica">Villa Rica</option>
-                            <option value="pozuzo">Pozuzo</option>
-                            <option value="selva-central">Selva Central</option>
-                        </select>
-                    </label>
-                    <label class="booking-field">
-                        <span class="booking-field__label">Fecha de viaje</span>
-                        <input type="date" name="fecha" min="<?= date('Y-m-d'); ?>" />
-                    </label>
-                    <label class="booking-field">
-                        <span class="booking-field__label">Tipo de tour</span>
-                        <select name="tipo">
-                            <option value="" selected>Selecciona una experiencia</option>
-                            <option value="aventura">Aventura</option>
-                            <option value="cultural">Cultural</option>
-                            <option value="gastronomia">Gastronomía</option>
-                            <option value="naturaleza">Naturaleza</option>
-                        </select>
-                    </label>
+                <div class="booking-form__fields" data-search-fields>
+                    <div class="booking-form__group" data-category-fields="destinos">
+                        <label class="booking-field">
+                            <span class="booking-field__label">Destino</span>
+                            <select name="region" data-search-input data-field-name="region"<?php if (!empty($searchRegions)): ?> data-required="true" required<?php endif; ?>>
+                                <option value="">Selecciona un destino</option>
+                                <?php foreach ($searchRegions as $region): ?>
+                                    <option value="<?= htmlspecialchars($region, ENT_QUOTES); ?>"><?= htmlspecialchars($region); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                        <?php if (!empty($searchStyles)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Estilo de viaje</span>
+                                <select data-search-input data-field-name="style">
+                                    <option value="">Todos los estilos</option>
+                                    <?php foreach ($searchStyles as $style): ?>
+                                        <option value="<?= htmlspecialchars($style, ENT_QUOTES); ?>"><?= htmlspecialchars($style); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                    </div>
+                    <div class="booking-form__group" data-category-fields="circuitos" hidden>
+                        <label class="booking-field">
+                            <span class="booking-field__label">Zona</span>
+                            <select data-search-input data-field-name="region">
+                                <option value="">Cualquier destino</option>
+                                <?php foreach ($searchRegions as $region): ?>
+                                    <option value="<?= htmlspecialchars($region, ENT_QUOTES); ?>"><?= htmlspecialchars($region); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                        <?php if (!empty($searchDurations)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Duración</span>
+                                <select data-search-input data-field-name="duration">
+                                    <option value="">Cualquier duración</option>
+                                    <?php foreach ($searchDurations as $durationOption):
+                                        $value = (string) ($durationOption['value'] ?? '');
+                                        $label = (string) ($durationOption['label'] ?? $value);
+                                        if ($value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                        <?php if (!empty($searchStyles)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Estilo</span>
+                                <select data-search-input data-field-name="style">
+                                    <option value="">Todos los estilos</option>
+                                    <?php foreach ($searchStyles as $style): ?>
+                                        <option value="<?= htmlspecialchars($style, ENT_QUOTES); ?>"><?= htmlspecialchars($style); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                    </div>
+                    <div class="booking-form__group" data-category-fields="experiencias" hidden>
+                        <label class="booking-field">
+                            <span class="booking-field__label">Destino</span>
+                            <select data-search-input data-field-name="region">
+                                <option value="">Cualquier destino</option>
+                                <?php foreach ($searchRegions as $region): ?>
+                                    <option value="<?= htmlspecialchars($region, ENT_QUOTES); ?>"><?= htmlspecialchars($region); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </label>
+                        <?php if (!empty($searchBudgets)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Presupuesto</span>
+                                <select data-search-input data-field-name="budget">
+                                    <option value="">Todos los presupuestos</option>
+                                    <?php foreach ($searchBudgets as $budgetOption):
+                                        $value = (string) ($budgetOption['value'] ?? '');
+                                        $label = (string) ($budgetOption['label'] ?? $value);
+                                        if ($value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                        <?php if (!empty($searchStyles)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Estilo de viaje</span>
+                                <select data-search-input data-field-name="style">
+                                    <option value="">Todos los estilos</option>
+                                    <?php foreach ($searchStyles as $style): ?>
+                                        <option value="<?= htmlspecialchars($style, ENT_QUOTES); ?>"><?= htmlspecialchars($style); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                    </div>
                     <button class="booking-form__submit" type="submit">Buscar</button>
                 </div>
             </form>
