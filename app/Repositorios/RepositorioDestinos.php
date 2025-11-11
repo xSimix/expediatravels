@@ -16,9 +16,10 @@ class RepositorioDestinos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT id, nombre, descripcion, region, imagen, imagen_destacada, tagline
+                'SELECT id, nombre, descripcion, region, imagen, imagen_destacada, tagline, mostrar_en_buscador, mostrar_en_explorador
                  FROM destinos
                  WHERE estado = "activo"
+                   AND mostrar_en_explorador = 1
                  ORDER BY id
                  LIMIT :limit'
             );
@@ -67,7 +68,27 @@ class RepositorioDestinos
             'imagen_destacada' => $destination['imagen_destacada'] ?? null,
             'tagline' => $destination['tagline'] ?? null,
             'slug' => $destination['slug'] ?? $this->generateSlug($name),
+            'mostrar_en_buscador' => $this->normalizeVisibility($destination['mostrar_en_buscador'] ?? $destination['mostrarEnBuscador'] ?? true),
+            'mostrar_en_explorador' => $this->normalizeVisibility($destination['mostrar_en_explorador'] ?? $destination['mostrarEnExplorador'] ?? true),
         ];
+    }
+
+    private function normalizeVisibility($value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return (int) $value === 1;
+        }
+
+        $text = strtolower(trim((string) $value));
+        if ($text === '') {
+            return false;
+        }
+
+        return in_array($text, ['1', 'true', 'si', 'sí', 'visible', 'on', 'activo'], true);
     }
 
     private function fallbackDestinations(): array

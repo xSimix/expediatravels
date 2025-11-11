@@ -139,6 +139,10 @@ class ControladorInicio
                 continue;
             }
 
+            if (!($destination['mostrar_en_buscador'] ?? true)) {
+                continue;
+            }
+
             $collectRegion($regions, $destination['nombre'] ?? null);
             $collectRegion($regions, $destination['region'] ?? null);
             $collectStyles($styles, $destination);

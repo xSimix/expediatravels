@@ -23,6 +23,8 @@ $datos = [
     'video_destacado_url' => '',
     'estado' => 'activo',
     'etiquetas' => '',
+    'mostrar_en_buscador' => true,
+    'mostrar_en_explorador' => true,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -38,6 +40,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? ''));
     $datos['estado'] = normalizarEstado($_POST['estado'] ?? 'activo');
     $datos['etiquetas'] = trim((string) ($_POST['etiquetas'] ?? ''));
+    $datos['mostrar_en_buscador'] = isset($_POST['mostrar_en_buscador']);
+    $datos['mostrar_en_explorador'] = isset($_POST['mostrar_en_explorador']);
 
     if ($datos['nombre'] === '') {
         $errores[] = 'Debes indicar el nombre del destino.';
@@ -65,6 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'video_destacado_url' => $datos['video_destacado_url'],
             'tags' => $etiquetas,
             'estado' => $datos['estado'],
+            'mostrar_en_buscador' => $datos['mostrar_en_buscador'],
+            'mostrar_en_explorador' => $datos['mostrar_en_explorador'],
         ];
 
         $identificador = crearDestinoCatalogo($nuevoDestino, $errores);
@@ -253,6 +259,19 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <option value="oculto" <?= $datos['estado'] === 'oculto' ? 'selected' : ''; ?>>Oculto</option>
                                 <option value="borrador" <?= $datos['estado'] === 'borrador' ? 'selected' : ''; ?>>Borrador</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field admin-field--checkbox">
+                            <input type="checkbox" id="mostrar_en_buscador" name="mostrar_en_buscador" value="1" <?= $datos['mostrar_en_buscador'] ? 'checked' : ''; ?> />
+                            <label for="mostrar_en_buscador">Mostrar en el buscador inteligente</label>
+                            <p class="admin-help">Desactívalo si no quieres que este destino aparezca en resultados y sugerencias de búsqueda.</p>
+                        </div>
+                        <div class="admin-field admin-field--checkbox">
+                            <input type="checkbox" id="mostrar_en_explorador" name="mostrar_en_explorador" value="1" <?= $datos['mostrar_en_explorador'] ? 'checked' : ''; ?> />
+                            <label for="mostrar_en_explorador">Mostrar en el explorador</label>
+                            <p class="admin-help">Controla si el destino se exhibe en los listados y filtros de la página Explorar.</p>
                         </div>
                     </div>
                 </div>

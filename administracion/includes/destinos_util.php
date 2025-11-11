@@ -16,7 +16,7 @@ function cargarDestinosCatalogo(array $predeterminados, array &$errores): array
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->query(
-            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, mostrar_en_buscador, mostrar_en_explorador, actualizado_en
              FROM destinos
              ORDER BY nombre'
         );
@@ -83,6 +83,8 @@ function normalizarDestino(array $destino): array
         'video_destacado_url' => $videoDestacado,
         'tags' => $tags,
         'estado' => normalizarEstado($destino['estado'] ?? 'activo'),
+        'mostrar_en_buscador' => normalizarBanderaVisibilidad($destino['mostrar_en_buscador'] ?? $destino['mostrarEnBuscador'] ?? true),
+        'mostrar_en_explorador' => normalizarBanderaVisibilidad($destino['mostrar_en_explorador'] ?? $destino['mostrarEnExplorador'] ?? true),
         'actualizado_en' => $destino['actualizado_en'] ?? null,
     ];
 
@@ -114,8 +116,8 @@ function crearDestinoCatalogo(array $destino, array &$errores): ?int
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'INSERT INTO destinos (nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado)
-             VALUES (:nombre, :descripcion, :tagline, :lat, :lon, :imagen, :imagen_destacada, :region, :galeria, :video, :tags, :estado)'
+            'INSERT INTO destinos (nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, mostrar_en_buscador, mostrar_en_explorador)
+             VALUES (:nombre, :descripcion, :tagline, :lat, :lon, :imagen, :imagen_destacada, :region, :galeria, :video, :tags, :estado, :mostrar_buscador, :mostrar_explorador)'
         );
         $statement->execute([
             ':nombre' => $destino['nombre'],
@@ -130,6 +132,8 @@ function crearDestinoCatalogo(array $destino, array &$errores): ?int
             ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
             ':tags' => prepararJsonLista($destino['tags']),
             ':estado' => $destino['estado'],
+            ':mostrar_buscador' => $destino['mostrar_en_buscador'] ? 1 : 0,
+            ':mostrar_explorador' => $destino['mostrar_en_explorador'] ? 1 : 0,
         ]);
 
         return (int) $pdo->lastInsertId();
@@ -157,7 +161,9 @@ function actualizarDestinoCatalogo(int $destinoId, array $destino, array &$error
                  galeria = :galeria,
                  video_destacado_url = :video,
                  tags = :tags,
-                 estado = :estado
+                 estado = :estado,
+                 mostrar_en_buscador = :mostrar_buscador,
+                 mostrar_en_explorador = :mostrar_explorador
              WHERE id = :id'
         );
         $statement->execute([
@@ -174,6 +180,8 @@ function actualizarDestinoCatalogo(int $destinoId, array $destino, array &$error
             ':video' => $destino['video_destacado_url'] !== '' ? $destino['video_destacado_url'] : null,
             ':tags' => prepararJsonLista($destino['tags']),
             ':estado' => $destino['estado'],
+            ':mostrar_buscador' => $destino['mostrar_en_buscador'] ? 1 : 0,
+            ':mostrar_explorador' => $destino['mostrar_en_explorador'] ? 1 : 0,
         ]);
 
         return $statement->rowCount() > 0;
@@ -208,7 +216,7 @@ function obtenerDestinoPorId(int $destinoId, array $predeterminados, array &$err
     try {
         $pdo = Conexion::obtener();
         $statement = $pdo->prepare(
-            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, actualizado_en
+            'SELECT id, nombre, descripcion, tagline, lat, lon, imagen, imagen_destacada, region, galeria, video_destacado_url, tags, estado, mostrar_en_buscador, mostrar_en_explorador, actualizado_en
              FROM destinos
              WHERE id = :id'
         );
@@ -277,6 +285,24 @@ function convertirEtiquetas($valor): array
     }
 
     return array_values(array_filter(array_map('trim', $items), static fn (string $item): bool => $item !== ''));
+}
+
+function normalizarBanderaVisibilidad($valor): bool
+{
+    if (is_bool($valor)) {
+        return $valor;
+    }
+
+    if (is_numeric($valor)) {
+        return (int) $valor === 1;
+    }
+
+    $texto = strtolower(trim((string) $valor));
+    if ($texto === '') {
+        return false;
+    }
+
+    return in_array($texto, ['1', 'true', 'si', 'sí', 'on', 'activo', 'visible'], true);
 }
 
 function normalizarEstado($valor): string

@@ -78,8 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'Debes indicar el nombre del circuito.';
     }
 
-    if ($datos['destino_id'] <= 0 && $datos['destino_personalizado'] === '') {
-        $errores[] = 'Selecciona un destino o escribe uno personalizado.';
+    if ($datos['destino_id'] <= 0) {
+        $errores[] = 'Selecciona el destino base del circuito.';
     }
 
     if ($datos['duracion'] === '') {
@@ -187,18 +187,19 @@ require __DIR__ . '/plantilla/cabecera.php';
 
                     <div class="admin-grid two-columns">
                         <div class="admin-field">
-                            <label for="destino_id">Destino asociado</label>
+                            <label for="destino_id">Destino asociado *</label>
                             <select id="destino_id" name="destino_id">
                                 <option value="0">Selecciona un destino del catálogo</option>
                                 <?php foreach ($destinosDisponibles as $destinoId => $destino): ?>
                                     <option value="<?= (int) $destinoId; ?>" <?= $datos['destino_id'] === (int) $destinoId ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="admin-help">Elige un destino existente o ingresa uno personalizado.</p>
+                            <p class="admin-help">Elige el departamento con el que se agrupará este circuito en buscadores y filtros.</p>
                         </div>
                         <div class="admin-field">
-                            <label for="destino_personalizado">Destino personalizado</label>
-                            <input type="text" id="destino_personalizado" name="destino_personalizado" value="<?= htmlspecialchars($datos['destino_personalizado'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Reserva de biosfera" />
+                            <label for="destino_personalizado">Nombre local (opcional)</label>
+                            <input type="text" id="destino_personalizado" name="destino_personalizado" value="<?= htmlspecialchars($datos['destino_personalizado'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Oxapampa, Perené, etc." />
+                            <p class="admin-help">Se muestra al público para especificar la ciudad o zona exacta dentro del destino base.</p>
                         </div>
                     </div>
                 </div>

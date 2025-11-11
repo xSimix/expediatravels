@@ -135,6 +135,8 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <?php if ($destino['latitud'] !== null && $destino['longitud'] !== null): ?>
                                             <li><strong>Coordenadas:</strong> <?= htmlspecialchars((string) $destino['latitud']); ?>, <?= htmlspecialchars((string) $destino['longitud']); ?></li>
                                         <?php endif; ?>
+                                        <li><strong>Buscador:</strong> <?= $destino['mostrar_en_buscador'] ? 'Visible' : 'Oculto'; ?></li>
+                                        <li><strong>Explorador:</strong> <?= $destino['mostrar_en_explorador'] ? 'Visible' : 'Oculto'; ?></li>
                                     </ul>
                                 </td>
                                 <td>
