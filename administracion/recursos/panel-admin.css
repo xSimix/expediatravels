@@ -226,6 +226,11 @@
     align-items: center;
 }
 
+.admin-actions--full {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+}
+
 .admin-button {
     display: inline-flex;
     align-items: center;
@@ -963,6 +968,30 @@
     color: #475569;
 }
 
+.admin-service-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.admin-service-item__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 14px;
+    background: rgba(59, 130, 246, 0.18);
+    color: #1d4ed8;
+    font-size: 1rem;
+}
+
+.admin-service-item__icon--danger {
+    background: rgba(239, 68, 68, 0.16);
+    color: #b91c1c;
+}
+
 .admin-tags {
     list-style: none;
     padding: 0;
@@ -1336,9 +1365,89 @@ body.media-modal-open {
     font-weight: 500;
 }
 
+.service-option__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: rgba(59, 130, 246, 0.15);
+    color: #1d4ed8;
+    font-size: 1rem;
+}
+
+.service-option__icon--danger {
+    background: rgba(239, 68, 68, 0.16);
+    color: #b91c1c;
+}
+
 .admin-table__list--options input[type="checkbox"] {
     width: 1.1rem;
     height: 1.1rem;
+}
+
+.content-services {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.content-service {
+    display: grid;
+    gap: 1.25rem;
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.92), rgba(255, 255, 255, 0.98));
+    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.content-service__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+}
+
+.content-service__icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 18px;
+    background: rgba(2, 132, 199, 0.12);
+    color: #0f172a;
+    display: grid;
+    place-items: center;
+    font-size: 1.6rem;
+}
+
+.content-service__grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.content-service__status {
+    align-self: end;
+}
+
+.content-service__availability {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.content-service__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.content-service__delete {
+    color: #b91c1c;
+    border-color: rgba(239, 68, 68, 0.35);
+    background: rgba(254, 226, 226, 0.45);
 }
 
 .itinerary-editor {

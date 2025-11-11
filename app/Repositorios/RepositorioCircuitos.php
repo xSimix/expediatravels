@@ -195,7 +195,16 @@ class RepositorioCircuitos
         if ($circuitId > 0) {
             $extras = $this->loadCircuitExtras($circuitId);
             if (!empty($extras['includes'])) {
-                $base['servicios'] = $extras['includes'];
+                $base['servicios'] = array_values(array_filter(array_map(
+                    static function ($item) {
+                        if (is_array($item)) {
+                            return trim((string) ($item['label'] ?? $item['nombre'] ?? ''));
+                        }
+
+                        return trim((string) $item);
+                    },
+                    $extras['includes']
+                ), static fn ($valor): bool => $valor !== ''));
             }
             if (!empty($extras['includes']) || !empty($extras['excludes'])) {
                 $essentials = [];
@@ -231,7 +240,7 @@ class RepositorioCircuitos
             $pdo = Conexion::obtener();
 
             $servicesStmt = $pdo->prepare(
-                'SELECT cs.tipo, sc.nombre
+                'SELECT cs.tipo, sc.nombre, sc.icono, sc.descripcion
                  FROM circuito_servicios cs
                  JOIN servicios_catalogo sc ON sc.id = cs.servicio_id
                  WHERE cs.circuito_id = :id
@@ -244,10 +253,18 @@ class RepositorioCircuitos
                     continue;
                 }
                 $tipo = ($row['tipo'] ?? '') === 'excluido' ? 'excludes' : 'includes';
-                $extras[$tipo][] = $nombre;
+                $icono = trim((string) ($row['icono'] ?? ''));
+                $descripcion = trim((string) ($row['descripcion'] ?? ''));
+                $extras[$tipo][] = [
+                    'label' => $nombre,
+                    'nombre' => $nombre,
+                    'icon' => $icono,
+                    'descripcion' => $descripcion,
+                    'description' => $descripcion,
+                ];
             }
 
-            $itineraryStmt = $pdo->prepare(
+$itineraryStmt = $pdo->prepare(
                 'SELECT dia, hora, titulo, descripcion, ubicacion_maps
                  FROM circuito_itinerarios
                  WHERE circuito_id = :id

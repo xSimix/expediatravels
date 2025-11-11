@@ -160,19 +160,59 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <p class="admin-help">+<?= count($circuito['itinerario']) - 3; ?> actividades adicionales.</p>
                                         <?php endif; ?>
                                     <?php endif; ?>
-                                    <?php if (!empty($circuito['servicios_incluidos'])): ?>
+                                    <?php
+                                        $serviciosIncluidos = $circuito['servicios_incluidos_detalles'] ?? $circuito['servicios_incluidos'] ?? [];
+                                        $serviciosIncluidos = is_array($serviciosIncluidos) ? $serviciosIncluidos : [];
+                                    ?>
+                                    <?php if (!empty($serviciosIncluidos)): ?>
                                         <p class="admin-table__meta"><strong>Incluye:</strong></p>
                                         <ul class="admin-table__list">
-                                            <?php foreach ($circuito['servicios_incluidos'] as $servicio): ?>
-                                                <li><?= htmlspecialchars($servicio, ENT_QUOTES, 'UTF-8'); ?></li>
+                                            <?php foreach ($serviciosIncluidos as $servicio):
+                                                if (is_array($servicio)) {
+                                                    $nombreServicio = trim((string) ($servicio['nombre'] ?? $servicio['label'] ?? ''));
+                                                    $iconoServicio = trim((string) ($servicio['icono'] ?? $servicio['icon'] ?? ''));
+                                                } else {
+                                                    $nombreServicio = trim((string) $servicio);
+                                                    $iconoServicio = '';
+                                                }
+                                                if ($nombreServicio === '') {
+                                                    continue;
+                                                }
+                                            ?>
+                                                <li class="admin-service-item">
+                                                    <?php if ($iconoServicio !== ''): ?>
+                                                        <span class="admin-service-item__icon"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <?php endif; ?>
+                                                    <span><?= htmlspecialchars($nombreServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
-                                    <?php if (!empty($circuito['servicios_excluidos'])): ?>
+                                    <?php
+                                        $serviciosExcluidos = $circuito['servicios_excluidos_detalles'] ?? $circuito['servicios_excluidos'] ?? [];
+                                        $serviciosExcluidos = is_array($serviciosExcluidos) ? $serviciosExcluidos : [];
+                                    ?>
+                                    <?php if (!empty($serviciosExcluidos)): ?>
                                         <p class="admin-table__meta"><strong>No incluye:</strong></p>
                                         <ul class="admin-table__list">
-                                            <?php foreach ($circuito['servicios_excluidos'] as $servicio): ?>
-                                                <li><?= htmlspecialchars($servicio, ENT_QUOTES, 'UTF-8'); ?></li>
+                                            <?php foreach ($serviciosExcluidos as $servicio):
+                                                if (is_array($servicio)) {
+                                                    $nombreServicio = trim((string) ($servicio['nombre'] ?? $servicio['label'] ?? ''));
+                                                    $iconoServicio = trim((string) ($servicio['icono'] ?? $servicio['icon'] ?? ''));
+                                                } else {
+                                                    $nombreServicio = trim((string) $servicio);
+                                                    $iconoServicio = '';
+                                                }
+                                                if ($nombreServicio === '') {
+                                                    continue;
+                                                }
+                                            ?>
+                                                <li class="admin-service-item">
+                                                    <?php if ($iconoServicio !== ''): ?>
+                                                        <span class="admin-service-item__icon admin-service-item__icon--danger"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                    <?php endif; ?>
+                                                    <span><?= htmlspecialchars($nombreServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                </li>
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>

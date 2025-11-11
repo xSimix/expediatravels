@@ -408,19 +408,19 @@ VALUES
 ('Laguna el Oconal', 'Reflejos perfectos en la Laguna El Oconal durante el atardecer.', 'Laguna con reflejo de montañas y cielo dorado', 'Foto: Jorge Huamán', 'almacenamiento/medios/laguna-oconal.jpg', 'laguna-oconal.jpg', 'laguna-oconal.jpg', 'image/jpeg', 'jpg', 315440, 1600, 1067, '9e320fb2d4b79e3c47691d9961c3c2de3c8a6d4f', '2024-07-02 18:20:00');
 
 -- Servicios disponibles para circuitos.
-INSERT INTO servicios_catalogo (nombre, tipo, descripcion, activo)
+INSERT INTO servicios_catalogo (nombre, icono, tipo, descripcion, activo)
 VALUES
-    ('Transporte turístico', 'incluido', 'Traslado terrestre para todo el circuito.', 1),
-    ('Guía especializado', 'incluido', 'Guías bilingües certificados.', 1),
-    ('Entradas a atractivos', 'incluido', 'Tickets de ingreso a sitios turísticos.', 1),
-    ('Alimentación durante el circuito', 'incluido', 'Almuerzo o snacks indicados en el itinerario.', 1),
-    ('Guía local', 'incluido', 'Acompañamiento de guías nativos de la zona.', 1),
-    ('Degustaciones programadas', 'incluido', 'Catas o degustaciones señaladas en el itinerario.', 1),
-    ('Gastos personales', 'excluido', 'Compras o servicios fuera del programa.', 1),
-    ('Seguro de viaje', 'excluido', 'Coberturas personales adicionales.', 1),
-    ('Bebidas alcohólicas', 'excluido', 'Consumo de bebidas alcohólicas.', 1),
-    ('Actividades opcionales', 'excluido', 'Actividades no mencionadas en el itinerario.', 1),
-    ('Propinas', 'excluido', 'Propinas a guías y conductores.', 1);
+    ('Transporte turístico', '🚌', 'incluido', 'Traslado terrestre para todo el circuito.', 1),
+    ('Guía especializado', '🧭', 'incluido', 'Guías bilingües certificados.', 1),
+    ('Entradas a atractivos', '🎟️', 'incluido', 'Tickets de ingreso a sitios turísticos.', 1),
+    ('Alimentación durante el circuito', '🍽️', 'incluido', 'Almuerzo o snacks indicados en el itinerario.', 1),
+    ('Guía local', '🗺️', 'incluido', 'Acompañamiento de guías nativos de la zona.', 1),
+    ('Degustaciones programadas', '🥂', 'incluido', 'Catas o degustaciones señaladas en el itinerario.', 1),
+    ('Gastos personales', '💸', 'excluido', 'Compras o servicios fuera del programa.', 1),
+    ('Seguro de viaje', '🛡️', 'excluido', 'Coberturas personales adicionales.', 1),
+    ('Bebidas alcohólicas', '🍹', 'excluido', 'Consumo de bebidas alcohólicas.', 1),
+    ('Actividades opcionales', '🎯', 'excluido', 'Actividades no mencionadas en el itinerario.', 1),
+    ('Propinas', '🤝', 'excluido', 'Propinas a guías y conductores.', 1);
 
 -- Relaciones de servicios por circuito de ejemplo.
 INSERT INTO circuito_servicios (circuito_id, servicio_id, tipo)

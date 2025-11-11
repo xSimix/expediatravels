@@ -54,13 +54,14 @@ function cargarServiciosDisponibles(array $predeterminados, array &$errores): ar
 
     try {
         $pdo = Conexion::obtener();
-        $statement = $pdo->query('SELECT id, nombre, tipo, descripcion FROM servicios_catalogo WHERE activo = 1 ORDER BY tipo, nombre');
+        $statement = $pdo->query('SELECT id, nombre, icono, tipo, descripcion FROM servicios_catalogo WHERE activo = 1 ORDER BY tipo, nombre');
         foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) ?: [] as $servicio) {
             $tipo = $servicio['tipo'] === 'excluido' ? 'excluido' : 'incluido';
             $id = (int) $servicio['id'];
             $servicios[$tipo][$id] = [
                 'id' => $id,
                 'nombre' => trim((string) $servicio['nombre']),
+                'icono' => trim((string) ($servicio['icono'] ?? '')),
                 'tipo' => $tipo,
                 'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
             ];
@@ -79,6 +80,7 @@ function cargarServiciosDisponibles(array $predeterminados, array &$errores): ar
             $servicios[$tipo][$id] = [
                 'id' => $id,
                 'nombre' => trim((string) ($servicio['nombre'] ?? '')),
+                'icono' => trim((string) ($servicio['icono'] ?? '')),
                 'tipo' => $tipo,
                 'descripcion' => trim((string) ($servicio['descripcion'] ?? '')),
             ];
@@ -403,15 +405,17 @@ function adjuntarRelacionesCircuito(array $circuito, array &$errores): array
         $servicios = obtenerServiciosDesdeDb($pdo, $circuitoId);
         $circuito['servicios_incluidos'] = $servicios['incluido']['nombres'];
         $circuito['servicios_excluidos'] = $servicios['excluido']['nombres'];
+        $circuito['servicios_incluidos_detalles'] = $servicios['incluido']['detalles'];
+        $circuito['servicios_excluidos_detalles'] = $servicios['excluido']['detalles'];
         $circuito['servicios_incluidos_ids'] = $servicios['incluido']['ids'];
         $circuito['servicios_excluidos_ids'] = $servicios['excluido']['ids'];
         $circuito['servicios'] = $servicios['incluido']['nombres'];
         $essentials = [];
-        if (!empty($circuito['servicios_incluidos'])) {
-            $essentials[] = ['title' => 'Incluye', 'items' => $circuito['servicios_incluidos']];
+        if (!empty($servicios['incluido']['detalles'])) {
+            $essentials[] = ['title' => 'Incluye', 'items' => transformarServiciosParaPresentacion($servicios['incluido']['detalles'])];
         }
-        if (!empty($circuito['servicios_excluidos'])) {
-            $essentials[] = ['title' => 'No incluye', 'items' => $circuito['servicios_excluidos']];
+        if (!empty($servicios['excluido']['detalles'])) {
+            $essentials[] = ['title' => 'No incluye', 'items' => transformarServiciosParaPresentacion($servicios['excluido']['detalles'])];
         }
         if (!empty($essentials)) {
             $circuito['essentials'] = $essentials;
@@ -680,7 +684,7 @@ function obtenerItinerarioDesdeDb(\PDO $pdo, int $circuitoId): array
 function obtenerServiciosDesdeDb(\PDO $pdo, int $circuitoId): array
 {
     $statement = $pdo->prepare(
-        'SELECT cs.servicio_id, cs.tipo, sc.nombre
+        'SELECT cs.servicio_id, cs.tipo, sc.nombre, sc.icono, sc.descripcion
          FROM circuito_servicios cs
          JOIN servicios_catalogo sc ON sc.id = cs.servicio_id
          WHERE cs.circuito_id = :id
@@ -690,19 +694,64 @@ function obtenerServiciosDesdeDb(\PDO $pdo, int $circuitoId): array
     $filas = $statement->fetchAll(\PDO::FETCH_ASSOC) ?: [];
 
     $resultado = [
-        'incluido' => ['ids' => [], 'nombres' => []],
-        'excluido' => ['ids' => [], 'nombres' => []],
+        'incluido' => ['ids' => [], 'nombres' => [], 'detalles' => []],
+        'excluido' => ['ids' => [], 'nombres' => [], 'detalles' => []],
     ];
 
     foreach ($filas as $fila) {
         $tipo = ($fila['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
         $id = (int) ($fila['servicio_id'] ?? 0);
         $nombre = trim((string) ($fila['nombre'] ?? ''));
+        $icono = trim((string) ($fila['icono'] ?? ''));
+        $descripcion = trim((string) ($fila['descripcion'] ?? ''));
         if ($id <= 0 || $nombre === '') {
             continue;
         }
         $resultado[$tipo]['ids'][] = $id;
         $resultado[$tipo]['nombres'][] = $nombre;
+        $resultado[$tipo]['detalles'][] = [
+            'id' => $id,
+            'nombre' => $nombre,
+            'icono' => $icono,
+            'descripcion' => $descripcion,
+        ];
+    }
+
+    return $resultado;
+}
+
+/**
+ * @param array<int, array<string, mixed>> $detalles
+ * @return array<int, array<string, string>>
+ */
+function transformarServiciosParaPresentacion(array $detalles): array
+{
+    $resultado = [];
+
+    foreach ($detalles as $detalle) {
+        if (is_array($detalle)) {
+            $nombre = trim((string) ($detalle['nombre'] ?? $detalle['label'] ?? ''));
+            if ($nombre === '') {
+                continue;
+            }
+
+            $resultado[] = [
+                'label' => $nombre,
+                'icon' => trim((string) ($detalle['icono'] ?? $detalle['icon'] ?? '')),
+                'descripcion' => trim((string) ($detalle['descripcion'] ?? '')),
+            ];
+        } else {
+            $nombre = trim((string) $detalle);
+            if ($nombre === '') {
+                continue;
+            }
+
+            $resultado[] = [
+                'label' => $nombre,
+                'icon' => '',
+                'descripcion' => '',
+            ];
+        }
     }
 
     return $resultado;

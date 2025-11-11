@@ -122,6 +122,7 @@ $grupoActivo = static function (array $claves) use ($paginaActiva): string {
           <a class="nav-sub <?= $navActivo('paquetes_registrados'); ?>" href="paquetes.php">Paquetes registrados</a>
           <a class="nav-sub <?= $navActivo('paquetes_crear'); ?>" href="crear_paquete.php">Crear paquete</a>
         </div>
+        <a class="<?= $navActivo('ajustes_contenido'); ?>" href="ajustes_contenido.php"><span>🧩</span> Ajustes de contenido</a>
         <a class="<?= $navActivo('medios'); ?>" href="medios.php"><span>🖼️</span> Medios</a>
         <a class="<?= $navActivo('usuarios'); ?>" href="usuarios.php"><span>🧑‍💼</span> Usuarios</a>
       </nav>

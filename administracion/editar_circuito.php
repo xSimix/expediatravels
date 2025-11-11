@@ -368,6 +368,10 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <li>
                                             <label>
                                                 <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
+                                                <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                                <?php if ($iconoServicio !== ''): ?>
+                                                    <span class="service-option__icon"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php endif; ?>
                                                 <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
                                             </label>
                                             <?php if ($servicio['descripcion'] !== ''): ?>
@@ -389,6 +393,10 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <li>
                                             <label>
                                                 <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
+                                                <?php $iconoServicio = trim((string) ($servicio['icono'] ?? '')); ?>
+                                                <?php if ($iconoServicio !== ''): ?>
+                                                    <span class="service-option__icon service-option__icon--danger"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php endif; ?>
                                                 <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
                                             </label>
                                             <?php if ($servicio['descripcion'] !== ''): ?>

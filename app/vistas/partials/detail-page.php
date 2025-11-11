@@ -251,14 +251,32 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
                 ?>
                     <article class="detail-essential">
                         <h3><?= htmlspecialchars($titleEssential); ?></h3>
-                        <ul>
+                        <ul class="detail-essential__list">
                             <?php foreach ($items as $item):
-                                $itemText = trim((string) $item);
+                                if (is_array($item)) {
+                                    $itemText = trim((string) ($item['label'] ?? $item['nombre'] ?? ''));
+                                    $itemIcon = trim((string) ($item['icon'] ?? $item['icono'] ?? ''));
+                                    $itemNote = trim((string) ($item['description'] ?? $item['descripcion'] ?? ''));
+                                } else {
+                                    $itemText = trim((string) $item);
+                                    $itemIcon = '';
+                                    $itemNote = '';
+                                }
                                 if ($itemText === '') {
                                     continue;
                                 }
                             ?>
-                                <li><?= htmlspecialchars($itemText); ?></li>
+                                <li class="detail-essential__item">
+                                    <?php if ($itemIcon !== ''): ?>
+                                        <span class="detail-essential__icon" aria-hidden="true"><?= htmlspecialchars($itemIcon); ?></span>
+                                    <?php endif; ?>
+                                    <span class="detail-essential__text">
+                                        <?= htmlspecialchars($itemText); ?>
+                                        <?php if ($itemNote !== ''): ?>
+                                            <small class="detail-essential__note"><?= htmlspecialchars($itemNote); ?></small>
+                                        <?php endif; ?>
+                                    </span>
+                                </li>
                             <?php endforeach; ?>
                         </ul>
                     </article>
