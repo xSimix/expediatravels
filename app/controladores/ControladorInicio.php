@@ -40,11 +40,12 @@ class ControladorInicio
         $signatureExperiences = $packagesRepository->getSignatureExperiences();
         $featuredCircuits = $circuitRepository->getFeatured();
         $destinations = $destinationRepository->getHighlights();
+        $searchDestinations = $destinationRepository->getForSearch();
 
         $searchMetadata = $this->buildSearchMetadata(
             array_merge($signatureExperiences, $featuredPackages),
             $featuredCircuits,
-            $destinations
+            $searchDestinations
         );
 
         $view = new Vista('inicio');

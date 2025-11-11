@@ -105,6 +105,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                             <th>Destino</th>
                             <th>Detalles</th>
                             <th>Etiquetas</th>
+                            <th>Visibilidad</th>
                             <th>Actualizado</th>
                             <th>Acciones</th>
                         </tr>
@@ -147,6 +148,12 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <?php endforeach; ?>
                                         </ul>
                                     <?php endif; ?>
+                                </td>
+                                <td>
+                                    <ul class="admin-table__list">
+                                        <li><strong>Buscador:</strong> <?= $destino['visible_en_busqueda'] ? 'Visible' : 'Oculto'; ?></li>
+                                        <li><strong>Explorador:</strong> <?= $destino['visible_en_explorador'] ? 'Visible' : 'Oculto'; ?></li>
+                                    </ul>
                                 </td>
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($destino['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
