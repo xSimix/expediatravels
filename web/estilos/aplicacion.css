@@ -1386,6 +1386,14 @@ a:hover {
     align-items: stretch;
 }
 
+.booking-form__group {
+    display: contents;
+}
+
+.booking-form__group[hidden] {
+    display: none;
+}
+
 .booking-field {
     display: grid;
     gap: 0.35rem;
