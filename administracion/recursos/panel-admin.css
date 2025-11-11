@@ -1531,12 +1531,14 @@ body.media-modal-open {
 .media-tile {
     display: grid;
     gap: 0.5rem;
+    width: 250px;
     border-radius: 18px;
     overflow: hidden;
     background: #f8fafc;
     border: 2px solid transparent;
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease;
+    margin: auto;
 }
 
 .media-tile:hover {
