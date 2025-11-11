@@ -72,6 +72,45 @@
         return $normalized !== '' ? trim($normalized, '-') : 'experiencia';
     };
 
+    $normalizeDestinationKey = static function (?string $value) use ($slugify): ?string {
+        if (!is_string($value)) {
+            return null;
+        }
+
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        return $slugify($trimmed);
+    };
+
+    $extractDestinationKeys = static function ($value) use ($normalizeDestinationKey): array {
+        if (!is_string($value)) {
+            return [];
+        }
+
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return [];
+        }
+
+        $segments = preg_split('/(?:\s+y\s+|\s+e\s+|,|;|\||\/|·|•|—|–|-)/u', $trimmed) ?: [];
+        $segments[] = $trimmed;
+
+        $keys = [];
+        foreach ($segments as $segment) {
+            $normalized = $normalizeDestinationKey($segment);
+            if ($normalized === null) {
+                continue;
+            }
+
+            $keys[$normalized] = true;
+        }
+
+        return array_keys($keys);
+    };
+
     $resolveMediaPath = static function (?string $path) {
         if (!is_string($path)) {
             return null;
@@ -421,10 +460,84 @@
                 ];
 
                 $packagesByDestination = [];
-                foreach ($featuredPackages as $package) {
-                    $destinationKey = $package['destino'] ?? null;
-                    if ($destinationKey) {
-                        $packagesByDestination[$destinationKey] = ($packagesByDestination[$destinationKey] ?? 0) + 1;
+                $packageIdentifiers = [];
+                $packageSources = array_merge(
+                    is_array($featuredPackages) ? $featuredPackages : [],
+                    is_array($signatureExperiences) ? $signatureExperiences : []
+                );
+                foreach ($packageSources as $package) {
+                    if (!is_array($package)) {
+                        continue;
+                    }
+
+                    $identifier = null;
+                    if (isset($package['id']) && is_numeric($package['id']) && (int) $package['id'] > 0) {
+                        $identifier = 'id:' . (int) $package['id'];
+                    } elseif (!empty($package['slug']) && is_string($package['slug'])) {
+                        $identifier = 'slug:' . strtolower(trim((string) $package['slug']));
+                    }
+
+                    if ($identifier !== null) {
+                        if (isset($packageIdentifiers[$identifier])) {
+                            continue;
+                        }
+
+                        $packageIdentifiers[$identifier] = true;
+                    }
+
+                    $seenKeys = [];
+                    foreach ([
+                        $package['destino'] ?? null,
+                        $package['region'] ?? null,
+                        $package['location'] ?? null,
+                    ] as $candidate) {
+                        foreach ($extractDestinationKeys($candidate) as $key) {
+                            if (isset($seenKeys[$key])) {
+                                continue;
+                            }
+
+                            $packagesByDestination[$key] = ($packagesByDestination[$key] ?? 0) + 1;
+                            $seenKeys[$key] = true;
+                        }
+                    }
+                }
+
+                $circuitsByDestination = [];
+                $circuitIdentifiers = [];
+                foreach ($featuredCircuits as $circuit) {
+                    if (!is_array($circuit)) {
+                        continue;
+                    }
+
+                    $identifier = null;
+                    if (isset($circuit['id']) && is_numeric($circuit['id']) && (int) $circuit['id'] > 0) {
+                        $identifier = 'id:' . (int) $circuit['id'];
+                    } elseif (!empty($circuit['slug']) && is_string($circuit['slug'])) {
+                        $identifier = 'slug:' . strtolower(trim((string) $circuit['slug']));
+                    }
+
+                    if ($identifier !== null) {
+                        if (isset($circuitIdentifiers[$identifier])) {
+                            continue;
+                        }
+
+                        $circuitIdentifiers[$identifier] = true;
+                    }
+
+                    $seenKeys = [];
+                    foreach ([
+                        $circuit['destino'] ?? null,
+                        $circuit['region'] ?? null,
+                        $circuit['location'] ?? null,
+                    ] as $candidate) {
+                        foreach ($extractDestinationKeys($candidate) as $key) {
+                            if (isset($seenKeys[$key])) {
+                                continue;
+                            }
+
+                            $circuitsByDestination[$key] = ($circuitsByDestination[$key] ?? 0) + 1;
+                            $seenKeys[$key] = true;
+                        }
                     }
                 }
 
@@ -454,6 +567,11 @@
                         continue;
                     }
 
+                    $destinationKey = $normalizeDestinationKey($destinationName);
+                    if ($destinationKey === null) {
+                        continue;
+                    }
+
                     $imageSource = $destination['imagen_destacada'] ?? $destination['imagen'] ?? null;
                     $imagePath = ($resolveMediaPath)($imageSource);
                     if ($imagePath === null && is_string($imageSource) && isset($fallbackImageMap[$imageSource])) {
@@ -463,13 +581,22 @@
                         $imagePath = $fallbackImageMap[$destinationName];
                     }
 
+                    $packageCount = (int) ($packagesByDestination[$destinationKey] ?? 0);
+                    $circuitCount = (int) ($circuitsByDestination[$destinationKey] ?? 0);
+                    $totalExperiences = $packageCount + $circuitCount;
+                    if ($totalExperiences === 0) {
+                        continue;
+                    }
+
                     $stats = $destinationStatsPresets[$index % count($destinationStatsPresets)] ?? [
                         'tours' => $index + 1,
                         'departures' => 20 + ($index * 2),
                         'guests' => 9_200 + ($index * 480),
                     ];
 
-                    $toursCount = max(1, (int) ($packagesByDestination[$destinationName] ?? $stats['tours']));
+                    $toursCount = $totalExperiences > 0
+                        ? $totalExperiences
+                        : max(1, (int) ($stats['tours'] ?? 1));
                     $formattedTours = str_pad((string) $toursCount, 2, '0', STR_PAD_LEFT);
                     $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
                     $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
