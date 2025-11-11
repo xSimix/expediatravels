@@ -6,6 +6,33 @@ if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
     $siteFavicon = null;
 }
 
+$heroSlides = $siteSettings['heroSlides'] ?? [];
+$visibleHeroSlides = array_values(array_filter($heroSlides, static function ($slide) {
+    if (isset($slide['isVisible']) && !$slide['isVisible']) {
+        return false;
+    }
+
+    $imageUrl = (string) ($slide['image'] ?? '');
+
+    return $imageUrl !== '';
+}));
+
+$heroSlide = $visibleHeroSlides[0] ?? null;
+$heroImage = is_array($heroSlide) ? (string) ($heroSlide['image'] ?? '') : '';
+$heroAlt = '';
+if ($heroSlide) {
+    $altText = trim((string) ($heroSlide['altText'] ?? ''));
+    $labelText = trim((string) ($heroSlide['label'] ?? ''));
+    if ($altText !== '') {
+        $heroAlt = $altText;
+    } elseif ($labelText !== '') {
+        $heroAlt = $labelText;
+    }
+}
+if ($heroAlt === '') {
+    $heroAlt = 'Paisajes y experiencias de la Selva Central del Perú';
+}
+
 $currentUser = $currentUser ?? null;
 $filters = $filters ?? [];
 $activeFilters = $activeFilters ?? [];
@@ -71,13 +98,25 @@ $hasFilters = !empty($activeChips);
 </head>
 <body class="page page--explorar">
     <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
-    <main class="explore">
-        <section class="explore__hero">
-            <div class="explore__hero-copy">
-                <h1 class="explore__title">Explora la Selva Central a tu manera</h1>
-                <p class="explore__lead">Descubre circuitos, experiencias y destinos curados para inspirar tu próximo viaje a Oxapampa y sus alrededores.</p>
+    <section class="hero hero--explore">
+        <?php if ($heroImage !== ''): ?>
+            <div class="hero__backgrounds">
+                <div
+                    class="hero__background hero__background--active"
+                    style="background-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');"
+                    role="img"
+                    aria-label="<?= htmlspecialchars($heroAlt, ENT_QUOTES); ?>"
+                ></div>
+            </div>
+        <?php endif; ?>
+        <div class="hero__content explore__hero">
+            <div class="hero__copy explore__hero-copy">
+                <span class="hero__badge">Explorador Expediatravels</span>
+                <h1 class="hero__title">Explora la Selva Central a tu manera</h1>
+                <p class="hero__subtitle explore__lead">Descubre circuitos, experiencias y destinos curados para inspirar tu próximo viaje a Oxapampa y sus alrededores.</p>
                 <ul class="explore__stats" aria-label="Resumen de resultados">
-                    <li><strong><?= (int) ($stats['total'] ?? count($results)); ?></strong> opciones totales</li>
+                    <?php $totalResults = (int) ($stats['total'] ?? count($results)); ?>
+                    <li><strong><?= $totalResults; ?></strong> opciones totales</li>
                     <?php foreach ($categoryLabels as $key => $label): ?>
                         <?php if (!empty($stats[$key])): ?>
                             <li><strong><?= (int) $stats[$key]; ?></strong> <?= htmlspecialchars($label); ?></li>
@@ -85,7 +124,7 @@ $hasFilters = !empty($activeChips);
                     <?php endforeach; ?>
                 </ul>
             </div>
-            <div class="explore__hero-card">
+            <aside class="explore__hero-card" aria-label="Ventajas del explorador">
                 <div class="explore__hero-card-inner">
                     <h2>Diseñamos experiencias flexibles</h2>
                     <p>Filtra por duración, presupuesto y estilo de viaje. Cada resultado incluye anfitriones locales certificados y logística verificada.</p>
@@ -95,9 +134,10 @@ $hasFilters = !empty($activeChips);
                         <li>✔️ Reservas flexibles y personalizadas</li>
                     </ul>
                 </div>
-            </div>
-        </section>
-
+            </aside>
+        </div>
+    </section>
+    <main class="explore">
         <section class="explore__layout">
             <aside class="explore__filters" id="filters-panel" data-filters-panel>
                 <div class="explore__filters-header">
