@@ -91,6 +91,7 @@ $servicios = $repositorioServicios->listar();
 $paginaActiva = 'ajustes_contenido';
 $tituloPagina = 'Ajustes de contenido — Expediatravels';
 $estilosExtra = ['recursos/panel-admin.css'];
+$scriptsExtra = ['recursos/servicios-iconos.js'];
 
 require __DIR__ . '/plantilla/cabecera.php';
 ?>
@@ -123,8 +124,14 @@ require __DIR__ . '/plantilla/cabecera.php';
             </div>
             <div class="admin-field">
                 <label for="nuevo_icono">Icono *</label>
-                <input type="text" id="nuevo_icono" name="icono" maxlength="12" placeholder="🚌" required />
-                <p class="admin-help">Puedes usar emojis o códigos cortos (por ejemplo: fa-solid fa-bus).</p>
+                <input type="text" id="nuevo_icono" name="icono" maxlength="64" placeholder="fa-solid fa-bus" required data-icon-preview-target="#nuevo_icono_preview" />
+                <div class="icon-preview" id="nuevo_icono_preview" data-icon-preview data-icon-fallback="⦿" aria-hidden="true"></div>
+                <p class="admin-help">Puedes usar emojis o clases de Font Awesome (por ejemplo: fa-solid fa-bus).</p>
+                <div class="icon-picker-search" data-icon-search-container>
+                    <input type="search" class="icon-picker-search__input" placeholder="Buscar iconos (ej. bus)" aria-label="Buscar iconos en Font Awesome" data-icon-search-input />
+                    <button type="button" class="admin-button secondary icon-picker-search__button" data-icon-search-button data-icon-search-target="#nuevo_icono">Buscar en Font Awesome</button>
+                </div>
+                <p class="admin-help">La búsqueda se abrirá en una nueva pestaña en fontawesome.com.</p>
             </div>
             <div class="admin-field">
                 <label for="nuevo_tipo">Se sugiere como</label>
@@ -163,11 +170,20 @@ require __DIR__ . '/plantilla/cabecera.php';
                     $serviceDescripcion = (string) ($servicio['descripcion'] ?? '');
                     $serviceActivo = !empty($servicio['activo']);
                 ?>
+                    <?php
+                        $iconInputId = 'icono_servicio_' . $serviceId;
+                        $iconSearchId = 'icono_buscar_' . $serviceId;
+                        $iconPreviewId = 'icono_preview_' . $serviceId;
+                    ?>
                     <form method="post" class="content-service">
                         <input type="hidden" name="service_id" value="<?= $serviceId; ?>" />
                         <div class="content-service__header">
-                            <div class="content-service__icon" aria-hidden="true">
-                                <?= $serviceIcono !== '' ? htmlspecialchars($serviceIcono) : '⦿'; ?>
+                            <div class="content-service__icon" id="<?= htmlspecialchars($iconPreviewId, ENT_QUOTES); ?>" data-icon-preview data-icon-fallback="⦿" aria-hidden="true">
+                                <?php if ($serviceIcono !== '' && str_contains($serviceIcono, 'fa-')): ?>
+                                    <i class="<?= htmlspecialchars($serviceIcono, ENT_QUOTES); ?>" aria-hidden="true"></i>
+                                <?php else: ?>
+                                    <?= $serviceIcono !== '' ? htmlspecialchars($serviceIcono) : '⦿'; ?>
+                                <?php endif; ?>
                             </div>
                             <div class="admin-field">
                                 <label>Nombre</label>
@@ -176,9 +192,14 @@ require __DIR__ . '/plantilla/cabecera.php';
                         </div>
                         <div class="content-service__grid">
                             <div class="admin-field">
-                                <label>Icono *</label>
-                                <input type="text" name="icono" value="<?= htmlspecialchars($serviceIcono, ENT_QUOTES); ?>" maxlength="12" required />
+                                <label for="<?= htmlspecialchars($iconInputId, ENT_QUOTES); ?>">Icono *</label>
+                                <input type="text" id="<?= htmlspecialchars($iconInputId, ENT_QUOTES); ?>" name="icono" value="<?= htmlspecialchars($serviceIcono, ENT_QUOTES); ?>" maxlength="64" required data-icon-preview-target="#<?= htmlspecialchars($iconPreviewId, ENT_QUOTES); ?>" />
                                 <p class="admin-help">Se muestra junto al nombre en el panel y en la web pública.</p>
+                                <div class="icon-picker-search" data-icon-search-container>
+                                    <input type="search" class="icon-picker-search__input" id="<?= htmlspecialchars($iconSearchId, ENT_QUOTES); ?>" placeholder="Buscar iconos (ej. bus)" aria-label="Buscar iconos en Font Awesome" data-icon-search-input />
+                                    <button type="button" class="admin-button secondary icon-picker-search__button" data-icon-search-button data-icon-search-target="#<?= htmlspecialchars($iconInputId, ENT_QUOTES); ?>">Buscar en Font Awesome</button>
+                                </div>
+                                <p class="admin-help">La búsqueda se abrirá en una nueva pestaña en fontawesome.com.</p>
                             </div>
                             <div class="admin-field">
                                 <label>Tipo sugerido</label>
