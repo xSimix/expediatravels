@@ -345,7 +345,9 @@ require __DIR__ . '/plantilla/cabecera.php';
                                                     <label>
                                                         <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" data-service-checkbox data-service-name="<?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
                                                         <?php if ($iconoServicio !== ''): ?>
-                                                            <span class="service-option__icon"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <span class="service-option__icon" aria-hidden="true">
+                                                                <i class="<?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                                            </span>
                                                         <?php endif; ?>
                                                         <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
                                                     </label>
@@ -381,7 +383,9 @@ require __DIR__ . '/plantilla/cabecera.php';
                                                     <label>
                                                         <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" data-service-checkbox data-service-name="<?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
                                                         <?php if ($iconoServicio !== ''): ?>
-                                                            <span class="service-option__icon service-option__icon--danger"><?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                            <span class="service-option__icon service-option__icon--danger" aria-hidden="true">
+                                                                <i class="<?= htmlspecialchars($iconoServicio, ENT_QUOTES, 'UTF-8'); ?>"></i>
+                                                            </span>
                                                         <?php endif; ?>
                                                         <span><?= htmlspecialchars($servicio['nombre'], ENT_QUOTES, 'UTF-8'); ?></span>
                                                     </label>
