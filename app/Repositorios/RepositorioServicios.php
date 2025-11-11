@@ -17,7 +17,7 @@ class RepositorioServicios
     {
         try {
             $pdo = Conexion::obtener();
-            $consulta = $pdo->query('SELECT id, nombre, icono, tipo, descripcion, activo, creado_en, actualizado_en FROM servicios_catalogo ORDER BY nombre');
+            $consulta = $pdo->query('SELECT id, nombre, icono, descripcion, activo, creado_en, actualizado_en FROM servicios_catalogo ORDER BY nombre');
             $filas = $consulta !== false ? $consulta->fetchAll(PDO::FETCH_ASSOC) : [];
 
             return array_map(fn (array $fila): array => $this->mapear($fila), $filas);
@@ -26,18 +26,16 @@ class RepositorioServicios
         }
     }
 
-    public function crear(string $nombre, string $tipo, ?string $descripcion, string $icono, bool $activo = true): int
+    public function crear(string $nombre, ?string $descripcion, string $icono, bool $activo = true): int
     {
         try {
             $pdo = Conexion::obtener();
-            $tipoNormalizado = $tipo === 'excluido' ? 'excluido' : 'incluido';
             $consulta = $pdo->prepare(
-                'INSERT INTO servicios_catalogo (nombre, icono, tipo, descripcion, activo)
-                 VALUES (:nombre, :icono, :tipo, :descripcion, :activo)'
+                'INSERT INTO servicios_catalogo (nombre, icono, descripcion, activo)
+                 VALUES (:nombre, :icono, :descripcion, :activo)'
             );
             $consulta->bindValue(':nombre', $nombre, PDO::PARAM_STR);
             $consulta->bindValue(':icono', $icono !== '' ? $icono : null, $icono !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $consulta->bindValue(':tipo', $tipoNormalizado, PDO::PARAM_STR);
             $consulta->bindValue(':descripcion', $descripcion !== null && $descripcion !== '' ? $descripcion : null, ($descripcion !== null && $descripcion !== '') ? PDO::PARAM_STR : PDO::PARAM_NULL);
             $consulta->bindValue(':activo', $activo ? 1 : 0, PDO::PARAM_INT);
             $consulta->execute();
@@ -59,7 +57,6 @@ class RepositorioServicios
                 'UPDATE servicios_catalogo
                  SET nombre = :nombre,
                      icono = :icono,
-                     tipo = :tipo,
                      descripcion = :descripcion,
                      activo = :activo
                  WHERE id = :id'
@@ -68,8 +65,6 @@ class RepositorioServicios
             $consulta->bindValue(':nombre', (string) ($datos['nombre'] ?? ''), PDO::PARAM_STR);
             $icono = trim((string) ($datos['icono'] ?? ''));
             $consulta->bindValue(':icono', $icono !== '' ? $icono : null, $icono !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
-            $tipo = ($datos['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido';
-            $consulta->bindValue(':tipo', $tipo, PDO::PARAM_STR);
             $descripcion = trim((string) ($datos['descripcion'] ?? ''));
             $consulta->bindValue(':descripcion', $descripcion !== '' ? $descripcion : null, $descripcion !== '' ? PDO::PARAM_STR : PDO::PARAM_NULL);
             $activo = !empty($datos['activo']);
@@ -104,7 +99,6 @@ class RepositorioServicios
             'id' => (int) ($fila['id'] ?? 0),
             'nombre' => trim((string) ($fila['nombre'] ?? '')),
             'icono' => trim((string) ($fila['icono'] ?? '')),
-            'tipo' => ($fila['tipo'] ?? '') === 'excluido' ? 'excluido' : 'incluido',
             'descripcion' => isset($fila['descripcion']) && $fila['descripcion'] !== null ? (string) $fila['descripcion'] : null,
             'activo' => (bool) ($fila['activo'] ?? false),
             'creado_en' => $fila['creado_en'] ?? null,

@@ -13,7 +13,6 @@
     id: form.querySelector('[data-service-field="id"]'),
     nombre: form.querySelector('[data-service-field="nombre"]'),
     icono: form.querySelector('[data-service-field="icono"]'),
-    tipo: form.querySelector('[data-service-field="tipo"]'),
     descripcion: form.querySelector('[data-service-field="descripcion"]'),
     activo: form.querySelector('[data-service-field="activo"]'),
   };
@@ -55,10 +54,6 @@
     }
     if (fields.icono) {
       fields.icono.value = dataset.serviceIcono || '';
-    }
-    if (fields.tipo) {
-      const tipo = dataset.serviceTipo === 'excluido' ? 'excluido' : 'incluido';
-      fields.tipo.value = tipo;
     }
     if (fields.descripcion) {
       fields.descripcion.value = dataset.serviceDescripcion || '';

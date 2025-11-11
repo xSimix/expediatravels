@@ -101,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['galeria'] = isset($_POST['galeria']) ? array_values(array_filter(array_map('trim', (array) $_POST['galeria']), static fn (string $valor): bool => $valor !== '')) : [];
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? $datos['video_destacado_url']));
     $datos['itinerario'] = procesarItinerarioFormulario($_POST['itinerario'] ?? []);
-    $datos['servicios_incluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_incluidos'] ?? $datos['servicios_incluidos_ids'], 'incluido');
-    $datos['servicios_excluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_excluidos'] ?? $datos['servicios_excluidos_ids'], 'excluido');
+    $datos['servicios_incluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_incluidos'] ?? $datos['servicios_incluidos_ids']);
+    $datos['servicios_excluidos_ids'] = filtrarServiciosSeleccionados($serviciosDisponibles, $_POST['servicios_excluidos'] ?? $datos['servicios_excluidos_ids']);
 
     if ($datos['nombre'] === '') {
         $errores[] = 'El nombre del circuito es obligatorio.';
@@ -360,11 +360,11 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <div class="admin-field">
                             <span class="admin-field__label">Servicios incluidos</span>
                             <p class="admin-help">Selecciona los servicios confirmados para este circuito.</p>
-                            <?php if (empty($serviciosDisponibles['incluido'])): ?>
+                            <?php if (empty($serviciosDisponibles)): ?>
                                 <p class="admin-help">No hay servicios configurados en el catálogo.</p>
                             <?php else: ?>
                                 <ul class="admin-table__list admin-table__list--options" data-services-incluidos>
-                                    <?php foreach ($serviciosDisponibles['incluido'] as $servicio): ?>
+                                    <?php foreach ($serviciosDisponibles as $servicio): ?>
                                         <li>
                                             <label>
                                                 <input type="checkbox" name="servicios_incluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_incluidos_ids'], true) ? 'checked' : ''; ?> />
@@ -385,11 +385,11 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <div class="admin-field">
                             <span class="admin-field__label">Servicios no incluidos</span>
                             <p class="admin-help">Marca los conceptos que se comunican como no incluidos al viajero.</p>
-                            <?php if (empty($serviciosDisponibles['excluido'])): ?>
+                            <?php if (empty($serviciosDisponibles)): ?>
                                 <p class="admin-help">No hay opciones de "no incluye" registradas todavía.</p>
                             <?php else: ?>
                                 <ul class="admin-table__list admin-table__list--options" data-services-excluidos>
-                                    <?php foreach ($serviciosDisponibles['excluido'] as $servicio): ?>
+                                    <?php foreach ($serviciosDisponibles as $servicio): ?>
                                         <li>
                                             <label>
                                                 <input type="checkbox" name="servicios_excluidos[]" value="<?= (int) $servicio['id']; ?>" <?= in_array((int) $servicio['id'], $datos['servicios_excluidos_ids'], true) ? 'checked' : ''; ?> />
