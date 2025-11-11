@@ -33,6 +33,8 @@ if ($destinoSeleccionado === null) {
         'video_destacado_url' => '',
         'tags' => [],
         'estado' => 'activo',
+        'visible_en_busqueda' => true,
+        'visible_en_explorador' => true,
     ];
 }
 
@@ -49,6 +51,8 @@ $datos = [
     'video_destacado_url' => $destinoSeleccionado['video_destacado_url'] ?? '',
     'estado' => $destinoSeleccionado['estado'] ?? 'activo',
     'etiquetas' => implode(', ', $destinoSeleccionado['tags'] ?? []),
+    'visible_en_busqueda' => (bool) ($destinoSeleccionado['visible_en_busqueda'] ?? true),
+    'visible_en_explorador' => (bool) ($destinoSeleccionado['visible_en_explorador'] ?? true),
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
@@ -64,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['video_destacado_url'] = trim((string) ($_POST['video_destacado_url'] ?? $datos['video_destacado_url']));
     $datos['estado'] = normalizarEstado($_POST['estado'] ?? $datos['estado']);
     $datos['etiquetas'] = trim((string) ($_POST['etiquetas'] ?? $datos['etiquetas']));
+    $datos['visible_en_busqueda'] = isset($_POST['visible_en_busqueda']);
+    $datos['visible_en_explorador'] = isset($_POST['visible_en_explorador']);
 
     if ($datos['nombre'] === '') {
         $errores[] = 'El nombre del destino no puede estar vacío.';
@@ -91,6 +97,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
             'video_destacado_url' => $datos['video_destacado_url'],
             'tags' => $etiquetas,
             'estado' => $datos['estado'],
+            'visible_en_busqueda' => $datos['visible_en_busqueda'],
+            'visible_en_explorador' => $datos['visible_en_explorador'],
         ];
 
         $esPredeterminado = (bool) ($destinoSeleccionado['es_predeterminado'] ?? false);
@@ -286,6 +294,23 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <option value="oculto" <?= $datos['estado'] === 'oculto' ? 'selected' : ''; ?>>Oculto</option>
                                 <option value="borrador" <?= $datos['estado'] === 'borrador' ? 'selected' : ''; ?>>Borrador</option>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field admin-field--checkbox">
+                            <label>
+                                <input type="checkbox" name="visible_en_busqueda" value="1" <?= $datos['visible_en_busqueda'] ? 'checked' : ''; ?> />
+                                <span>Mostrar en el buscador de la página principal</span>
+                            </label>
+                            <p class="admin-help">Desmarca esta opción si todavía no quieres sugerir el destino en el buscador inteligente.</p>
+                        </div>
+                        <div class="admin-field admin-field--checkbox">
+                            <label>
+                                <input type="checkbox" name="visible_en_explorador" value="1" <?= $datos['visible_en_explorador'] ? 'checked' : ''; ?> />
+                                <span>Mostrar en el explorador de experiencias</span>
+                            </label>
+                            <p class="admin-help">Controla si el destino aparece como categoría disponible en la sección Explorar.</p>
                         </div>
                     </div>
                 </div>
