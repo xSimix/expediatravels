@@ -21,7 +21,9 @@ class RepositorioCircuitos
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
-                 LEFT JOIN destinos d ON d.id = c.destino_id
+                 INNER JOIN destinos d ON d.id = c.destino_id
+                     AND d.estado = "activo"
+                     AND d.mostrar_en_buscador = 1
                  WHERE c.estado = "activo"
                  ORDER BY c.creado_en DESC, c.id DESC
                  LIMIT :limit'
@@ -62,7 +64,9 @@ class RepositorioCircuitos
                         d.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
-                 LEFT JOIN destinos d ON d.id = c.destino_id
+                 INNER JOIN destinos d ON d.id = c.destino_id
+                     AND d.estado = "activo"
+                     AND d.mostrar_en_buscador = 1
                  WHERE c.estado = "activo"'
             );
 

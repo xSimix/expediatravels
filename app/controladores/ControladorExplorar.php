@@ -63,6 +63,10 @@ class ControladorExplorar
         }
 
         foreach ($destinations as $destination) {
+            if (!($destination['mostrar_en_explorador'] ?? true)) {
+                continue;
+            }
+
             $items[] = $this->normaliseDestination($destination);
         }
 

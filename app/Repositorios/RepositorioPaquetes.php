@@ -21,6 +21,8 @@ class RepositorioPaquetes
                         d.nombre AS destino, d.region
                  FROM paquetes p
                  INNER JOIN destinos d ON d.id = p.destino_id
+                     AND d.estado = "activo"
+                     AND d.mostrar_en_buscador = 1
                  WHERE p.estado = "publicado"
                  ORDER BY p.creado_en DESC
                  LIMIT :limit'
@@ -49,6 +51,8 @@ class RepositorioPaquetes
                         d.nombre AS destino, d.region
                  FROM paquetes p
                  INNER JOIN destinos d ON d.id = p.destino_id
+                     AND d.estado = "activo"
+                     AND d.mostrar_en_buscador = 1
                  WHERE p.estado = "publicado"
                  ORDER BY p.precio DESC
                  LIMIT 6'
