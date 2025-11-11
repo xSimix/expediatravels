@@ -410,17 +410,31 @@ VALUES
 -- Servicios disponibles para circuitos.
 INSERT INTO servicios_catalogo (nombre, icono, tipo, descripcion, activo)
 VALUES
-    ('Transporte turístico', '🚌', 'incluido', 'Traslado terrestre para todo el circuito.', 1),
-    ('Guía especializado', '🧭', 'incluido', 'Guías bilingües certificados.', 1),
-    ('Entradas a atractivos', '🎟️', 'incluido', 'Tickets de ingreso a sitios turísticos.', 1),
-    ('Alimentación durante el circuito', '🍽️', 'incluido', 'Almuerzo o snacks indicados en el itinerario.', 1),
-    ('Guía local', '🗺️', 'incluido', 'Acompañamiento de guías nativos de la zona.', 1),
-    ('Degustaciones programadas', '🥂', 'incluido', 'Catas o degustaciones señaladas en el itinerario.', 1),
-    ('Gastos personales', '💸', 'excluido', 'Compras o servicios fuera del programa.', 1),
-    ('Seguro de viaje', '🛡️', 'excluido', 'Coberturas personales adicionales.', 1),
-    ('Bebidas alcohólicas', '🍹', 'excluido', 'Consumo de bebidas alcohólicas.', 1),
-    ('Actividades opcionales', '🎯', 'excluido', 'Actividades no mencionadas en el itinerario.', 1),
-    ('Propinas', '🤝', 'excluido', 'Propinas a guías y conductores.', 1);
+    ('Transporte turístico', 'fa-solid fa-bus', 'incluido', 'Traslado terrestre para todo el circuito.', 1),
+    ('Guía especializado', 'fa-solid fa-person-hiking', 'incluido', 'Guías bilingües certificados.', 1),
+    ('Entradas a atractivos', 'fa-solid fa-ticket', 'incluido', 'Tickets de ingreso a sitios turísticos.', 1),
+    ('Alimentación durante el circuito', 'fa-solid fa-utensils', 'incluido', 'Almuerzos o snacks indicados en el itinerario.', 1),
+    ('Alojamiento en hotel', 'fa-solid fa-hotel', 'incluido', 'Hospedaje según categoría indicada.', 1),
+    ('Desayunos incluidos', 'fa-solid fa-mug-hot', 'incluido', 'Desayunos diarios durante el circuito.', 1),
+    ('Asistencia médica durante el viaje', 'fa-solid fa-briefcase-medical', 'incluido', 'Equipo de primeros auxilios y apoyo básico.', 1),
+    ('Seguro de viaje', 'fa-solid fa-shield', 'excluido', 'Coberturas personales adicionales.', 1),
+    ('Traslados aeropuerto–hotel–aeropuerto', 'fa-solid fa-plane-arrival', 'incluido', 'Traslados coordinados según itinerario.', 1),
+    ('Actividades guiadas', 'fa-solid fa-route', 'incluido', 'Actividades acompañadas por guías autorizados.', 1),
+    ('Equipos de seguridad o aventura', 'fa-solid fa-helmet-safety', 'incluido', 'Equipamiento requerido para actividades programadas.', 1),
+    ('Fotografías o video del recorrido', 'fa-solid fa-camera', 'incluido', 'Registro audiovisual básico del circuito.', 1),
+    ('Impuestos y tasas locales', 'fa-solid fa-file-invoice-dollar', 'incluido', 'Tributos aplicables incluidos en la tarifa.', 1),
+    ('Propinas', 'fa-solid fa-hand-holding-dollar', 'excluido', 'Propinas a guías y conductores.', 1),
+    ('Bebidas alcohólicas', 'fa-solid fa-wine-glass', 'excluido', 'Consumo de bebidas alcohólicas.', 1),
+    ('Gastos personales', 'fa-solid fa-wallet', 'excluido', 'Compras o servicios fuera del programa.', 1),
+    ('Souvenirs o compras', 'fa-solid fa-bag-shopping', 'excluido', 'Artículos personales y recuerdos.', 1),
+    ('Vuelos nacionales', 'fa-solid fa-plane', 'excluido', 'Vuelos internos no contemplados en el paquete.', 1),
+    ('Vuelos internacionales', 'fa-solid fa-earth-americas', 'excluido', 'Pasajes internacionales hacia/desde el destino.', 1),
+    ('Actividades opcionales fuera del itinerario', 'fa-solid fa-puzzle-piece', 'excluido', 'Actividades no mencionadas en el programa.', 1),
+    ('Servicios de lavandería', 'fa-solid fa-shirt', 'excluido', 'Lavandería o planchado en el alojamiento.', 1),
+    ('Consumo en minibar', 'fa-solid fa-wine-bottle', 'excluido', 'Consumo adicional en la habitación.', 1),
+    ('Almuerzos o cenas no especificadas', 'fa-solid fa-burger', 'excluido', 'Comidas no detalladas en el itinerario.', 1),
+    ('Acceso VIP o preferencial', 'fa-solid fa-crown', 'excluido', 'Servicios con prioridad o acceso especial.', 1),
+    ('Transporte marítimo o fluvial', 'fa-solid fa-ship', 'incluido', 'Traslados por vía marítima o fluvial programados.', 1);
 
 -- Relaciones de servicios por circuito de ejemplo.
 INSERT INTO circuito_servicios (circuito_id, servicio_id, tipo)

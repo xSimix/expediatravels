@@ -1,3 +1,5 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css');
+
 .admin-wrapper {
     max-width: 100%;
     margin: 0 auto;
@@ -1421,6 +1423,10 @@ body.media-modal-open {
     font-size: 1.6rem;
 }
 
+.content-service__icon i {
+    font-size: 1.6rem;
+}
+
 .content-service__grid {
     display: grid;
     gap: 1.25rem;
@@ -1436,6 +1442,49 @@ body.media-modal-open {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+}
+
+.icon-preview {
+    margin-top: 0.6rem;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 1rem;
+    background: rgba(14, 116, 144, 0.12);
+    color: #0f172a;
+    display: grid;
+    place-items: center;
+    font-size: 1.8rem;
+}
+
+.icon-preview i {
+    font-size: 1.8rem;
+}
+
+.icon-picker-search {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.icon-picker-search__input {
+    flex: 1 1 220px;
+    min-width: 180px;
+    border-radius: 999px;
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    padding: 0.65rem 1rem;
+    font-size: 0.95rem;
+}
+
+.icon-picker-search__input:focus {
+    outline: 3px solid rgba(56, 189, 248, 0.3);
+    border-color: rgba(56, 189, 248, 0.6);
+}
+
+.icon-picker-search__button {
+    flex: 0 0 auto;
+    white-space: nowrap;
 }
 
 .content-service__actions {

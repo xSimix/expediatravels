@@ -268,7 +268,13 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
                             ?>
                                 <li class="detail-essential__item">
                                     <?php if ($itemIcon !== ''): ?>
-                                        <span class="detail-essential__icon" aria-hidden="true"><?= htmlspecialchars($itemIcon); ?></span>
+                                        <span class="detail-essential__icon" aria-hidden="true">
+                                            <?php if (str_contains($itemIcon, 'fa-')): ?>
+                                                <i class="<?= htmlspecialchars($itemIcon, ENT_QUOTES); ?>" aria-hidden="true"></i>
+                                            <?php else: ?>
+                                                <?= htmlspecialchars($itemIcon); ?>
+                                            <?php endif; ?>
+                                        </span>
                                     <?php endif; ?>
                                     <span class="detail-essential__text">
                                         <?= htmlspecialchars($itemText); ?>
