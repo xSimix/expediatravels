@@ -17,14 +17,25 @@ class RepositorioCircuitos
             $statement = $pdo->prepare(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         c.galeria,
-                        COALESCE(c.destino_personalizado, d.nombre) AS destino,
-                        d.region,
+                        COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
+                        destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
-                 INNER JOIN destinos d ON d.id = c.destino_id
-                     AND d.estado = "activo"
-                     AND d.mostrar_en_buscador = 1
+                 INNER JOIN (
+                     SELECT cd.circuito_id,
+                            MIN(d.nombre) AS nombre,
+                            MIN(d.region) AS region
+                     FROM circuito_destinos cd
+                     INNER JOIN destinos d ON d.id = cd.destino_id
+                         AND d.estado = "activo"
+                         AND d.mostrar_en_buscador = 1
+                     GROUP BY cd.circuito_id
+                 ) AS destino_destacado ON destino_destacado.circuito_id = c.id
                  WHERE c.estado = "activo"
+                   AND c.estado_publicacion = "publicado"
+                   AND c.visibilidad = "publico"
+                   AND (c.vigencia_desde IS NULL OR c.vigencia_desde <= NOW())
+                   AND (c.vigencia_hasta IS NULL OR c.vigencia_hasta >= NOW())
                  ORDER BY c.creado_en DESC, c.id DESC
                  LIMIT :limit'
             );
@@ -60,14 +71,25 @@ class RepositorioCircuitos
             $statement = $pdo->query(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
                         c.galeria,
-                        COALESCE(c.destino_personalizado, d.nombre) AS destino,
-                        d.region,
+                        COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
+                        destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
                  FROM circuitos c
-                 INNER JOIN destinos d ON d.id = c.destino_id
-                     AND d.estado = "activo"
-                     AND d.mostrar_en_buscador = 1
-                 WHERE c.estado = "activo"'
+                 INNER JOIN (
+                     SELECT cd.circuito_id,
+                            MIN(d.nombre) AS nombre,
+                            MIN(d.region) AS region
+                     FROM circuito_destinos cd
+                     INNER JOIN destinos d ON d.id = cd.destino_id
+                         AND d.estado = "activo"
+                         AND d.mostrar_en_buscador = 1
+                     GROUP BY cd.circuito_id
+                 ) AS destino_destacado ON destino_destacado.circuito_id = c.id
+                 WHERE c.estado = "activo"
+                   AND c.estado_publicacion = "publicado"
+                   AND c.visibilidad = "publico"
+                   AND (c.vigencia_desde IS NULL OR c.vigencia_desde <= NOW())
+                   AND (c.vigencia_hasta IS NULL OR c.vigencia_hasta >= NOW())'
             );
 
             if ($statement !== false) {

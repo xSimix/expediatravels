@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
+use DateTimeImmutable;
+use Exception;
+
 require_once __DIR__ . '/includes/circuitos_util.php';
 
 $errores = [];
@@ -34,6 +37,16 @@ $estadosPermitidos = [
     'inactivo' => 'Inactivo',
 ];
 
+$estadosPublicacionPermitidos = [
+    'borrador' => 'Borrador',
+    'publicado' => 'Publicado',
+];
+
+$visibilidadesPermitidas = [
+    'publico' => 'Público',
+    'privado' => 'Privado',
+];
+
 $circuitoId = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $circuitoId = isset($_POST['circuito_id']) ? (int) $_POST['circuito_id'] : $circuitoId;
@@ -48,11 +61,18 @@ if ($circuitoSeleccionado === null) {
         'id' => $circuitoId,
         'nombre' => '',
         'destino' => ['id' => null, 'nombre' => '', 'personalizado' => '', 'region' => ''],
+        'destinos' => [],
         'duracion' => '',
         'categoria' => 'naturaleza',
         'dificultad' => 'relajado',
         'frecuencia' => '',
         'estado' => 'borrador',
+        'estado_publicacion' => 'borrador',
+        'visibilidad' => 'publico',
+        'vigencia_desde_form' => '',
+        'vigencia_hasta_form' => '',
+        'vigencia_desde' => null,
+        'vigencia_hasta' => null,
         'descripcion' => '',
         'itinerario' => [],
         'servicios_incluidos_ids' => [],
@@ -67,7 +87,7 @@ if ($circuitoSeleccionado === null) {
 
 $datos = [
     'nombre' => $circuitoSeleccionado['nombre'] ?? '',
-    'destino_id' => $circuitoSeleccionado['destino']['id'] ?? 0,
+    'destinos' => $circuitoSeleccionado['destinos'] ?? (isset($circuitoSeleccionado['destino']['id']) && $circuitoSeleccionado['destino']['id'] ? [(int) $circuitoSeleccionado['destino']['id']] : []),
     'destino_personalizado' => $circuitoSeleccionado['destino']['personalizado'] ?? '',
     'duracion' => $circuitoSeleccionado['duracion'] ?? '',
     'precio' => $circuitoSeleccionado['precio'] !== null ? number_format((float) $circuitoSeleccionado['precio'], 2, '.', '') : '',
@@ -75,6 +95,12 @@ $datos = [
     'dificultad' => $circuitoSeleccionado['dificultad'] ?? 'relajado',
     'frecuencia' => $circuitoSeleccionado['frecuencia'] ?? '',
     'estado' => $circuitoSeleccionado['estado'] ?? 'borrador',
+    'estado_publicacion' => $circuitoSeleccionado['estado_publicacion'] ?? 'borrador',
+    'visibilidad' => $circuitoSeleccionado['visibilidad'] ?? 'publico',
+    'vigencia_desde_form' => $circuitoSeleccionado['vigencia_desde_form'] ?? '',
+    'vigencia_hasta_form' => $circuitoSeleccionado['vigencia_hasta_form'] ?? '',
+    'vigencia_desde' => $circuitoSeleccionado['vigencia_desde'] ?? null,
+    'vigencia_hasta' => $circuitoSeleccionado['vigencia_hasta'] ?? null,
     'descripcion' => $circuitoSeleccionado['descripcion'] ?? '',
     'itinerario' => $circuitoSeleccionado['itinerario'] ?? [],
     'servicios_incluidos_ids' => $circuitoSeleccionado['servicios_incluidos_ids'] ?? [],
@@ -87,7 +113,7 @@ $datos = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['nombre'] = trim((string) ($_POST['nombre'] ?? $datos['nombre']));
-    $datos['destino_id'] = isset($_POST['destino_id']) ? (int) $_POST['destino_id'] : $datos['destino_id'];
+    $datos['destinos'] = isset($_POST['destinos']) ? array_values(array_map('intval', (array) $_POST['destinos'])) : $datos['destinos'];
     $datos['destino_personalizado'] = trim((string) ($_POST['destino_personalizado'] ?? $datos['destino_personalizado']));
     $datos['duracion'] = trim((string) ($_POST['duracion'] ?? $datos['duracion']));
     $datos['precio'] = trim((string) ($_POST['precio'] ?? $datos['precio']));
@@ -95,6 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['dificultad'] = strtolower(trim((string) ($_POST['dificultad'] ?? $datos['dificultad'])));
     $datos['frecuencia'] = trim((string) ($_POST['frecuencia'] ?? $datos['frecuencia']));
     $datos['estado'] = strtolower(trim((string) ($_POST['estado'] ?? $datos['estado'])));
+    $datos['estado_publicacion'] = strtolower(trim((string) ($_POST['estado_publicacion'] ?? $datos['estado_publicacion'])));
+    $datos['visibilidad'] = strtolower(trim((string) ($_POST['visibilidad'] ?? $datos['visibilidad'])));
+    $datos['vigencia_desde_form'] = trim((string) ($_POST['vigencia_desde'] ?? $datos['vigencia_desde_form']));
+    $datos['vigencia_hasta_form'] = trim((string) ($_POST['vigencia_hasta'] ?? $datos['vigencia_hasta_form']));
+    $datos['vigencia_desde'] = circuitosNormalizarFecha($datos['vigencia_desde_form']);
+    $datos['vigencia_hasta'] = circuitosNormalizarFecha($datos['vigencia_hasta_form']);
     $datos['descripcion'] = trim((string) ($_POST['descripcion'] ?? $datos['descripcion']));
     $datos['imagen_portada'] = trim((string) ($_POST['imagen_portada'] ?? $datos['imagen_portada']));
     $datos['imagen_destacada'] = trim((string) ($_POST['imagen_destacada'] ?? $datos['imagen_destacada']));
@@ -108,8 +140,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
         $errores[] = 'El nombre del circuito es obligatorio.';
     }
 
-    if ($datos['destino_id'] <= 0) {
-        $errores[] = 'Selecciona el destino base del circuito.';
+    if (empty($datos['destinos'])) {
+        $errores[] = 'Selecciona al menos un destino asociado para el circuito.';
     }
 
     if ($datos['duracion'] === '') {
@@ -128,19 +160,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
         $errores[] = 'El estado indicado no es válido.';
     }
 
+    if (!array_key_exists($datos['estado_publicacion'], $estadosPublicacionPermitidos)) {
+        $errores[] = 'Selecciona un estado de publicación válido.';
+    }
+
+    if (!array_key_exists($datos['visibilidad'], $visibilidadesPermitidas)) {
+        $errores[] = 'Selecciona una visibilidad válida.';
+    }
+
     $precio = circuitosParsearPrecio($datos['precio'], $errores);
 
     $destinoNombre = $datos['destino_personalizado'];
     $destinoRegion = '';
-    if ($datos['destino_id'] > 0) {
-        $destinoNombre = $destinosDisponibles[$datos['destino_id']]['nombre'] ?? $destinoNombre;
-        $destinoRegion = $destinosDisponibles[$datos['destino_id']]['region'] ?? '';
+    $destinoPrincipalId = $datos['destinos'][0] ?? 0;
+    if ($destinoPrincipalId > 0) {
+        $destinoNombre = $destinosDisponibles[$destinoPrincipalId]['nombre'] ?? $destinoNombre;
+        $destinoRegion = $destinosDisponibles[$destinoPrincipalId]['region'] ?? '';
+    }
+
+    if ($datos['vigencia_desde_form'] !== '' && $datos['vigencia_desde'] === null) {
+        $errores[] = 'La fecha de inicio de vigencia no es válida.';
+    }
+
+    if ($datos['vigencia_hasta_form'] !== '' && $datos['vigencia_hasta'] === null) {
+        $errores[] = 'La fecha de fin de vigencia no es válida.';
+    }
+
+    if ($datos['vigencia_desde'] !== null && $datos['vigencia_hasta'] !== null) {
+        try {
+            if (new DateTimeImmutable($datos['vigencia_hasta']) < new DateTimeImmutable($datos['vigencia_desde'])) {
+                $errores[] = 'La vigencia final debe ser posterior a la inicial.';
+            }
+        } catch (Exception $exception) {
+            $errores[] = 'No se pudo validar el rango de vigencia proporcionado.';
+        }
     }
 
     if (empty($errores)) {
         $circuitoActualizado = [
             'nombre' => $datos['nombre'],
-            'destino_id' => $datos['destino_id'],
+            'destinos' => $datos['destinos'],
             'destino_personalizado' => $datos['destino_personalizado'],
             'duracion' => $datos['duracion'],
             'precio' => $precio,
@@ -148,6 +207,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
             'dificultad' => $datos['dificultad'],
             'frecuencia' => $datos['frecuencia'],
             'estado' => $datos['estado'],
+            'estado_publicacion' => $datos['estado_publicacion'],
+            'visibilidad' => $datos['visibilidad'],
+            'vigencia_desde' => $datos['vigencia_desde'],
+            'vigencia_hasta' => $datos['vigencia_hasta'],
             'descripcion' => $datos['descripcion'],
             'imagen_portada' => $datos['imagen_portada'],
             'imagen_destacada' => $datos['imagen_destacada'],
@@ -229,14 +292,14 @@ require __DIR__ . '/plantilla/cabecera.php';
 
                     <div class="admin-grid two-columns">
                         <div class="admin-field">
-                            <label for="destino_id">Destino asociado *</label>
-                            <select id="destino_id" name="destino_id">
-                                <option value="0">Selecciona un destino del catálogo</option>
+                            <label for="destinos">Destinos asociados *</label>
+                            <select id="destinos" name="destinos[]" multiple size="6">
                                 <?php foreach ($destinosDisponibles as $destinoId => $destino): ?>
-                                    <option value="<?= (int) $destinoId; ?>" <?= $datos['destino_id'] === (int) $destinoId ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
+                                    <?php $seleccionado = in_array((int) $destinoId, $datos['destinos'], true); ?>
+                                    <option value="<?= (int) $destinoId; ?>" <?= $seleccionado ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="admin-help">Elige el departamento que agrupa este circuito en el catálogo público.</p>
+                            <p class="admin-help">Mantén presionadas Ctrl (Windows) o Cmd (Mac) para sumar o quitar destinos sin perder la selección actual.</p>
                         </div>
                         <div class="admin-field">
                             <label for="destino_personalizado">Nombre local (opcional)</label>
@@ -278,6 +341,40 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="estado_publicacion">Estado de publicación</label>
+                            <select id="estado_publicacion" name="estado_publicacion">
+                                <?php foreach ($estadosPublicacionPermitidos as $clave => $etiqueta): ?>
+                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado_publicacion'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="admin-help">Solo los circuitos publicados y dentro de vigencia se mostrarán al público.</p>
+                        </div>
+                        <div class="admin-field">
+                            <label for="visibilidad">Visibilidad</label>
+                            <select id="visibilidad" name="visibilidad">
+                                <?php foreach ($visibilidadesPermitidas as $clave => $etiqueta): ?>
+                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['visibilidad'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <p class="admin-help">Configura la visibilidad privada para circuitos exclusivos o en fase de revisión.</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="vigencia_desde">Vigencia desde</label>
+                            <input type="datetime-local" id="vigencia_desde" name="vigencia_desde" value="<?= htmlspecialchars($datos['vigencia_desde_form'], ENT_QUOTES, 'UTF-8'); ?>" />
+                            <p class="admin-help">Déjalo vacío para conservar la disponibilidad inmediata.</p>
+                        </div>
+                        <div class="admin-field">
+                            <label for="vigencia_hasta">Vigencia hasta</label>
+                            <input type="datetime-local" id="vigencia_hasta" name="vigencia_hasta" value="<?= htmlspecialchars($datos['vigencia_hasta_form'], ENT_QUOTES, 'UTF-8'); ?>" />
+                            <p class="admin-help">Define una fecha límite para ofertas especiales o campañas concretas.</p>
                         </div>
                     </div>
 

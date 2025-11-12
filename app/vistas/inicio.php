@@ -464,21 +464,34 @@
                     }
 
                     $stats = $destinationStatsPresets[$index % count($destinationStatsPresets)] ?? [
-                        'tours' => $index + 1,
                         'departures' => 20 + ($index * 2),
                         'guests' => 9_200 + ($index * 480),
                     ];
 
-                    $toursCount = max(1, (int) ($packagesByDestination[$destinationName] ?? $stats['tours']));
-                    $formattedTours = str_pad((string) $toursCount, 2, '0', STR_PAD_LEFT);
-                    $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
-                    $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
+                    $circuitCount = (int) ($destination['circuit_count'] ?? 0);
+                    $packageCount = (int) ($destination['package_count'] ?? 0);
+                    $metaSegments = [];
+                    if ($circuitCount > 0) {
+                        $metaSegments[] = $circuitCount === 1
+                            ? '1 circuito publicado'
+                            : sprintf('%d circuitos publicados', $circuitCount);
+                    }
+                    if ($packageCount > 0) {
+                        $metaSegments[] = $packageCount === 1
+                            ? '1 paquete activo'
+                            : sprintf('%d paquetes activos', $packageCount);
+                    }
+                    if (empty($metaSegments)) {
+                        $metaSegments[] = sprintf('%s salidas programadas', str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT));
+                    }
+                    $metaSegments[] = sprintf('%s viajeros felices', number_format((int) ($stats['guests'] ?? 0)));
+                    $metaText = implode(' · ', $metaSegments);
 
                     $destinationSlug = $destination['slug'] ?? $slugify($destinationName);
 
                     $destinationsByRegion[$region][] = [
                         'title' => $destinationName,
-                        'meta' => sprintf('%s tours | %s salidas · %s viajeros.', $formattedTours, $formattedDepartures, $formattedGuests),
+                        'meta' => $metaText,
                         'img' => $imagePath,
                         'slug' => $destinationSlug,
                         'href' => 'destino.php?slug=' . urlencode($destinationSlug),
@@ -517,6 +530,9 @@
                         <?php foreach ($destinationsPayload[$activeRegion] as $item): ?>
                             <?php
                                 $cardImage = isset($item['img']) ? ($resolveMediaPath)($item['img']) : null;
+                                if ($cardImage === null) {
+                                    $cardImage = ($resolveMediaPath)('recursos/placeholder-destino.svg');
+                                }
                                 $cardHref = $item['href'] ?? null;
                             ?>
                             <article class="card" role="article">
