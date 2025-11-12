@@ -16,11 +16,26 @@ class RepositorioDestinos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT id, nombre, descripcion, region, imagen, imagen_destacada, tagline, mostrar_en_buscador, mostrar_en_explorador
-                 FROM destinos
-                 WHERE estado = "activo"
-                   AND mostrar_en_explorador = 1
-                 ORDER BY id
+                'SELECT d.id,
+                        d.nombre,
+                        d.descripcion,
+                        d.region,
+                        d.imagen,
+                        d.imagen_destacada,
+                        d.tagline,
+                        d.mostrar_en_buscador,
+                        d.mostrar_en_explorador,
+                        COUNT(DISTINCT CASE WHEN p.estado = "publicado" THEN p.id END) AS total_paquetes,
+                        COUNT(DISTINCT CASE WHEN c.estado = "activo" THEN c.id END) AS total_circuitos
+                 FROM destinos d
+                 LEFT JOIN paquetes p ON p.destino_id = d.id
+                 LEFT JOIN circuitos c ON c.destino_id = d.id
+                 WHERE d.estado = "activo"
+                   AND d.mostrar_en_explorador = 1
+                 GROUP BY d.id, d.nombre, d.descripcion, d.region, d.imagen, d.imagen_destacada, d.tagline,
+                          d.mostrar_en_buscador, d.mostrar_en_explorador
+                 HAVING total_paquetes > 0 OR total_circuitos > 0
+                 ORDER BY d.id
                  LIMIT :limit'
             );
             $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -70,6 +85,8 @@ class RepositorioDestinos
             'slug' => $destination['slug'] ?? $this->generateSlug($name),
             'mostrar_en_buscador' => $this->normalizeVisibility($destination['mostrar_en_buscador'] ?? $destination['mostrarEnBuscador'] ?? true),
             'mostrar_en_explorador' => $this->normalizeVisibility($destination['mostrar_en_explorador'] ?? $destination['mostrarEnExplorador'] ?? true),
+            'total_paquetes' => max(0, (int) ($destination['total_paquetes'] ?? $destination['totalPaquetes'] ?? 0)),
+            'total_circuitos' => max(0, (int) ($destination['total_circuitos'] ?? $destination['totalCircuitos'] ?? 0)),
         ];
     }
 
@@ -93,7 +110,7 @@ class RepositorioDestinos
 
     private function fallbackDestinations(): array
     {
-        return [
+        $destinations = [
             [
                 'id' => 1,
                 'slug' => 'oxapampa',
@@ -475,6 +492,16 @@ class RepositorioDestinos
                 ],
             ],
         ];
+
+        return array_map(
+            static function (array $destination): array {
+                $destination['total_paquetes'] = (int) ($destination['total_paquetes'] ?? 1);
+                $destination['total_circuitos'] = (int) ($destination['total_circuitos'] ?? 1);
+
+                return $destination;
+            },
+            $destinations
+        );
     }
 
     private function generateSlug(string $value): string
