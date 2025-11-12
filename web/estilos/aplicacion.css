@@ -2846,6 +2846,27 @@ body.has-modal-open {
     margin: 4px 0 6px;
 }
 
+.destinations-showcase .data-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.destinations-showcase .data-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--dest-chip);
+    border: 1px solid var(--dest-chip-border);
+    color: var(--dest-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    text-transform: none;
+}
+
 .destinations-showcase .meta {
     color: var(--dest-muted);
     font-size: 13px;
