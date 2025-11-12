@@ -38,7 +38,6 @@ CREATE TABLE usuario_fotos_portada (
 CREATE TABLE destinos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(120) NOT NULL,
-    slug VARCHAR(150) NOT NULL,
     descripcion TEXT,
     tagline VARCHAR(180) DEFAULT NULL,
     lat DECIMAL(10, 7),
@@ -49,12 +48,11 @@ CREATE TABLE destinos (
     galeria JSON DEFAULT NULL,
     video_destacado_url VARCHAR(255) DEFAULT NULL,
     tags JSON DEFAULT NULL,
-    estado ENUM('activo', 'inactivo') NOT NULL DEFAULT 'activo',
+    estado ENUM('activo', 'oculto', 'borrador') NOT NULL DEFAULT 'activo',
     mostrar_en_buscador TINYINT(1) NOT NULL DEFAULT 1,
     mostrar_en_explorador TINYINT(1) NOT NULL DEFAULT 1,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY idx_destinos_slug (slug)
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE circuitos (
@@ -68,10 +66,6 @@ CREATE TABLE circuitos (
     dificultad ENUM('relajado', 'moderado', 'intenso') NOT NULL DEFAULT 'relajado',
     frecuencia VARCHAR(120) DEFAULT NULL,
     estado ENUM('borrador', 'activo', 'inactivo') NOT NULL DEFAULT 'borrador',
-    estado_publicacion ENUM('borrador', 'publicado') NOT NULL DEFAULT 'borrador',
-    vigencia_desde DATETIME DEFAULT NULL,
-    vigencia_hasta DATETIME DEFAULT NULL,
-    visibilidad ENUM('publico', 'privado') NOT NULL DEFAULT 'publico',
     descripcion TEXT,
     puntos_interes JSON DEFAULT NULL,
     servicios JSON DEFAULT NULL,
@@ -81,17 +75,7 @@ CREATE TABLE circuitos (
     video_destacado_url VARCHAR(255) DEFAULT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (destino_id) REFERENCES destinos(id) ON DELETE SET NULL,
-    INDEX idx_circuitos_publicacion (estado_publicacion, visibilidad, vigencia_desde, vigencia_hasta)
-);
-
-CREATE TABLE circuito_destinos (
-    circuito_id INT NOT NULL,
-    destino_id INT NOT NULL,
-    PRIMARY KEY (circuito_id, destino_id),
-    FOREIGN KEY (circuito_id) REFERENCES circuitos(id) ON DELETE CASCADE,
-    FOREIGN KEY (destino_id) REFERENCES destinos(id) ON DELETE CASCADE,
-    INDEX idx_circuito_destinos_destino (destino_id)
+    FOREIGN KEY (destino_id) REFERENCES destinos(id) ON DELETE SET NULL
 );
 
 
@@ -139,10 +123,6 @@ CREATE TABLE paquetes (
     precio DECIMAL(10, 2) DEFAULT NULL,
     moneda CHAR(3) NOT NULL DEFAULT 'PEN',
     estado ENUM('borrador', 'publicado', 'agotado', 'inactivo') DEFAULT 'borrador',
-    estado_publicacion ENUM('borrador', 'publicado') NOT NULL DEFAULT 'borrador',
-    vigencia_desde DATETIME DEFAULT NULL,
-    vigencia_hasta DATETIME DEFAULT NULL,
-    visibilidad ENUM('publico', 'privado') NOT NULL DEFAULT 'publico',
     imagen_portada VARCHAR(255) DEFAULT NULL,
     imagen_destacada VARCHAR(255) DEFAULT NULL,
     galeria JSON DEFAULT NULL,
@@ -155,8 +135,7 @@ CREATE TABLE paquetes (
     cupos_max INT DEFAULT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (destino_id) REFERENCES destinos(id),
-    INDEX idx_paquetes_publicacion (estado_publicacion, visibilidad, vigencia_desde, vigencia_hasta)
+    FOREIGN KEY (destino_id) REFERENCES destinos(id)
 );
 
 CREATE TABLE paquete_destinos (

@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Aplicacion\BaseDatos\Conexion;
-use DateTimeImmutable;
-use Exception;
 
 require_once __DIR__ . '/slug_util.php';
 
@@ -136,19 +134,6 @@ function paquetesNormalizarPaquete(array $paquete): array
         $estado = 'borrador';
     }
 
-    $estadoPublicacion = strtolower(trim((string) ($paquete['estado_publicacion'] ?? 'borrador')));
-    if (!in_array($estadoPublicacion, ['publicado', 'borrador'], true)) {
-        $estadoPublicacion = 'borrador';
-    }
-
-    $visibilidad = strtolower(trim((string) ($paquete['visibilidad'] ?? 'publico')));
-    if (!in_array($visibilidad, ['publico', 'privado'], true)) {
-        $visibilidad = 'publico';
-    }
-
-    $vigenciaDesde = $paquete['vigencia_desde'] ?? null;
-    $vigenciaHasta = $paquete['vigencia_hasta'] ?? null;
-
     $galeria = paquetesDecodificarLista($paquete['galeria'] ?? []);
     $beneficios = paquetesDecodificarLista($paquete['beneficios'] ?? []);
     $incluye = paquetesDecodificarLista($paquete['incluye'] ?? []);
@@ -164,12 +149,6 @@ function paquetesNormalizarPaquete(array $paquete): array
         'moneda' => strtoupper(trim((string) ($paquete['moneda'] ?? 'PEN'))),
         'descripcion_breve' => trim((string) ($paquete['resumen'] ?? $paquete['descripcion_breve'] ?? '')),
         'descripcion_detallada' => trim((string) ($paquete['itinerario'] ?? $paquete['descripcion_detallada'] ?? '')),
-        'estado_publicacion' => $estadoPublicacion,
-        'visibilidad' => $visibilidad,
-        'vigencia_desde' => $vigenciaDesde,
-        'vigencia_hasta' => $vigenciaHasta,
-        'vigencia_desde_form' => paquetesFormatearFechaParaFormulario($vigenciaDesde),
-        'vigencia_hasta_form' => paquetesFormatearFechaParaFormulario($vigenciaHasta),
         'beneficios' => $beneficios,
         'incluye' => $incluye,
         'no_incluye' => $noIncluye,
@@ -215,54 +194,8 @@ function paquetesCrearPaquete(array $paquete, array &$errores): ?int
         $pdo->beginTransaction();
 
         $statement = $pdo->prepare(
-            'INSERT INTO paquetes (
-                destino_id,
-                nombre,
-                resumen,
-                itinerario,
-                duracion,
-                precio,
-                moneda,
-                estado,
-                estado_publicacion,
-                vigencia_desde,
-                vigencia_hasta,
-                visibilidad,
-                imagen_portada,
-                imagen_destacada,
-                galeria,
-                video_destacado_url,
-                beneficios,
-                incluye,
-                no_incluye,
-                salidas,
-                cupos_min,
-                cupos_max
-            )
-             VALUES (
-                :destino_id,
-                :nombre,
-                :resumen,
-                :itinerario,
-                :duracion,
-                :precio,
-                :moneda,
-                :estado,
-                :estado_publicacion,
-                :vigencia_desde,
-                :vigencia_hasta,
-                :visibilidad,
-                :imagen_portada,
-                :imagen_destacada,
-                :galeria,
-                :video,
-                :beneficios,
-                :incluye,
-                :no_incluye,
-                :salidas,
-                :cupos_min,
-                :cupos_max
-            )'
+            'INSERT INTO paquetes (destino_id, nombre, resumen, itinerario, duracion, precio, moneda, estado, imagen_portada, imagen_destacada, galeria, video_destacado_url, beneficios, incluye, no_incluye, salidas, cupos_min, cupos_max)
+             VALUES (:destino_id, :nombre, :resumen, :itinerario, :duracion, :precio, :moneda, :estado, :imagen_portada, :imagen_destacada, :galeria, :video, :beneficios, :incluye, :no_incluye, :salidas, :cupos_min, :cupos_max)'
         );
         $destinoPrincipal = $paquete['destinos'][0] ?? null;
         $statement->execute([
@@ -274,10 +207,6 @@ function paquetesCrearPaquete(array $paquete, array &$errores): ?int
             ':precio' => $paquete['precio_desde'],
             ':moneda' => $paquete['moneda'],
             ':estado' => $paquete['estado'],
-            ':estado_publicacion' => $paquete['estado_publicacion'],
-            ':vigencia_desde' => $paquete['vigencia_desde'] ?? null,
-            ':vigencia_hasta' => $paquete['vigencia_hasta'] ?? null,
-            ':visibilidad' => $paquete['visibilidad'],
             ':imagen_portada' => $paquete['imagen_portada'] !== '' ? $paquete['imagen_portada'] : null,
             ':imagen_destacada' => $paquete['imagen_destacada'] !== '' ? $paquete['imagen_destacada'] : null,
             ':galeria' => paquetesPrepararJsonLista($paquete['galeria']),
@@ -323,10 +252,6 @@ function paquetesActualizarPaquete(int $paqueteId, array $paquete, array &$error
                  precio = :precio,
                  moneda = :moneda,
                  estado = :estado,
-                 estado_publicacion = :estado_publicacion,
-                 vigencia_desde = :vigencia_desde,
-                 vigencia_hasta = :vigencia_hasta,
-                 visibilidad = :visibilidad,
                  imagen_portada = :imagen_portada,
                  imagen_destacada = :imagen_destacada,
                  galeria = :galeria,
@@ -350,10 +275,6 @@ function paquetesActualizarPaquete(int $paqueteId, array $paquete, array &$error
             ':precio' => $paquete['precio_desde'],
             ':moneda' => $paquete['moneda'],
             ':estado' => $paquete['estado'],
-            ':estado_publicacion' => $paquete['estado_publicacion'],
-            ':vigencia_desde' => $paquete['vigencia_desde'] ?? null,
-            ':vigencia_hasta' => $paquete['vigencia_hasta'] ?? null,
-            ':visibilidad' => $paquete['visibilidad'],
             ':imagen_portada' => $paquete['imagen_portada'] !== '' ? $paquete['imagen_portada'] : null,
             ':imagen_destacada' => $paquete['imagen_destacada'] !== '' ? $paquete['imagen_destacada'] : null,
             ':galeria' => paquetesPrepararJsonLista($paquete['galeria']),
@@ -644,41 +565,9 @@ if (!function_exists('formatearMarcaTiempo')) {
 
         try {
             $fecha = new DateTimeImmutable($marca);
-
             return $fecha->format('d/m/Y H:i');
         } catch (Exception $exception) {
             return $marca;
         }
-    }
-}
-
-function paquetesNormalizarFecha(string $texto): ?string
-{
-    $texto = trim($texto);
-    if ($texto === '') {
-        return null;
-    }
-
-    try {
-        $fecha = new DateTimeImmutable($texto);
-
-        return $fecha->format('Y-m-d H:i:s');
-    } catch (Exception $exception) {
-        return null;
-    }
-}
-
-function paquetesFormatearFechaParaFormulario(?string $valor): string
-{
-    if ($valor === null || $valor === '') {
-        return '';
-    }
-
-    try {
-        $fecha = new DateTimeImmutable($valor);
-
-        return $fecha->format('Y-m-d\TH:i');
-    } catch (Exception $exception) {
-        return '';
     }
 }

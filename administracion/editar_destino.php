@@ -291,7 +291,8 @@ require __DIR__ . '/plantilla/cabecera.php';
                             <label for="estado">Estado</label>
                             <select id="estado" name="estado">
                                 <option value="activo" <?= $datos['estado'] === 'activo' ? 'selected' : ''; ?>>Activo</option>
-                                <option value="inactivo" <?= $datos['estado'] === 'inactivo' ? 'selected' : ''; ?>>Inactivo</option>
+                                <option value="oculto" <?= $datos['estado'] === 'oculto' ? 'selected' : ''; ?>>Oculto</option>
+                                <option value="borrador" <?= $datos['estado'] === 'borrador' ? 'selected' : ''; ?>>Borrador</option>
                             </select>
                         </div>
                     </div>
