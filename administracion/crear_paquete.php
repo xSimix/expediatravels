@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
+use DateTimeImmutable;
+use Exception;
+
 require_once __DIR__ . '/includes/paquetes_util.php';
 
 $errores = [];
@@ -22,6 +25,16 @@ $estadosPermitidos = [
     'inactivo' => 'Inactivo',
 ];
 
+$estadosPublicacionPermitidos = [
+    'borrador' => 'Borrador',
+    'publicado' => 'Publicado',
+];
+
+$visibilidadesPermitidas = [
+    'publico' => 'Público',
+    'privado' => 'Privado',
+];
+
 $monedasPermitidas = [
     'PEN' => 'S/',
     'USD' => '$',
@@ -30,6 +43,8 @@ $monedasPermitidas = [
 $datos = [
     'nombre' => '',
     'estado' => 'borrador',
+    'estado_publicacion' => 'borrador',
+    'visibilidad' => 'publico',
     'duracion' => '',
     'moneda' => 'PEN',
     'precio_desde' => '',
@@ -47,11 +62,17 @@ $datos = [
     'cupos_max' => '',
     'destinos' => [],
     'circuitos' => [],
+    'vigencia_desde_form' => '',
+    'vigencia_hasta_form' => '',
+    'vigencia_desde' => null,
+    'vigencia_hasta' => null,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['nombre'] = trim((string) ($_POST['nombre'] ?? ''));
     $datos['estado'] = strtolower(trim((string) ($_POST['estado'] ?? 'borrador')));
+    $datos['estado_publicacion'] = strtolower(trim((string) ($_POST['estado_publicacion'] ?? 'borrador')));
+    $datos['visibilidad'] = strtolower(trim((string) ($_POST['visibilidad'] ?? 'publico')));
     $datos['duracion'] = trim((string) ($_POST['duracion'] ?? ''));
     $datos['moneda'] = strtoupper(trim((string) ($_POST['moneda'] ?? 'PEN')));
     $datos['precio_desde'] = trim((string) ($_POST['precio_desde'] ?? ''));
@@ -69,6 +90,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['cupos_max'] = trim((string) ($_POST['cupos_max'] ?? ''));
     $datos['destinos'] = isset($_POST['destinos']) ? array_map('intval', (array) $_POST['destinos']) : [];
     $datos['circuitos'] = isset($_POST['circuitos']) ? array_map('intval', (array) $_POST['circuitos']) : [];
+    $datos['vigencia_desde_form'] = trim((string) ($_POST['vigencia_desde'] ?? ''));
+    $datos['vigencia_hasta_form'] = trim((string) ($_POST['vigencia_hasta'] ?? ''));
+    $datos['vigencia_desde'] = paquetesNormalizarFecha($datos['vigencia_desde_form']);
+    $datos['vigencia_hasta'] = paquetesNormalizarFecha($datos['vigencia_hasta_form']);
 
     if ($datos['nombre'] === '') {
         $errores[] = 'Debes indicar el nombre del paquete.';
@@ -84,6 +109,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($datos['duracion'] === '') {
         $errores[] = 'La duración del paquete es obligatoria.';
+    }
+
+    if (!array_key_exists($datos['estado_publicacion'], $estadosPublicacionPermitidos)) {
+        $errores[] = 'Debes definir si el paquete se publica o permanece en borrador.';
+    }
+
+    if (!array_key_exists($datos['visibilidad'], $visibilidadesPermitidas)) {
+        $errores[] = 'Selecciona una visibilidad válida para el paquete.';
     }
 
     if (empty($datos['destinos'])) {
@@ -108,6 +141,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($cuposMin !== null && $cuposMax !== null && $cuposMin > $cuposMax) {
         $errores[] = 'El cupo máximo debe ser mayor o igual al mínimo.';
+    }
+
+    if ($datos['vigencia_desde_form'] !== '' && $datos['vigencia_desde'] === null) {
+        $errores[] = 'La fecha de inicio de vigencia no tiene un formato válido.';
+    }
+
+    if ($datos['vigencia_hasta_form'] !== '' && $datos['vigencia_hasta'] === null) {
+        $errores[] = 'La fecha de fin de vigencia no tiene un formato válido.';
+    }
+
+    if ($datos['vigencia_desde'] !== null && $datos['vigencia_hasta'] !== null) {
+        try {
+            if (new DateTimeImmutable($datos['vigencia_hasta']) < new DateTimeImmutable($datos['vigencia_desde'])) {
+                $errores[] = 'La fecha final de vigencia debe ser posterior a la inicial.';
+            }
+        } catch (Exception $exception) {
+            $errores[] = 'No se pudo validar el rango de vigencia proporcionado.';
+        }
     }
 
     $beneficios = convertirListado($datos['beneficios']);
@@ -136,6 +187,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'cupos_max' => $cuposMax,
             'destinos' => $datos['destinos'],
             'circuitos' => $datos['circuitos'],
+            'estado_publicacion' => $datos['estado_publicacion'],
+            'visibilidad' => $datos['visibilidad'],
+            'vigencia_desde' => $datos['vigencia_desde'],
+            'vigencia_hasta' => $datos['vigencia_hasta'],
         ];
 
         $nuevoId = paquetesCrearPaquete($paquete, $errores);
@@ -199,6 +254,25 @@ require __DIR__ . '/plantilla/cabecera.php';
                         </div>
                     </div>
 
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="estado_publicacion">Estado de publicación</label>
+                            <select id="estado_publicacion" name="estado_publicacion">
+                                <?php foreach ($estadosPublicacionPermitidos as $clave => $etiqueta): ?>
+                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado_publicacion'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="admin-field">
+                            <label for="visibilidad">Visibilidad</label>
+                            <select id="visibilidad" name="visibilidad">
+                                <?php foreach ($visibilidadesPermitidas as $clave => $etiqueta): ?>
+                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['visibilidad'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="admin-grid three-columns">
                         <div class="admin-field">
                             <label for="duracion">Duración *</label>
@@ -215,6 +289,19 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <div class="admin-field">
                             <label for="precio_desde">Precio desde</label>
                             <input type="text" id="precio_desde" name="precio_desde" value="<?= htmlspecialchars($datos['precio_desde'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="599.00" />
+                        </div>
+                    </div>
+
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="vigencia_desde">Inicio de vigencia</label>
+                            <input type="datetime-local" id="vigencia_desde" name="vigencia_desde" value="<?= htmlspecialchars($datos['vigencia_desde_form'], ENT_QUOTES, 'UTF-8'); ?>" />
+                            <p class="admin-help">Opcional. Define desde cuándo se muestra automáticamente.</p>
+                        </div>
+                        <div class="admin-field">
+                            <label for="vigencia_hasta">Fin de vigencia</label>
+                            <input type="datetime-local" id="vigencia_hasta" name="vigencia_hasta" value="<?= htmlspecialchars($datos['vigencia_hasta_form'], ENT_QUOTES, 'UTF-8'); ?>" />
+                            <p class="admin-help">Opcional. El paquete dejará de mostrarse después de esta fecha.</p>
                         </div>
                     </div>
 

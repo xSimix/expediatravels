@@ -16,11 +16,37 @@ class RepositorioDestinos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT id, nombre, descripcion, region, imagen, imagen_destacada, tagline, mostrar_en_buscador, mostrar_en_explorador
-                 FROM destinos
-                 WHERE estado = "activo"
-                   AND mostrar_en_explorador = 1
-                 ORDER BY id
+                'SELECT d.id, d.nombre, d.descripcion, d.region, d.imagen, d.imagen_destacada, d.tagline,
+                        d.mostrar_en_buscador, d.mostrar_en_explorador, d.slug,
+                        COALESCE(circuitos_publicados.total, 0) AS circuitos_publicados,
+                        COALESCE(paquetes_publicados.total, 0) AS paquetes_publicados
+                 FROM destinos d
+                 LEFT JOIN (
+                     SELECT cd.destino_id, COUNT(DISTINCT cd.circuito_id) AS total
+                     FROM circuito_destinos cd
+                     INNER JOIN circuitos c ON c.id = cd.circuito_id
+                         AND c.estado = "activo"
+                         AND c.estado_publicacion = "publicado"
+                         AND c.visibilidad = "publico"
+                         AND (c.vigencia_desde IS NULL OR c.vigencia_desde <= NOW())
+                         AND (c.vigencia_hasta IS NULL OR c.vigencia_hasta >= NOW())
+                     GROUP BY cd.destino_id
+                 ) AS circuitos_publicados ON circuitos_publicados.destino_id = d.id
+                 LEFT JOIN (
+                     SELECT pd.destino_id, COUNT(DISTINCT pd.paquete_id) AS total
+                     FROM paquete_destinos pd
+                     INNER JOIN paquetes p ON p.id = pd.paquete_id
+                         AND p.estado = "publicado"
+                         AND p.estado_publicacion = "publicado"
+                         AND p.visibilidad = "publico"
+                         AND (p.vigencia_desde IS NULL OR p.vigencia_desde <= NOW())
+                         AND (p.vigencia_hasta IS NULL OR p.vigencia_hasta >= NOW())
+                     GROUP BY pd.destino_id
+                 ) AS paquetes_publicados ON paquetes_publicados.destino_id = d.id
+                 WHERE d.estado = "activo"
+                   AND d.mostrar_en_explorador = 1
+                   AND (COALESCE(circuitos_publicados.total, 0) + COALESCE(paquetes_publicados.total, 0)) > 0
+                 ORDER BY d.nombre
                  LIMIT :limit'
             );
             $statement->bindValue(':limit', $limit, PDO::PARAM_INT);
@@ -58,6 +84,10 @@ class RepositorioDestinos
     private function hydrateDestination(array $destination): array
     {
         $name = (string) ($destination['nombre'] ?? '');
+        $slug = trim((string) ($destination['slug'] ?? ''));
+        if ($slug === '') {
+            $slug = $this->generateSlug($name);
+        }
 
         return [
             'id' => (int) ($destination['id'] ?? 0),
@@ -67,9 +97,11 @@ class RepositorioDestinos
             'imagen' => $destination['imagen'] ?? null,
             'imagen_destacada' => $destination['imagen_destacada'] ?? null,
             'tagline' => $destination['tagline'] ?? null,
-            'slug' => $destination['slug'] ?? $this->generateSlug($name),
+            'slug' => $slug,
             'mostrar_en_buscador' => $this->normalizeVisibility($destination['mostrar_en_buscador'] ?? $destination['mostrarEnBuscador'] ?? true),
             'mostrar_en_explorador' => $this->normalizeVisibility($destination['mostrar_en_explorador'] ?? $destination['mostrarEnExplorador'] ?? true),
+            'circuit_count' => (int) ($destination['circuitos_publicados'] ?? 0),
+            'package_count' => (int) ($destination['paquetes_publicados'] ?? 0),
         ];
     }
 
