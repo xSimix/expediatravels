@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Aplicacion\BaseDatos\Conexion;
-use DateTimeImmutable;
-use Exception;
 
 require_once __DIR__ . '/slug_util.php';
 
