@@ -18,12 +18,23 @@ class RepositorioPaquetes
             $statement = $pdo->prepare(
                 'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, p.moneda, p.itinerario,
                         COALESCE(p.imagen_destacada, p.imagen_portada) AS imagen,
-                        d.nombre AS destino, d.region
+                        destino_destacado.nombre AS destino, destino_destacado.region
                  FROM paquetes p
-                 INNER JOIN destinos d ON d.id = p.destino_id
-                     AND d.estado = "activo"
-                     AND d.mostrar_en_buscador = 1
+                 INNER JOIN (
+                     SELECT pd.paquete_id,
+                            MIN(d.nombre) AS nombre,
+                            MIN(d.region) AS region
+                     FROM paquete_destinos pd
+                     INNER JOIN destinos d ON d.id = pd.destino_id
+                         AND d.estado = "activo"
+                         AND d.mostrar_en_buscador = 1
+                     GROUP BY pd.paquete_id
+                 ) AS destino_destacado ON destino_destacado.paquete_id = p.id
                  WHERE p.estado = "publicado"
+                   AND p.estado_publicacion = "publicado"
+                   AND p.visibilidad = "publico"
+                   AND (p.vigencia_desde IS NULL OR p.vigencia_desde <= NOW())
+                   AND (p.vigencia_hasta IS NULL OR p.vigencia_hasta >= NOW())
                  ORDER BY p.creado_en DESC
                  LIMIT :limit'
             );
@@ -48,12 +59,23 @@ class RepositorioPaquetes
             $statement = $pdo->query(
                 'SELECT p.id, p.nombre, p.resumen, p.duracion, p.precio, p.moneda,
                         COALESCE(p.imagen_destacada, p.imagen_portada) AS imagen,
-                        d.nombre AS destino, d.region
+                        destino_destacado.nombre AS destino, destino_destacado.region
                  FROM paquetes p
-                 INNER JOIN destinos d ON d.id = p.destino_id
-                     AND d.estado = "activo"
-                     AND d.mostrar_en_buscador = 1
+                 INNER JOIN (
+                     SELECT pd.paquete_id,
+                            MIN(d.nombre) AS nombre,
+                            MIN(d.region) AS region
+                     FROM paquete_destinos pd
+                     INNER JOIN destinos d ON d.id = pd.destino_id
+                         AND d.estado = "activo"
+                         AND d.mostrar_en_buscador = 1
+                     GROUP BY pd.paquete_id
+                 ) AS destino_destacado ON destino_destacado.paquete_id = p.id
                  WHERE p.estado = "publicado"
+                   AND p.estado_publicacion = "publicado"
+                   AND p.visibilidad = "publico"
+                   AND (p.vigencia_desde IS NULL OR p.vigencia_desde <= NOW())
+                   AND (p.vigencia_hasta IS NULL OR p.vigencia_hasta >= NOW())
                  ORDER BY p.precio DESC
                  LIMIT 6'
             );
