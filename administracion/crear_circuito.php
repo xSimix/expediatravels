@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use DateTimeImmutable;
-use Exception;
-
 require_once __DIR__ . '/includes/circuitos_util.php';
 
 $errores = [];
@@ -37,19 +34,9 @@ $estadosPermitidos = [
     'inactivo' => 'Inactivo',
 ];
 
-$estadosPublicacionPermitidos = [
-    'borrador' => 'Borrador',
-    'publicado' => 'Publicado',
-];
-
-$visibilidadesPermitidas = [
-    'publico' => 'Público',
-    'privado' => 'Privado',
-];
-
 $datos = [
     'nombre' => '',
-    'destinos' => [],
+    'destino_id' => 0,
     'destino_personalizado' => '',
     'duracion' => '',
     'precio' => '',
@@ -57,12 +44,6 @@ $datos = [
     'dificultad' => 'relajado',
     'frecuencia' => '',
     'estado' => 'borrador',
-    'estado_publicacion' => 'borrador',
-    'visibilidad' => 'publico',
-    'vigencia_desde_form' => '',
-    'vigencia_hasta_form' => '',
-    'vigencia_desde' => null,
-    'vigencia_hasta' => null,
     'descripcion' => '',
     'itinerario' => [],
     'servicios_incluidos_ids' => [],
@@ -75,7 +56,7 @@ $datos = [
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['nombre'] = trim((string) ($_POST['nombre'] ?? ''));
-    $datos['destinos'] = isset($_POST['destinos']) ? array_values(array_map('intval', (array) $_POST['destinos'])) : [];
+    $datos['destino_id'] = isset($_POST['destino_id']) ? (int) $_POST['destino_id'] : 0;
     $datos['destino_personalizado'] = trim((string) ($_POST['destino_personalizado'] ?? ''));
     $datos['duracion'] = trim((string) ($_POST['duracion'] ?? ''));
     $datos['precio'] = trim((string) ($_POST['precio'] ?? ''));
@@ -83,12 +64,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $datos['dificultad'] = strtolower(trim((string) ($_POST['dificultad'] ?? 'relajado')));
     $datos['frecuencia'] = trim((string) ($_POST['frecuencia'] ?? ''));
     $datos['estado'] = strtolower(trim((string) ($_POST['estado'] ?? 'borrador')));
-    $datos['estado_publicacion'] = strtolower(trim((string) ($_POST['estado_publicacion'] ?? 'borrador')));
-    $datos['visibilidad'] = strtolower(trim((string) ($_POST['visibilidad'] ?? 'publico')));
-    $datos['vigencia_desde_form'] = trim((string) ($_POST['vigencia_desde'] ?? ''));
-    $datos['vigencia_hasta_form'] = trim((string) ($_POST['vigencia_hasta'] ?? ''));
-    $datos['vigencia_desde'] = circuitosNormalizarFecha($datos['vigencia_desde_form']);
-    $datos['vigencia_hasta'] = circuitosNormalizarFecha($datos['vigencia_hasta_form']);
     $datos['descripcion'] = trim((string) ($_POST['descripcion'] ?? ''));
     $datos['imagen_portada'] = trim((string) ($_POST['imagen_portada'] ?? ''));
     $datos['imagen_destacada'] = trim((string) ($_POST['imagen_destacada'] ?? ''));
@@ -103,8 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'Debes indicar el nombre del circuito.';
     }
 
-    if (empty($datos['destinos'])) {
-        $errores[] = 'Selecciona al menos un destino asociado para el circuito.';
+    if ($datos['destino_id'] <= 0) {
+        $errores[] = 'Selecciona el destino base del circuito.';
     }
 
     if ($datos['duracion'] === '') {
@@ -123,46 +98,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errores[] = 'El estado seleccionado no es válido.';
     }
 
-    if (!array_key_exists($datos['estado_publicacion'], $estadosPublicacionPermitidos)) {
-        $errores[] = 'Debes definir si el circuito se publica o permanece en borrador.';
-    }
-
-    if (!array_key_exists($datos['visibilidad'], $visibilidadesPermitidas)) {
-        $errores[] = 'Selecciona una visibilidad válida para el circuito.';
-    }
-
     $precio = circuitosParsearPrecio($datos['precio'], $errores);
 
     $destinoNombre = $datos['destino_personalizado'];
     $destinoRegion = '';
-    $destinoPrincipalId = $datos['destinos'][0] ?? 0;
-    if ($destinoPrincipalId > 0) {
-        $destinoNombre = $destinosDisponibles[$destinoPrincipalId]['nombre'] ?? $destinoNombre;
-        $destinoRegion = $destinosDisponibles[$destinoPrincipalId]['region'] ?? '';
-    }
-
-    if ($datos['vigencia_desde_form'] !== '' && $datos['vigencia_desde'] === null) {
-        $errores[] = 'La fecha de inicio de vigencia no tiene un formato válido.';
-    }
-
-    if ($datos['vigencia_hasta_form'] !== '' && $datos['vigencia_hasta'] === null) {
-        $errores[] = 'La fecha de fin de vigencia no tiene un formato válido.';
-    }
-
-    if ($datos['vigencia_desde'] !== null && $datos['vigencia_hasta'] !== null) {
-        try {
-            if (new DateTimeImmutable($datos['vigencia_hasta']) < new DateTimeImmutable($datos['vigencia_desde'])) {
-                $errores[] = 'La fecha final de vigencia debe ser posterior a la inicial.';
-            }
-        } catch (Exception $exception) {
-            $errores[] = 'No se pudo validar el rango de vigencia proporcionado.';
-        }
+    if ($datos['destino_id'] > 0) {
+        $destinoNombre = $destinosDisponibles[$datos['destino_id']]['nombre'] ?? $destinoNombre;
+        $destinoRegion = $destinosDisponibles[$datos['destino_id']]['region'] ?? '';
     }
 
     if (empty($errores)) {
         $nuevoCircuito = [
             'nombre' => $datos['nombre'],
-            'destinos' => $datos['destinos'],
+            'destino_id' => $datos['destino_id'],
             'destino_personalizado' => $datos['destino_personalizado'],
             'duracion' => $datos['duracion'],
             'precio' => $precio,
@@ -170,10 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'dificultad' => $datos['dificultad'],
             'frecuencia' => $datos['frecuencia'],
             'estado' => $datos['estado'],
-            'estado_publicacion' => $datos['estado_publicacion'],
-            'visibilidad' => $datos['visibilidad'],
-            'vigencia_desde' => $datos['vigencia_desde'],
-            'vigencia_hasta' => $datos['vigencia_hasta'],
             'descripcion' => $datos['descripcion'],
             'imagen_portada' => $datos['imagen_portada'],
             'imagen_destacada' => $datos['imagen_destacada'],
@@ -243,14 +187,14 @@ require __DIR__ . '/plantilla/cabecera.php';
 
                     <div class="admin-grid two-columns">
                         <div class="admin-field">
-                            <label for="destinos">Destinos asociados *</label>
-                            <select id="destinos" name="destinos[]" multiple size="6">
+                            <label for="destino_id">Destino asociado *</label>
+                            <select id="destino_id" name="destino_id">
+                                <option value="0">Selecciona un destino del catálogo</option>
                                 <?php foreach ($destinosDisponibles as $destinoId => $destino): ?>
-                                    <?php $seleccionado = in_array((int) $destinoId, $datos['destinos'], true); ?>
-                                    <option value="<?= (int) $destinoId; ?>" <?= $seleccionado ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
+                                    <option value="<?= (int) $destinoId; ?>" <?= $datos['destino_id'] === (int) $destinoId ? 'selected' : ''; ?>><?= htmlspecialchars($destino['nombre'] . ' · ' . $destino['region'], ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                            <p class="admin-help">Mantén presionadas las teclas Ctrl (Windows) o Cmd (Mac) para seleccionar varios destinos y mostrar este circuito en cada uno.</p>
+                            <p class="admin-help">Elige el departamento con el que se agrupará este circuito en buscadores y filtros.</p>
                         </div>
                         <div class="admin-field">
                             <label for="destino_personalizado">Nombre local (opcional)</label>
@@ -292,40 +236,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                                     <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
-                        </div>
-                    </div>
-
-                    <div class="admin-grid two-columns">
-                        <div class="admin-field">
-                            <label for="estado_publicacion">Estado de publicación</label>
-                            <select id="estado_publicacion" name="estado_publicacion">
-                                <?php foreach ($estadosPublicacionPermitidos as $clave => $etiqueta): ?>
-                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['estado_publicacion'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="admin-help">Publica el circuito cuando quieras que aparezca en la web y en el listado de destinos.</p>
-                        </div>
-                        <div class="admin-field">
-                            <label for="visibilidad">Visibilidad</label>
-                            <select id="visibilidad" name="visibilidad">
-                                <?php foreach ($visibilidadesPermitidas as $clave => $etiqueta): ?>
-                                    <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $datos['visibilidad'] === $clave ? 'selected' : ''; ?>><?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                            <p class="admin-help">Los circuitos privados solo estarán disponibles para campañas directas o enlaces compartidos.</p>
-                        </div>
-                    </div>
-
-                    <div class="admin-grid two-columns">
-                        <div class="admin-field">
-                            <label for="vigencia_desde">Vigencia desde</label>
-                            <input type="datetime-local" id="vigencia_desde" name="vigencia_desde" value="<?= htmlspecialchars($datos['vigencia_desde_form'], ENT_QUOTES, 'UTF-8'); ?>" />
-                            <p class="admin-help">Déjalo en blanco para que el circuito sea vigente desde hoy.</p>
-                        </div>
-                        <div class="admin-field">
-                            <label for="vigencia_hasta">Vigencia hasta</label>
-                            <input type="datetime-local" id="vigencia_hasta" name="vigencia_hasta" value="<?= htmlspecialchars($datos['vigencia_hasta_form'], ENT_QUOTES, 'UTF-8'); ?>" />
-                            <p class="admin-help">Usa este campo para campañas temporales. Déjalo vacío si no tienes fecha de cierre.</p>
                         </div>
                     </div>
 

@@ -323,7 +323,7 @@ function normalizarBanderaVisibilidad($valor): bool
 function normalizarEstado($valor): string
 {
     $estado = strtolower(trim((string) $valor));
-    $permitidos = ['activo', 'inactivo'];
+    $permitidos = ['activo', 'oculto', 'borrador'];
 
     return in_array($estado, $permitidos, true) ? $estado : 'activo';
 }
@@ -358,7 +358,8 @@ function normalizarCoordenada($valor, string $campo, array &$errores): ?float
 function estadoDestinoEtiqueta(string $estado): string
 {
     return match ($estado) {
-        'inactivo' => 'Inactivo',
+        'oculto' => 'Oculto',
+        'borrador' => 'Borrador',
         default => 'Activo',
     };
 }
