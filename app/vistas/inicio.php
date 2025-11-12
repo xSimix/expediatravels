@@ -420,6 +420,14 @@
                     ['tours' => 4, 'departures' => 22, 'guests' => 9_420],
                 ];
 
+                $packagesByDestination = [];
+                foreach ($featuredPackages as $package) {
+                    $destinationKey = $package['destino'] ?? null;
+                    if ($destinationKey) {
+                        $packagesByDestination[$destinationKey] = ($packagesByDestination[$destinationKey] ?? 0) + 1;
+                    }
+                }
+
                 $fallbackImageMap = [
                     'oxapampa.jpg' => 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?q=80&w=1400&auto=format&fit=crop',
                     'villa-rica.jpg' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1400&auto=format&fit=crop',
@@ -446,12 +454,6 @@
                         continue;
                     }
 
-                    $linkedPackages = max(0, (int) ($destination['total_paquetes'] ?? $destination['totalPaquetes'] ?? 0));
-                    $linkedCircuits = max(0, (int) ($destination['total_circuitos'] ?? $destination['totalCircuitos'] ?? 0));
-                    if ($linkedPackages === 0 && $linkedCircuits === 0) {
-                        continue;
-                    }
-
                     $imageSource = $destination['imagen_destacada'] ?? $destination['imagen'] ?? null;
                     $imagePath = ($resolveMediaPath)($imageSource);
                     if ($imagePath === null && is_string($imageSource) && isset($fallbackImageMap[$imageSource])) {
@@ -467,32 +469,16 @@
                         'guests' => 9_200 + ($index * 480),
                     ];
 
-                    $formattedPackages = str_pad((string) $linkedPackages, 2, '0', STR_PAD_LEFT);
-                    $formattedCircuits = str_pad((string) $linkedCircuits, 2, '0', STR_PAD_LEFT);
-                    $experienceSegments = [];
-                    if ($linkedPackages > 0) {
-                        $experienceSegments[] = sprintf('%s paquete%s', $formattedPackages, $linkedPackages === 1 ? '' : 's');
-                    }
-                    if ($linkedCircuits > 0) {
-                        $experienceSegments[] = sprintf('%s circuito%s', $formattedCircuits, $linkedCircuits === 1 ? '' : 's');
-                    }
+                    $toursCount = max(1, (int) ($packagesByDestination[$destinationName] ?? $stats['tours']));
+                    $formattedTours = str_pad((string) $toursCount, 2, '0', STR_PAD_LEFT);
                     $formattedDepartures = str_pad((string) ($stats['departures'] ?? 0), 2, '0', STR_PAD_LEFT);
                     $formattedGuests = number_format((int) ($stats['guests'] ?? 0));
-                    $metaSegments = [];
-                    if (!empty($experienceSegments)) {
-                        $metaSegments[] = implode(' · ', $experienceSegments);
-                    } else {
-                        $metaSegments[] = sprintf('%s tours', str_pad((string) max(1, (int) ($stats['tours'] ?? 1)), 2, '0', STR_PAD_LEFT));
-                    }
-                    $metaSegments[] = sprintf('%s salidas', $formattedDepartures);
-                    $metaSegments[] = sprintf('%s viajeros', $formattedGuests);
-                    $metaText = implode(' · ', $metaSegments) . '.';
 
                     $destinationSlug = $destination['slug'] ?? $slugify($destinationName);
 
                     $destinationsByRegion[$region][] = [
                         'title' => $destinationName,
-                        'meta' => $metaText,
+                        'meta' => sprintf('%s tours | %s salidas · %s viajeros.', $formattedTours, $formattedDepartures, $formattedGuests),
                         'img' => $imagePath,
                         'slug' => $destinationSlug,
                         'href' => 'destino.php?slug=' . urlencode($destinationSlug),
