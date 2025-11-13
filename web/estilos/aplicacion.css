@@ -1167,7 +1167,7 @@ a:hover {
 
     .booking-form {
         margin-inline: auto;
-        max-width: min(100%, 520px);
+        max-width: min(100%, 600px);
     }
 
     .booking-form__tabs {
@@ -1189,11 +1189,11 @@ a:hover {
 
 .hero {
     position: relative;
-    padding: calc(var(--header-height) + 2.5rem) var(--page-gutter) 5rem;
+    padding: calc(var(--header-height) + 2rem) var(--page-gutter) clamp(4rem, 7vw, 5.5rem);
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 700px;
+    min-height: 680px;
     background-color: #0f172a;
     color: #ffffff;
     overflow: hidden;
@@ -1283,10 +1283,10 @@ a:hover {
     position: relative;
     z-index: 1;
     display: grid;
-    gap: 2.5rem;
+    gap: 2.25rem;
     align-items: start;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    width: min(100%, 1100px);
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    width: min(100%, 1240px);
 }
 
 .hero__copy {
@@ -1332,12 +1332,12 @@ a:hover {
     position: relative;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(244, 247, 254, 0.92) 100%);
     border-radius: 28px;
-    padding: 2rem;
+    padding: clamp(1.65rem, 3vw, 1.9rem) clamp(1.85rem, 3.2vw, 2.2rem);
     display: grid;
-    gap: 1.85rem;
+    gap: clamp(1.5rem, 3vw, 1.8rem);
     box-shadow: 0 35px 90px rgba(15, 23, 42, 0.28);
     width: 100%;
-    max-width: 520px;
+    max-width: 660px;
     color: var(--text-main);
     border: 1px solid rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(16px);
@@ -1354,23 +1354,25 @@ a:hover {
 }
 
 .booking-form__tabs {
-    display: inline-flex;
-    align-items: center;
-    gap: clamp(0.3rem, 1.6vw, 0.6rem);
-    padding: clamp(0.35rem, 1.5vw, 0.45rem);
+    display: flex;
+    align-items: stretch;
+    gap: clamp(0.3rem, 1vw, 0.6rem);
+    padding: clamp(0.35rem, 1vw, 0.55rem);
     background: rgba(248, 250, 252, 0.75);
     border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.25);
     margin: 0;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
     flex-wrap: nowrap;
-    justify-content: center;
     width: 100%;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .booking-tab {
     position: relative;
-    display: inline-flex;
+    display: flex;
+    align-items: stretch;
     cursor: pointer;
     border-radius: 999px;
     font-weight: 600;
@@ -1401,7 +1403,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.6rem clamp(1rem, 2.8vw, 1.5rem);
+    padding: 0.55rem clamp(0.95rem, 2.2vw, 1.45rem);
     border-radius: inherit;
     transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
     background: transparent;
@@ -1423,6 +1425,7 @@ a:hover {
     grid-template-columns: 1fr;
     gap: 1.15rem;
     align-items: stretch;
+    width: 100%;
 }
 
 .booking-form__fields > * {
