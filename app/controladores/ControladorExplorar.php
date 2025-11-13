@@ -77,6 +77,8 @@ class ControladorExplorar
     {
         $regions = [];
         $styles = [];
+        $tourCategories = [];
+        $difficulties = [];
 
         foreach ($catalogue as $item) {
             $region = trim((string) ($item['region'] ?? ''));
@@ -90,12 +92,31 @@ class ControladorExplorar
                     $styles[$normalized] = $normalized;
                 }
             }
+
+            $categoryValue = strtolower(trim((string) ($item['tourCategory'] ?? '')));
+            if ($categoryValue !== '') {
+                $tourCategories[$categoryValue] = [
+                    'value' => $categoryValue,
+                    'label' => $item['tourCategoryLabel'] ?? $this->formatFilterLabel((string) ($item['tourCategory'] ?? '')),
+                ];
+            }
+
+            $difficultyValue = strtolower(trim((string) ($item['difficulty'] ?? '')));
+            if ($difficultyValue !== '') {
+                $difficultyLabel = $item['difficultyLabel'] ?? (string) ($item['difficulty'] ?? '');
+                $difficulties[$difficultyValue] = [
+                    'value' => $difficultyValue,
+                    'label' => $this->formatFilterLabel($difficultyLabel),
+                ];
+            }
         }
 
         ksort($regions, SORT_NATURAL | SORT_FLAG_CASE);
         natcasesort($styles);
+        uasort($tourCategories, static fn ($a, $b) => strnatcasecmp($a['label'], $b['label']));
+        uasort($difficulties, static fn ($a, $b) => strnatcasecmp($a['label'], $b['label']));
 
-        return [
+        $filters = [
             'category' => [
                 'label' => 'Categoría',
                 'options' => [
@@ -136,6 +157,22 @@ class ControladorExplorar
                 ),
             ],
         ];
+
+        if ($tourCategories !== []) {
+            $filters['tour_category'] = [
+                'label' => 'Categoría del circuito',
+                'options' => array_values($tourCategories),
+            ];
+        }
+
+        if ($difficulties !== []) {
+            $filters['difficulty'] = [
+                'label' => 'Dificultad',
+                'options' => array_values($difficulties),
+            ];
+        }
+
+        return $filters;
     }
 
     private function resolveActiveFilters(array $query, array $filters): array
@@ -214,6 +251,20 @@ class ControladorExplorar
             if (isset($activeFilters['style'])) {
                 $styles = array_map('strtolower', $item['styleTags'] ?? []);
                 if (!in_array(strtolower($activeFilters['style']), $styles, true)) {
+                    return false;
+                }
+            }
+
+            if (isset($activeFilters['tour_category'])) {
+                $itemCategory = strtolower((string) ($item['tourCategory'] ?? ''));
+                if ($itemCategory === '' || $itemCategory !== strtolower($activeFilters['tour_category'])) {
+                    return false;
+                }
+            }
+
+            if (isset($activeFilters['difficulty'])) {
+                $itemDifficulty = strtolower((string) ($item['difficulty'] ?? ''));
+                if ($itemDifficulty === '' || $itemDifficulty !== strtolower($activeFilters['difficulty'])) {
                     return false;
                 }
             }
@@ -388,6 +439,10 @@ class ControladorExplorar
             'highlights' => $this->extractHighlights($circuit),
             'rating' => $this->parseFloat($circuit['ratingPromedio'] ?? null),
             'reviews' => isset($circuit['totalResenas']) && is_numeric($circuit['totalResenas']) ? (int) $circuit['totalResenas'] : null,
+            'tourCategory' => strtolower(trim((string) ($circuit['categoria'] ?? ''))),
+            'tourCategoryLabel' => $this->formatFilterLabel((string) ($circuit['categoria'] ?? '')),
+            'difficulty' => strtolower(trim((string) ($circuit['dificultad'] ?? ''))),
+            'difficultyLabel' => $this->formatFilterLabel((string) ($circuit['dificultad'] ?? '')),
         ];
     }
 
@@ -415,6 +470,18 @@ class ControladorExplorar
             'rating' => null,
             'reviews' => null,
         ];
+    }
+
+    private function formatFilterLabel(string $value): string
+    {
+        $normalized = trim($value);
+        if ($normalized === '') {
+            return '';
+        }
+
+        $normalized = str_replace(['_', '-'], ' ', $normalized);
+
+        return mb_convert_case($normalized, MB_CASE_TITLE, 'UTF-8');
     }
 
     private function extractStyleTags(array $item): array
