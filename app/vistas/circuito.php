@@ -10,12 +10,12 @@ if (!is_string($siteFavicon) || trim($siteFavicon) === '') {
 
 $title = trim((string) ($detail['title'] ?? ($detail['nombre'] ?? '')));
 if ($title === '') {
-    $title = 'Tour sin nombre';
+    $title = 'Circuito sin nombre';
 }
 
-$typeLabel = trim((string) ($detail['type'] ?? ($detail['type_tag'] ?? ($detail['categoria'] ?? 'Tour'))));
+$typeLabel = trim((string) ($detail['type'] ?? ($detail['type_tag'] ?? ($detail['categoria'] ?? 'Circuito'))));
 if ($typeLabel === '') {
-    $typeLabel = 'Tour';
+    $typeLabel = 'Circuito';
 }
 
 $tagline = trim((string) ($detail['tagline'] ?? ($detail['resumen'] ?? '')));
@@ -224,7 +224,10 @@ foreach ($faqRaw as $faq) {
     if (is_string($faq)) {
         $question = trim($faq);
         if ($question !== '') {
-            $faqItems[] = ['question' => $question, 'answer' => 'Consulta con nuestro equipo para obtener más información detallada.'];
+            $faqItems[] = [
+                'question' => $question,
+                'answer' => 'Nuestro equipo te brindará la información que necesitas para planificar tu viaje.',
+            ];
         }
         continue;
     }
@@ -237,15 +240,24 @@ foreach ($faqRaw as $faq) {
         continue;
     }
     if ($answer === '') {
-        $answer = 'Nuestro equipo estará encantado de ayudarte con esta inquietud.';
+        $answer = 'Responderemos personalmente cada detalle para que disfrutes del circuito sin preocupaciones.';
     }
     $faqItems[] = ['question' => $question, 'answer' => $answer];
 }
 if (empty($faqItems)) {
     $faqItems = [
-        ['question' => '¿Cuál es la mejor época para realizar este tour?', 'answer' => 'La temporada seca ofrece cielos despejados y temperaturas agradables, ideales para disfrutar cada actividad del itinerario.'],
-        ['question' => '¿El transporte está incluido durante todo el recorrido?', 'answer' => 'Sí, contamos con movilidad privada, conductores experimentados y paradas estratégicas para tu comodidad.'],
-        ['question' => '¿Puedo personalizar algunas actividades?', 'answer' => 'Nuestro equipo puede adaptar experiencias según tus intereses con aviso previo. Escríbenos para ayudarte.'],
+        [
+            'question' => '¿Cuál es la mejor época para realizar este circuito?',
+            'answer' => 'La temporada seca ofrece cielos despejados y temperaturas agradables, ideales para disfrutar cada actividad del itinerario.',
+        ],
+        [
+            'question' => '¿El transporte está incluido durante todo el recorrido?',
+            'answer' => 'Sí, contamos con movilidad privada, conductores experimentados y paradas estratégicas para tu comodidad.',
+        ],
+        [
+            'question' => '¿Puedo personalizar algunas actividades?',
+            'answer' => 'Podemos adaptar experiencias según tus intereses con aviso previo. Escríbenos para ayudarte.',
+        ],
     ];
 }
 
@@ -302,7 +314,7 @@ $guideData = is_array($detail['guide'] ?? null) ? $detail['guide'] : ($detail['g
 if (!is_array($guideData)) {
     $guideData = [];
 }
-$guideName = trim((string) ($guideData['name'] ?? ($guideData['nombre'] ?? 'Equipo de guías Expediatravels')));
+$guideName = trim((string) ($guideData['name'] ?? ($guideData['nombre'] ?? 'Guía especialista Expediatravels')));
 $guideSince = trim((string) ($guideData['since'] ?? ($guideData['desde'] ?? 'Desde 2012')));
 if ($guideSince === '') {
     $guideSince = 'Desde 2012';
@@ -335,7 +347,7 @@ $languagesBadges = array_map(static fn ($language) => ['label' => $language], $l
 $durationBadges = [
     ['icon' => '🕒', 'label' => '3 – 5 horas'],
     ['icon' => '🧭', 'label' => '5 – 7 horas'],
-    ['icon' => '🌄', 'label' => 'Full day'],
+    ['icon' => '🌄', 'label' => 'Jornada completa'],
 ];
 
 $pageTitle = $title . ' — ' . $siteTitle;
@@ -380,28 +392,28 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <article class="tour-banner__info-item">
                         <span class="tour-banner__info-icon" aria-hidden="true">⏱️</span>
                         <div>
-                            <p>Duration</p>
+                            <p>Duración</p>
                             <strong><?= htmlspecialchars($duration); ?></strong>
                         </div>
                     </article>
                     <article class="tour-banner__info-item">
                         <span class="tour-banner__info-icon" aria-hidden="true">🧭</span>
                         <div>
-                            <p>Tour Type</p>
+                            <p>Tipo de circuito</p>
                             <strong><?= htmlspecialchars($tourType); ?></strong>
                         </div>
                     </article>
                     <article class="tour-banner__info-item">
                         <span class="tour-banner__info-icon" aria-hidden="true">👥</span>
                         <div>
-                            <p>Group Size</p>
+                            <p>Tamaño del grupo</p>
                             <strong><?= htmlspecialchars($groupSize); ?></strong>
                         </div>
                     </article>
                     <article class="tour-banner__info-item">
                         <span class="tour-banner__info-icon" aria-hidden="true">💬</span>
                         <div>
-                            <p>Languages</p>
+                            <p>Idiomas</p>
                             <strong><?= htmlspecialchars(implode(', ', $languagesList)); ?></strong>
                         </div>
                     </article>
@@ -413,7 +425,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
             <div class="tour-detail__left">
                 <section class="detail-section detail-section--about" id="about">
                     <header>
-                        <h2>About this tour</h2>
+                        <h2>Sobre este circuito</h2>
                     </header>
                     <?php foreach ($aboutParagraphs as $paragraph): ?>
                         <p><?= htmlspecialchars($paragraph); ?></p>
@@ -422,7 +434,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section" id="highlights">
                     <header>
-                        <h2>Highlights</h2>
+                        <h2>Puntos destacados</h2>
                     </header>
                     <ul class="highlight-list">
                         <?php foreach ($highlights as $highlight): ?>
@@ -433,11 +445,11 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section detail-section--split" id="included">
                     <header>
-                        <h2>Included / Excluded</h2>
+                        <h2>Incluye / No incluye</h2>
                     </header>
                     <div class="split-columns">
                         <div class="split-columns__item">
-                            <h3>Included</h3>
+                            <h3>Incluye</h3>
                             <ul>
                                 <?php foreach ($includes as $item): ?>
                                     <li><span class="split-columns__icon" aria-hidden="true">✔</span><?= htmlspecialchars($item); ?></li>
@@ -445,7 +457,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             </ul>
                         </div>
                         <div class="split-columns__item">
-                            <h3>Excluded</h3>
+                            <h3>No incluye</h3>
                             <ul>
                                 <?php foreach ($excludes as $item): ?>
                                     <li><span class="split-columns__icon split-columns__icon--negative" aria-hidden="true">✘</span><?= htmlspecialchars($item); ?></li>
@@ -457,19 +469,19 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section" id="itinerary">
                     <header>
-                        <h2>Itinerary</h2>
+                        <h2>Itinerario</h2>
                     </header>
                     <div class="accordion" data-accordion="itinerary">
                         <?php foreach ($itineraryDays as $index => $day): ?>
                             <?php $isOpen = $index === 0; ?>
                             <article class="accordion__item<?= $isOpen ? ' is-open' : ''; ?>" data-accordion-item>
                                 <button type="button" class="accordion__trigger" data-accordion-trigger aria-expanded="<?= $isOpen ? 'true' : 'false'; ?>">
-                                    <span class="accordion__day">Day <?= $index + 1; ?></span>
+                                    <span class="accordion__day">Día <?= $index + 1; ?></span>
                                     <span class="accordion__title"><?= htmlspecialchars($day['title']); ?></span>
                                     <span class="accordion__icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="accordion__content" data-accordion-content<?= $isOpen ? '' : ' hidden'; ?>>
-                                    <p><?= htmlspecialchars($day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del tour.'); ?></p>
+                                    <p><?= htmlspecialchars($day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del circuito.'); ?></p>
                                 </div>
                             </article>
                         <?php endforeach; ?>
@@ -478,7 +490,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section detail-section--strip" id="durations">
                     <header>
-                        <h2>Durations</h2>
+                        <h2>Modalidades del recorrido</h2>
                     </header>
                     <div class="strip-list">
                         <?php foreach ($durationBadges as $badge): ?>
@@ -492,7 +504,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section detail-section--strip" id="languages">
                     <header>
-                        <h2>Languages</h2>
+                        <h2>Idiomas disponibles</h2>
                     </header>
                     <div class="strip-list strip-list--languages">
                         <?php foreach ($languagesBadges as $badge): ?>
@@ -506,7 +518,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 <section class="detail-section" id="faq">
                     <header>
-                        <h2>Frequently Asked Questions</h2>
+                        <h2>Preguntas frecuentes</h2>
                     </header>
                     <div class="accordion accordion--faq" data-accordion="faq">
                         <?php foreach ($faqItems as $index => $faq): ?>
@@ -531,12 +543,12 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <span class="booking-price"><?= htmlspecialchars($priceFrom); ?></span>
                         <span class="booking-rating">
                             <span aria-hidden="true">⭐</span>
-                            <?= htmlspecialchars(number_format($ratingValue, 1, '.', '')); ?> · <?= htmlspecialchars($reviewsCount); ?> reviews
+                            <?= htmlspecialchars(number_format($ratingValue, 1, '.', '')); ?> · <?= htmlspecialchars($reviewsCount); ?> reseñas
                         </span>
                     </div>
                     <form class="booking-form" action="<?= $bookingUrl ? htmlspecialchars($bookingUrl, ENT_QUOTES) : '#'; ?>" method="get">
                         <label class="booking-field">
-                            <span>Date</span>
+                            <span>Fecha</span>
                             <select name="date" <?= $bookingUrl ? '' : 'disabled'; ?>>
                                 <?php foreach ($departureOptions as $option): ?>
                                     <option value="<?= htmlspecialchars($option, ENT_QUOTES); ?>"><?= htmlspecialchars($option); ?></option>
@@ -545,9 +557,9 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         </label>
                         <div class="booking-grid">
                             <?php $travellers = [
-                                ['label' => 'Adults', 'name' => 'adults', 'min' => 1],
-                                ['label' => 'Children', 'name' => 'children', 'min' => 0],
-                                ['label' => 'Infant', 'name' => 'infant', 'min' => 0],
+                                ['label' => 'Adultos', 'name' => 'adults', 'min' => 1],
+                                ['label' => 'Niños', 'name' => 'children', 'min' => 0],
+                                ['label' => 'Infantes', 'name' => 'infant', 'min' => 0],
                             ]; ?>
                             <?php foreach ($travellers as $traveller): ?>
                                 <div class="booking-counter" data-counter>
@@ -564,7 +576,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        <button type="submit" class="booking-submit" <?= $bookingUrl ? '' : 'disabled'; ?>>Book Now</button>
+                        <button type="submit" class="booking-submit" <?= $bookingUrl ? '' : 'disabled'; ?>>Reservar ahora</button>
                     </form>
                 </section>
 
@@ -572,11 +584,11 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     <div class="guide-avatar" style="background-image: url('<?= htmlspecialchars($guideAvatar, ENT_QUOTES); ?>');"></div>
                     <h3><?= htmlspecialchars($guideName); ?></h3>
                     <p><?= htmlspecialchars($guideSince); ?></p>
-                    <button type="button" class="guide-button">Ask a question</button>
+                    <button type="button" class="guide-button">Consultar ahora</button>
                 </section>
 
                 <section class="aside-card aside-card--contact">
-                    <h3>Information Contact</h3>
+                    <h3>Información de contacto</h3>
                     <ul>
                         <li><span aria-hidden="true">✉️</span> <a href="mailto:<?= htmlspecialchars($contactEmail, ENT_QUOTES); ?>"><?= htmlspecialchars($contactEmail); ?></a></li>
                         <li><span aria-hidden="true">🌐</span> <a href="https://<?= htmlspecialchars(ltrim($contactWebsite, 'https://'), ENT_QUOTES); ?>" target="_blank" rel="noopener"><?= htmlspecialchars($contactWebsite); ?></a></li>
