@@ -1167,7 +1167,7 @@ a:hover {
 
     .booking-form {
         margin-inline: auto;
-        max-width: min(100%, 520px);
+        max-width: min(100%, 560px);
     }
 
     .booking-form__tabs {
@@ -1286,7 +1286,7 @@ a:hover {
     gap: 2.5rem;
     align-items: start;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-    width: min(100%, 1100px);
+    width: min(100%, 1180px);
 }
 
 .hero__copy {
@@ -1337,7 +1337,7 @@ a:hover {
     gap: 1.85rem;
     box-shadow: 0 35px 90px rgba(15, 23, 42, 0.28);
     width: 100%;
-    max-width: 520px;
+    max-width: 560px;
     color: var(--text-main);
     border: 1px solid rgba(255, 255, 255, 0.6);
     backdrop-filter: blur(16px);
@@ -1356,8 +1356,8 @@ a:hover {
 .booking-form__tabs {
     display: inline-flex;
     align-items: center;
-    gap: clamp(0.3rem, 1.6vw, 0.6rem);
-    padding: clamp(0.35rem, 1.5vw, 0.45rem);
+    gap: clamp(0.25rem, 1.2vw, 0.55rem);
+    padding: clamp(0.35rem, 1.25vw, 0.55rem);
     background: rgba(248, 250, 252, 0.75);
     border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.25);
@@ -1401,7 +1401,7 @@ a:hover {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    padding: 0.6rem clamp(1rem, 2.8vw, 1.5rem);
+    padding: 0.6rem clamp(1.05rem, 2.5vw, 1.6rem);
     border-radius: inherit;
     transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease;
     background: transparent;
