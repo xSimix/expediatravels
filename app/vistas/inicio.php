@@ -350,46 +350,39 @@
                                 </select>
                             </label>
                         <?php endif; ?>
-                        <?php if (!empty($searchTourCategories) || !empty($searchDifficulties)): ?>
-                            <div class="booking-field booking-field--split" role="group" aria-labelledby="booking-field-category-difficulty">
-                                <span class="booking-field__label" id="booking-field-category-difficulty">Categoría y Dificultad</span>
-                                <div class="booking-field__split-controls">
-                                    <?php if (!empty($searchTourCategories)): ?>
-                                        <label class="booking-field__sub">
-                                            <span class="booking-field__sub-label">Categoría</span>
-                                            <select data-search-input data-field-name="tour_category">
-                                                <option value="">Todas</option>
-                                                <?php foreach ($searchTourCategories as $categoryOption):
-                                                    $value = (string) ($categoryOption['value'] ?? '');
-                                                    $label = (string) ($categoryOption['label'] ?? $value);
-                                                    if ($value === '') {
-                                                        continue;
-                                                    }
-                                                ?>
-                                                    <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </label>
-                                    <?php endif; ?>
-                                    <?php if (!empty($searchDifficulties)): ?>
-                                        <label class="booking-field__sub">
-                                            <span class="booking-field__sub-label">Dificultad</span>
-                                            <select data-search-input data-field-name="difficulty">
-                                                <option value="">Todas</option>
-                                                <?php foreach ($searchDifficulties as $difficultyOption):
-                                                    $value = (string) ($difficultyOption['value'] ?? '');
-                                                    $label = (string) ($difficultyOption['label'] ?? $value);
-                                                    if ($value === '') {
-                                                        continue;
-                                                    }
-                                                ?>
-                                                    <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
-                                                <?php endforeach; ?>
-                                            </select>
-                                        </label>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
+                        <?php if (!empty($searchTourCategories)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Categoría</span>
+                                <select data-search-input data-field-name="tour_category">
+                                    <option value="">Todas</option>
+                                    <?php foreach ($searchTourCategories as $categoryOption):
+                                        $value = (string) ($categoryOption['value'] ?? '');
+                                        $label = (string) ($categoryOption['label'] ?? $value);
+                                        if ($value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                        <?php if (!empty($searchDifficulties)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Dificultad</span>
+                                <select data-search-input data-field-name="difficulty">
+                                    <option value="">Todas</option>
+                                    <?php foreach ($searchDifficulties as $difficultyOption):
+                                        $value = (string) ($difficultyOption['value'] ?? '');
+                                        $label = (string) ($difficultyOption['label'] ?? $value);
+                                        if ($value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
                         <?php endif; ?>
                     </div>
                     <div class="booking-form__group" data-category-fields="experiencias" hidden>
