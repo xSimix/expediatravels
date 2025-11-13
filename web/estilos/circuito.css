@@ -178,11 +178,6 @@
   font-size: 1.05rem;
 }
 
-.detail-section header p {
-  margin: 0.4rem 0 0;
-  color: var(--tour-muted);
-}
-
 .detail-section--about {
   position: relative;
 }
@@ -231,77 +226,14 @@
   color: var(--tour-highlight);
 }
 
-.circuit-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin: 0;
-}
-
-.circuit-stats__item {
-  padding: 1rem 1.25rem;
-  border-radius: var(--tour-radius-sm);
-  background: rgba(37, 99, 235, 0.08);
-  display: grid;
-  gap: 0.4rem;
-}
-
-.circuit-stats__item dt {
-  margin: 0;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tour-muted);
-}
-
-.circuit-stats__item dd {
-  margin: 0;
-  font-weight: 600;
-  font-size: 1.1rem;
-  color: var(--tour-ink);
-}
-
-.detail-section--operations {
-  gap: 1.8rem;
-}
-
-.fact-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
-}
-
-.fact-grid__item {
-  background: rgba(15, 23, 42, 0.04);
-  border-radius: var(--tour-radius-sm);
-  padding: 1.1rem 1.3rem;
-  display: grid;
-  gap: 0.35rem;
-}
-
-.fact-grid__item dt {
-  margin: 0;
-  font-size: 0.85rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--tour-muted);
-}
-
-.fact-grid__item dd {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--tour-ink);
-}
-
 .detail-section--split {
   gap: 1.5rem;
 }
 
 .split-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
 }
 
 .split-columns__item h3 {
@@ -341,46 +273,6 @@
 .split-columns__icon--negative {
   background: rgba(239, 68, 68, 0.12);
   color: var(--tour-error);
-}
-
-.experience-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.25rem;
-}
-
-.experience-card {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.9rem;
-  padding: 1.2rem 1.4rem;
-  border: 1px solid var(--tour-border);
-  border-radius: var(--tour-radius-sm);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.06);
-  transition: transform var(--tour-transition), box-shadow var(--tour-transition);
-}
-
-.experience-card:hover,
-.experience-card:focus-within {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 32px rgba(37, 99, 235, 0.12);
-}
-
-.experience-card__icon {
-  font-size: 1.8rem;
-}
-
-.experience-card__content h3 {
-  margin: 0;
-  font-size: 1.15rem;
-  color: var(--tour-ink);
-}
-
-.experience-card__content p {
-  margin: 0.45rem 0 0;
-  font-size: 0.98rem;
-  color: var(--tour-muted);
 }
 
 .accordion {
@@ -490,7 +382,7 @@
   background: radial-gradient(circle at center, rgba(59, 130, 246, 0.55) 35%, rgba(59, 130, 246, 0) 70%);
 }
 
-.strip-list {
+.detail-section--strip .strip-list {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
@@ -519,73 +411,6 @@
 .strip-list--languages .strip-list__item {
   background: rgba(22, 163, 74, 0.12);
   color: var(--tour-highlight);
-}
-
-.detail-section--media {
-  gap: 1.5rem;
-}
-
-.media-resources {
-  display: grid;
-  gap: 1.5rem;
-}
-
-.media-card {
-  border-radius: var(--tour-radius-md);
-  overflow: hidden;
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.08);
-  background: #fff;
-}
-
-.media-card img {
-  width: 100%;
-  display: block;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.media-card figcaption {
-  margin: 0;
-  padding: 0.9rem 1.2rem 1.2rem;
-  color: var(--tour-muted);
-  font-size: 0.95rem;
-}
-
-.media-gallery {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-}
-
-.media-gallery__item {
-  border-radius: var(--tour-radius-sm);
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.07);
-}
-
-.media-gallery__item img {
-  width: 100%;
-  display: block;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
-
-.media-gallery__item figcaption {
-  margin: 0;
-  padding: 0.65rem 0.9rem 0.9rem;
-  font-size: 0.9rem;
-  color: var(--tour-muted);
-}
-
-.media-gallery__item figcaption::before {
-  content: '#';
-  color: var(--tour-brand);
-  margin-right: 0.4rem;
-}
-
-.media-resources:has(.media-card) {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
 .tour-detail__right {
