@@ -654,3 +654,8 @@
     padding: 1.6rem;
   }
 }
+
+.tour-detail__left section {
+    width: 100%;
+    margin: auto;
+}
