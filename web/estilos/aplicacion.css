@@ -1364,19 +1364,29 @@ a:hover {
     pointer-events: none;
 }
 
-.booking-tab span {
+.booking-tab input:checked + .booking-tab__content {
+    background: #ffffff;
+    color: var(--sky-primary);
+    box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
+}
+
+.booking-tab__content {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.4rem;
     padding: 0.6rem 1.35rem;
     border-radius: inherit;
     transition: color 150ms ease, background 150ms ease, box-shadow 150ms ease;
 }
 
-.booking-tab input:checked + span {
-    background: #ffffff;
-    color: var(--sky-primary);
-    box-shadow: 0 16px 30px rgba(37, 99, 235, 0.25);
+.booking-tab__icon {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.booking-tab__text {
+    white-space: nowrap;
 }
 
 .booking-form__fields {
@@ -1430,6 +1440,34 @@ a:hover {
 
 .booking-field select option {
     color: var(--text-main);
+}
+
+.booking-field--split {
+    gap: 0.75rem;
+}
+
+.booking-field__split-controls {
+    display: grid;
+    gap: 0.6rem;
+}
+
+@media (min-width: 640px) {
+    .booking-field__split-controls {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+}
+
+.booking-field__sub {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.booking-field__sub-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
 }
 
 .booking-field input[type='date']::-webkit-calendar-picker-indicator {

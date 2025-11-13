@@ -15,7 +15,7 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia, c.servicios,
                         c.galeria,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
@@ -69,7 +69,7 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.dificultad, c.frecuencia, c.servicios,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia, c.servicios,
                         c.galeria,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
@@ -410,6 +410,7 @@ $itineraryStmt = $pdo->prepare(
                 'type' => 'Circuito',
                 'title' => 'Circuito Esencia Selva Central',
                 'tagline' => 'De Oxapampa a Perené entre bosques nubosos, cataratas y pueblos cafeteros.',
+                'categoria' => 'aventura',
                 'summary' => "Conecta los imprescindibles de la Selva Central peruana en un circuito que combina aventura, cultura y gastronomía local. Inicia en Oxapampa con sus casonas austroalemanas y su reserva de biosfera, continúa hacia Villa Rica para descubrir sus fincas cafetaleras y culmina en los cañones y cataratas del valle del Perené.\n\nCada jornada equilibra actividades al aire libre con encuentros auténticos con comunidades asháninkas y yaneshas, degustaciones de café de especialidad y espacios para relajarse entre paisajes cubiertos de neblina.",
                 'location' => 'Oxapampa, Villa Rica y Perené — Selva Central, Perú',
                 'region' => 'Pasco y Junín',
@@ -568,6 +569,7 @@ $itineraryStmt = $pdo->prepare(
                 'type' => 'Circuito',
                 'title' => 'Aventura Cataratas del Perené',
                 'tagline' => 'Rafting, caminatas y cultura asháninka en dos días vibrantes.',
+                'categoria' => 'aventura',
                 'summary' => "Explora el valle del Perené en un circuito exprés pensado para viajeros activos. Combina rápidos clase II en el río, caminatas a imponentes cataratas y experiencias vivas con comunidades originarias.",
                 'location' => 'Valle del Perené — Junín, Perú',
                 'region' => 'Junín',
