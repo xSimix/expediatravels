@@ -29,7 +29,7 @@
 }
 
 .tour-detail > *:not(.tour-banner) {
-  width: min(1160px, 92vw);
+  width: min(1200px, 92vw);
   margin: 0 auto;
 }
 
@@ -57,7 +57,7 @@
 .tour-banner__content {
   position: relative;
   z-index: 1;
-  width: min(1160px, 92vw);
+  width: min(1200px, 92vw);
   display: grid;
   gap: 1.75rem;
 }
@@ -145,7 +145,7 @@
 
 .tour-detail__layout {
   display: grid;
-  grid-template-columns: minmax(0, 2.3fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: clamp(2.5rem, 4vw, 3.5rem);
   align-items: start;
 }
@@ -431,6 +431,7 @@
 .aside-card--booking {
   position: sticky;
   top: 110px;
+  width: min(420px, 100%);
 }
 
 .booking-header {
@@ -615,7 +616,7 @@
 
 @media (max-width: 1080px) {
   .tour-detail__layout {
-    grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 
@@ -634,6 +635,7 @@
 
   .aside-card--booking {
     position: static;
+    width: 100%;
   }
 }
 
