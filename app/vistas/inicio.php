@@ -495,7 +495,47 @@
 
                 $defaultRegionName = 'Otros distinos';
                 $destinationsByRegion = [];
+                $destinationHasLinkedContent = static function ($destination): bool {
+                    if (!is_array($destination)) {
+                        return false;
+                    }
+
+                    $packageCount = (int) ($destination['package_count'] ?? $destination['paquetes_publicados'] ?? 0);
+                    $circuitCount = (int) ($destination['circuit_count'] ?? $destination['circuitos_publicados'] ?? 0);
+
+                    if ($packageCount + $circuitCount > 0) {
+                        return true;
+                    }
+
+                    if (!empty($destination['experiences'] ?? null) || !empty($destination['experiencias'] ?? null)) {
+                        return true;
+                    }
+
+                    if (!empty($destination['related'] ?? null) || !empty($destination['relacionados'] ?? null)) {
+                        return true;
+                    }
+
+                    $cta = $destination['cta'] ?? null;
+                    if (is_array($cta) && !empty($cta['primaryHref'] ?? null)) {
+                        return true;
+                    }
+
+                    return false;
+                };
+
                 foreach ($destinations as $index => $destination) {
+                    if (!is_array($destination)) {
+                        continue;
+                    }
+
+                    if (!($destination['mostrar_en_buscador'] ?? true)) {
+                        continue;
+                    }
+
+                    if (!$destinationHasLinkedContent($destination)) {
+                        continue;
+                    }
+
                     $region = trim((string) ($destination['region'] ?? $defaultRegionName));
                     if ($region === '') {
                         $region = $defaultRegionName;
