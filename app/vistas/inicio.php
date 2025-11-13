@@ -395,14 +395,25 @@
                                 <?php endforeach; ?>
                             </select>
                         </label>
-                        <?php if (!empty($searchBudgets)): ?>
+                        <?php if (!empty($searchStyles)): ?>
                             <label class="booking-field">
-                                <span class="booking-field__label">Presupuesto</span>
-                                <select data-search-input data-field-name="budget">
-                                    <option value="">Todos los presupuestos</option>
-                                    <?php foreach ($searchBudgets as $budgetOption):
-                                        $value = (string) ($budgetOption['value'] ?? '');
-                                        $label = (string) ($budgetOption['label'] ?? $value);
+                                <span class="booking-field__label">Estilo de viaje</span>
+                                <select data-search-input data-field-name="style">
+                                    <option value="">Todos los estilos</option>
+                                    <?php foreach ($searchStyles as $style): ?>
+                                        <option value="<?= htmlspecialchars($style, ENT_QUOTES); ?>"><?= htmlspecialchars($style); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </label>
+                        <?php endif; ?>
+                        <?php if (!empty($searchTourCategories)): ?>
+                            <label class="booking-field">
+                                <span class="booking-field__label">Categoría</span>
+                                <select data-search-input data-field-name="tour_category">
+                                    <option value="">Todas</option>
+                                    <?php foreach ($searchTourCategories as $categoryOption):
+                                        $value = (string) ($categoryOption['value'] ?? '');
+                                        $label = (string) ($categoryOption['label'] ?? $value);
                                         if ($value === '') {
                                             continue;
                                         }
@@ -412,13 +423,19 @@
                                 </select>
                             </label>
                         <?php endif; ?>
-                        <?php if (!empty($searchStyles)): ?>
+                        <?php if (!empty($searchDifficulties)): ?>
                             <label class="booking-field">
-                                <span class="booking-field__label">Estilo de viaje</span>
-                                <select data-search-input data-field-name="style">
-                                    <option value="">Todos los estilos</option>
-                                    <?php foreach ($searchStyles as $style): ?>
-                                        <option value="<?= htmlspecialchars($style, ENT_QUOTES); ?>"><?= htmlspecialchars($style); ?></option>
+                                <span class="booking-field__label">Dificultad</span>
+                                <select data-search-input data-field-name="difficulty">
+                                    <option value="">Todas</option>
+                                    <?php foreach ($searchDifficulties as $difficultyOption):
+                                        $value = (string) ($difficultyOption['value'] ?? '');
+                                        $label = (string) ($difficultyOption['label'] ?? $value);
+                                        if ($value === '') {
+                                            continue;
+                                        }
+                                    ?>
+                                        <option value="<?= htmlspecialchars($value, ENT_QUOTES); ?>"><?= htmlspecialchars($label); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </label>
