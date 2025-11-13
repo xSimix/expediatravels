@@ -314,11 +314,7 @@ $guideData = is_array($detail['guide'] ?? null) ? $detail['guide'] : ($detail['g
 if (!is_array($guideData)) {
     $guideData = [];
 }
-$guideName = trim((string) ($guideData['name'] ?? ($guideData['nombre'] ?? 'Guía especialista Expediatravels')));
-$guideSince = trim((string) ($guideData['since'] ?? ($guideData['desde'] ?? 'Desde 2012')));
-if ($guideSince === '') {
-    $guideSince = 'Desde 2012';
-}
+
 $guideAvatar = trim((string) ($guideData['avatar'] ?? ($guideData['foto'] ?? '')));
 if ($guideAvatar === '') {
     $guideAvatar = 'https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=320&q=80';
@@ -488,53 +484,8 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </div>
                 </section>
 
-                <section class="detail-section detail-section--strip" id="durations">
-                    <header>
-                        <h2>Modalidades del recorrido</h2>
-                    </header>
-                    <div class="strip-list">
-                        <?php foreach ($durationBadges as $badge): ?>
-                            <div class="strip-list__item">
-                                <span class="strip-list__icon" aria-hidden="true"><?= $badge['icon']; ?></span>
-                                <span><?= htmlspecialchars($badge['label']); ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
 
-                <section class="detail-section detail-section--strip" id="languages">
-                    <header>
-                        <h2>Idiomas disponibles</h2>
-                    </header>
-                    <div class="strip-list strip-list--languages">
-                        <?php foreach ($languagesBadges as $badge): ?>
-                            <div class="strip-list__item">
-                                <span class="strip-list__icon strip-list__icon--check" aria-hidden="true">✔</span>
-                                <span><?= htmlspecialchars($badge['label']); ?></span>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-
-                <section class="detail-section" id="faq">
-                    <header>
-                        <h2>Preguntas frecuentes</h2>
-                    </header>
-                    <div class="accordion accordion--faq" data-accordion="faq">
-                        <?php foreach ($faqItems as $index => $faq): ?>
-                            <?php $isOpen = $index === 0; ?>
-                            <article class="accordion__item<?= $isOpen ? ' is-open' : ''; ?>" data-accordion-item>
-                                <button type="button" class="accordion__trigger" data-accordion-trigger aria-expanded="<?= $isOpen ? 'true' : 'false'; ?>">
-                                    <span class="accordion__title"><?= htmlspecialchars($faq['question']); ?></span>
-                                    <span class="accordion__icon" aria-hidden="true"></span>
-                                </button>
-                                <div class="accordion__content" data-accordion-content<?= $isOpen ? '' : ' hidden'; ?>>
-                                    <p><?= htmlspecialchars($faq['answer']); ?></p>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
+                
             </div>
 
             <aside class="tour-detail__right">
@@ -580,12 +531,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </form>
                 </section>
 
-                <section class="aside-card aside-card--guide">
-                    <div class="guide-avatar" style="background-image: url('<?= htmlspecialchars($guideAvatar, ENT_QUOTES); ?>');"></div>
-                    <h3><?= htmlspecialchars($guideName); ?></h3>
-                    <p><?= htmlspecialchars($guideSince); ?></p>
-                    <button type="button" class="guide-button">Consultar ahora</button>
-                </section>
 
                 <section class="aside-card aside-card--contact">
                     <h3>Información de contacto</h3>
