@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../app/configuracion/arranque.php';
 
-use DateTimeImmutable;
-use Exception;
-
 require_once __DIR__ . '/includes/paquetes_util.php';
 
 $errores = [];
