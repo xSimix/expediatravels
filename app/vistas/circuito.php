@@ -610,19 +610,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </div>
                 </section>
 
-
-                <section class="detail-section" id="highlights">
-                    <header>
-                        <h2>Puntos destacados</h2>
-                    </header>
-                    <ul class="highlight-list">
-                        <?php foreach ($highlights as $highlight): ?>
-                            <li><?= htmlspecialchars($highlight); ?></li>
-                        <?php endforeach; ?>
-                    </ul>
-                </section>
-
-                <section class="detail-section detail-section--split" id="included">
+                 <section class="detail-section detail-section--split" id="included">
                     <header>
                         <h2>Incluye / No incluye</h2>
                     </header>
@@ -645,6 +633,20 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         </div>
                     </div>
                 </section>
+
+
+                <section class="detail-section" id="highlights">
+                    <header>
+                        <h2>Puntos destacados</h2>
+                    </header>
+                    <ul class="highlight-list">
+                        <?php foreach ($highlights as $highlight): ?>
+                            <li><?= htmlspecialchars($highlight); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </section>
+
+               
 
 
 
