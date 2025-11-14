@@ -488,6 +488,18 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
         <div class="tour-detail__layout">
             <div class="tour-detail__left">
+
+                            <section class="detail-section detail-section--about" id="about">
+                    <header>
+                        <h2>Sobre este circuito</h2>
+                    </header>
+                    <?php foreach ($aboutParagraphs as $paragraph): ?>
+                        <p><?= htmlspecialchars($paragraph); ?></p>
+                    <?php endforeach; ?>
+                </section>
+
+                
+
                 <?php if (!empty($galleryImages)): ?>
                     <section class="detail-section detail-section--gallery" id="galeria">
                         <header>
@@ -513,14 +525,35 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </section>
                 <?php endif; ?>
 
-                <section class="detail-section detail-section--about" id="about">
+
+                            <section class="detail-section" id="itinerary">
                     <header>
-                        <h2>Sobre este circuito</h2>
+                        <h2>Itinerario</h2>
                     </header>
-                    <?php foreach ($aboutParagraphs as $paragraph): ?>
-                        <p><?= htmlspecialchars($paragraph); ?></p>
-                    <?php endforeach; ?>
+                    <div class="accordion" data-accordion="itinerary">
+                        <?php foreach ($itineraryDays as $index => $day): ?>
+                            <?php $isOpen = $index === 0; ?>
+                            <article class="accordion__item<?= $isOpen ? ' is-open' : ''; ?>" data-accordion-item>
+                                <button type="button" class="accordion__trigger" data-accordion-trigger aria-expanded="<?= $isOpen ? 'true' : 'false'; ?>">
+                                    <span class="accordion__day">Día <?= $index + 1; ?></span>
+                                    <span class="accordion__title"><?= htmlspecialchars($day['title']); ?></span>
+                                    <span class="accordion__icon" aria-hidden="true"></span>
+                                </button>
+                                <div class="accordion__content" data-accordion-content<?= $isOpen ? '' : ' hidden'; ?>>
+                                    <?php $descriptionText = $day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del circuito.'; ?>
+                                    <p><?= htmlspecialchars($descriptionText); ?></p>
+                                    <?php if (!empty($day['mapUrl'])): ?>
+                                        <a class="accordion__map-link" href="<?= htmlspecialchars($day['mapUrl'], ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer">
+                                            <span aria-hidden="true">📍</span>
+                                            <span>Ubicación en Google Maps</span>
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
                 </section>
+
 
                 <section class="detail-section" id="highlights">
                     <header>
@@ -557,33 +590,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </div>
                 </section>
 
-                <section class="detail-section" id="itinerary">
-                    <header>
-                        <h2>Itinerario</h2>
-                    </header>
-                    <div class="accordion" data-accordion="itinerary">
-                        <?php foreach ($itineraryDays as $index => $day): ?>
-                            <?php $isOpen = $index === 0; ?>
-                            <article class="accordion__item<?= $isOpen ? ' is-open' : ''; ?>" data-accordion-item>
-                                <button type="button" class="accordion__trigger" data-accordion-trigger aria-expanded="<?= $isOpen ? 'true' : 'false'; ?>">
-                                    <span class="accordion__day">Día <?= $index + 1; ?></span>
-                                    <span class="accordion__title"><?= htmlspecialchars($day['title']); ?></span>
-                                    <span class="accordion__icon" aria-hidden="true"></span>
-                                </button>
-                                <div class="accordion__content" data-accordion-content<?= $isOpen ? '' : ' hidden'; ?>>
-                                    <?php $descriptionText = $day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del circuito.'; ?>
-                                    <p><?= htmlspecialchars($descriptionText); ?></p>
-                                    <?php if (!empty($day['mapUrl'])): ?>
-                                        <a class="accordion__map-link" href="<?= htmlspecialchars($day['mapUrl'], ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer">
-                                            <span aria-hidden="true">📍</span>
-                                            <span>Ubicación en Google Maps</span>
-                                        </a>
-                                    <?php endif; ?>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
+
 
 
                 
