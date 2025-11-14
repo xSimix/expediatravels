@@ -500,31 +500,78 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
                 
 
-                <?php if (!empty($galleryImages)): ?>
+                <?php if (!empty($galleryImages)):
+                    $gallerySlides = array_chunk($galleryImages, 2);
+                    $hasMultipleSlides = count($gallerySlides) > 1;
+                ?>
                     <section class="detail-section detail-section--gallery" id="galeria">
                         <header>
                             <h2>Galería del circuito</h2>
                             <p>Explora una selección de momentos destacados de esta experiencia.</p>
                         </header>
-                        <div class="detail-gallery">
-                            <?php foreach ($galleryImages as $image):
-                                $src = $image['src'] ?? '';
-                                if ($src === '') {
-                                    continue;
-                                }
-                                $alt = $image['alt'] ?? $title;
-                                if (!is_string($alt) || trim($alt) === '') {
-                                    $alt = $title;
-                                }
-                                $caption = trim($alt);
-                            ?>
-                                <figure class="detail-gallery__item">
-                                    <img class="detail-gallery__image" src="<?= htmlspecialchars($src, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($alt); ?>" loading="lazy" />
-                                    <?php if ($caption !== ''): ?>
-                                        <figcaption class="detail-gallery__caption"><?= htmlspecialchars($caption); ?></figcaption>
-                                    <?php endif; ?>
-                                </figure>
-                            <?php endforeach; ?>
+                        <div class="detail-gallery" data-gallery-slider data-gallery-interval="6000">
+                            <div class="detail-gallery__viewport" data-gallery-viewport>
+                                <div class="detail-gallery__track" data-gallery-track>
+                                    <?php foreach ($gallerySlides as $slideImages): ?>
+                                        <div class="detail-gallery__slide" data-gallery-slide>
+                                            <?php foreach ($slideImages as $image):
+                                                $src = $image['src'] ?? '';
+                                                if (!is_string($src) || trim($src) === '') {
+                                                    continue;
+                                                }
+                                                $src = trim($src);
+                                                $alt = $image['alt'] ?? $title;
+                                                if (!is_string($alt) || trim($alt) === '') {
+                                                    $alt = $title;
+                                                }
+                                                $alt = trim($alt);
+                                                $caption = $alt;
+                                                $buttonLabel = $caption !== ''
+                                                    ? 'Ver imagen: ' . $caption
+                                                    : 'Ver imagen del circuito';
+                                            ?>
+                                                <figure class="detail-gallery__item">
+                                                    <button
+                                                        type="button"
+                                                        class="detail-gallery__media"
+                                                        data-gallery-lightbox-trigger
+                                                        data-lightbox-src="<?= htmlspecialchars($src, ENT_QUOTES); ?>"
+                                                        data-lightbox-alt="<?= htmlspecialchars($alt, ENT_QUOTES); ?>"
+                                                        data-lightbox-caption="<?= htmlspecialchars($caption, ENT_QUOTES); ?>"
+                                                        aria-label="<?= htmlspecialchars($buttonLabel, ENT_QUOTES); ?>"
+                                                    >
+                                                        <img class="detail-gallery__image" src="<?= htmlspecialchars($src, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($alt, ENT_QUOTES); ?>" loading="lazy" />
+                                                    </button>
+                                                    <?php if ($caption !== ''): ?>
+                                                        <figcaption class="detail-gallery__caption"><?= htmlspecialchars($caption); ?></figcaption>
+                                                    <?php endif; ?>
+                                                </figure>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                            <?php if ($hasMultipleSlides): ?>
+                                <div class="detail-gallery__dots" role="tablist" aria-label="Paginación de galería">
+                                    <?php foreach ($gallerySlides as $index => $_): ?>
+                                        <button
+                                            type="button"
+                                            class="detail-gallery__dot<?= $index === 0 ? ' is-active' : ''; ?>"
+                                            data-gallery-dot="<?= $index; ?>"
+                                            aria-label="Ir a la página <?= $index + 1; ?>"
+                                            <?= $index === 0 ? 'aria-current="true"' : ''; ?>
+                                        ></button>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="detail-lightbox" data-gallery-lightbox role="dialog" aria-modal="true" tabindex="-1" hidden>
+                            <div class="detail-lightbox__backdrop" data-lightbox-close aria-hidden="true"></div>
+                            <figure class="detail-lightbox__figure">
+                                <button type="button" class="detail-lightbox__close" data-lightbox-close aria-label="Cerrar galería">×</button>
+                                <img class="detail-lightbox__image" src="" alt="" data-lightbox-image />
+                                <figcaption class="detail-lightbox__caption" data-lightbox-caption></figcaption>
+                            </figure>
                         </div>
                     </section>
                 <?php endif; ?>
