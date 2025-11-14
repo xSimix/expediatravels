@@ -407,6 +407,101 @@ if ($contactFax === '') {
     $contactFax = '—';
 }
 
+$formatWhatsappLink = static function (string $phone) use ($contactPhone): string {
+    $digits = preg_replace('/\D+/', '', $phone);
+    if ($digits === '') {
+        $digits = preg_replace('/\D+/', '', $contactPhone);
+    }
+    if ($digits === '') {
+        return '#';
+    }
+    if (strpos($digits, '00') === 0) {
+        $digits = substr($digits, 2);
+    }
+    if (strpos($digits, '51') !== 0) {
+        $digits = ltrim($digits, '0');
+        if ($digits === '') {
+            $digits = preg_replace('/\D+/', '', $contactPhone) ?: '';
+        }
+        if ($digits === '') {
+            return '#';
+        }
+        $digits = '51' . $digits;
+    }
+
+    return 'https://wa.me/' . $digits;
+};
+
+$generateInitials = static function (string $name): string {
+    $parts = preg_split('/\s+/', trim($name)) ?: [];
+    $initials = '';
+    $count = 0;
+    foreach ($parts as $part) {
+        if ($part === '') {
+            continue;
+        }
+        if (function_exists('mb_substr')) {
+            $char = mb_substr($part, 0, 1, 'UTF-8');
+        } else {
+            $char = substr($part, 0, 1);
+        }
+        if (function_exists('mb_strtoupper')) {
+            $char = mb_strtoupper($char, 'UTF-8');
+        } else {
+            $char = strtoupper($char);
+        }
+        $initials .= $char;
+        $count++;
+        if ($count >= 2) {
+            break;
+        }
+    }
+
+    return $initials !== '' ? $initials : 'EV';
+};
+
+$salesAdvisersRaw = $detail['salesAdvisers'] ?? ($contactSettings['advisers'] ?? ($siteSettings['salesAdvisers'] ?? []));
+if (!is_array($salesAdvisersRaw)) {
+    $salesAdvisersRaw = [];
+}
+if (empty($salesAdvisersRaw)) {
+    $salesAdvisersRaw = [
+        ['name' => 'María López', 'phone' => '+51 987 654 321', 'role' => 'Especialista en circuitos'],
+        ['name' => 'Jorge Ramírez', 'phone' => '+51 945 123 456', 'role' => 'Atención personalizada'],
+    ];
+}
+
+$salesAdvisers = [];
+foreach ($salesAdvisersRaw as $advisor) {
+    $name = '';
+    $phone = '';
+    $role = '';
+
+    if (is_string($advisor)) {
+        $name = trim($advisor);
+    } elseif (is_array($advisor)) {
+        $name = trim((string) ($advisor['name'] ?? ($advisor['nombre'] ?? '')));
+        $phone = trim((string) ($advisor['phone'] ?? ($advisor['telefono'] ?? '')));
+        $role = trim((string) ($advisor['role'] ?? ($advisor['cargo'] ?? ($advisor['especialidad'] ?? ''))));
+    }
+
+    if ($name === '') {
+        continue;
+    }
+
+    if ($phone === '') {
+        $phone = $contactPhone;
+    }
+
+    $salesAdvisers[] = [
+        'name' => $name,
+        'role' => $role,
+        'phone' => $phone,
+        'initials' => $generateInitials($name),
+        'whatsapp' => $formatWhatsappLink($phone),
+    ];
+}
+
 $languagesBadges = array_map(static fn ($language) => ['label' => $language], $languagesList);
 
 $durationBadges = [
@@ -619,7 +714,14 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <h3>Incluye</h3>
                             <ul>
                                 <?php foreach ($includes as $item): ?>
-                                    <li><span class="split-columns__icon" aria-hidden="true">✔</span><?= htmlspecialchars($item); ?></li>
+                                    <li>
+                                        <span class="split-columns__icon split-columns__icon--include" aria-hidden="true">
+                                            <svg viewBox="0 0 20 20" focusable="false">
+                                                <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm3.54-9.46-4 4a.75.75 0 0 1-1.08 0l-2-2a.75.75 0 0 1 1.06-1.06L8.5 11.44l3.46-3.47a.75.75 0 0 1 1.06 1.06z" />
+                                            </svg>
+                                        </span>
+                                        <span class="split-columns__text"><?= htmlspecialchars($item); ?></span>
+                                    </li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
@@ -627,7 +729,14 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <h3>No incluye</h3>
                             <ul>
                                 <?php foreach ($excludes as $item): ?>
-                                    <li><span class="split-columns__icon split-columns__icon--negative" aria-hidden="true">✘</span><?= htmlspecialchars($item); ?></li>
+                                    <li>
+                                        <span class="split-columns__icon split-columns__icon--exclude" aria-hidden="true">
+                                            <svg viewBox="0 0 20 20" focusable="false">
+                                                <path d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm2.47-10.53-1.94 1.94 1.94 1.94a.75.75 0 1 1-1.06 1.06l-1.94-1.94-1.94 1.94a.75.75 0 0 1-1.06-1.06l1.94-1.94-1.94-1.94a.75.75 0 0 1 1.06-1.06l1.94 1.94 1.94-1.94a.75.75 0 1 1 1.06 1.06z" />
+                                            </svg>
+                                        </span>
+                                        <span class="split-columns__text"><?= htmlspecialchars($item); ?></span>
+                                    </li>
                                 <?php endforeach; ?>
                             </ul>
                         </div>
@@ -655,14 +764,19 @@ $pageTitle = $title . ' — ' . $siteTitle;
             </div>
 
             <aside class="tour-detail__right">
-                <section class="aside-card aside-card--booking">
-                    <div class="booking-header">
-                        <span class="booking-price"><?= htmlspecialchars($priceFrom); ?></span>
-                        <span class="booking-rating">
-                            <span aria-hidden="true">⭐</span>
-                            <?= htmlspecialchars(number_format($ratingValue, 1, '.', '')); ?> · <?= htmlspecialchars($reviewsCount); ?> reseñas
-                        </span>
+                <section class="aside-card aside-card--pricing">
+                    <div class="pricing-header">
+                        <span class="pricing-label">Precio referencial</span>
+                        <span class="pricing-amount"><?= htmlspecialchars($priceFrom); ?></span>
                     </div>
+                    <p class="pricing-note">Tarifa calculada por viajero en base doble. Escríbenos para una propuesta personalizada.</p>
+                </section>
+
+                <section class="aside-card aside-card--booking">
+                    <header class="booking-form__header">
+                        <h3 class="booking-form__title">Formulario de reserva</h3>
+                        <p class="booking-form__subtitle">Selecciona la fecha y cantidad de viajeros para iniciar tu solicitud.</p>
+                    </header>
                     <form class="booking-form" action="<?= $bookingUrl ? htmlspecialchars($bookingUrl, ENT_QUOTES) : '#'; ?>" method="get">
                         <label class="booking-field">
                             <span>Fecha</span>
@@ -695,17 +809,27 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         </div>
                         <button type="submit" class="booking-submit" <?= $bookingUrl ? '' : 'disabled'; ?>>Reservar ahora</button>
                     </form>
-                </section>
-
-
-                <section class="aside-card aside-card--contact">
-                    <h3>Información de contacto</h3>
-                    <ul>
-                        <li><span aria-hidden="true">✉️</span> <a href="mailto:<?= htmlspecialchars($contactEmail, ENT_QUOTES); ?>"><?= htmlspecialchars($contactEmail); ?></a></li>
-                        <li><span aria-hidden="true">🌐</span> <a href="https://<?= htmlspecialchars(ltrim($contactWebsite, 'https://'), ENT_QUOTES); ?>" target="_blank" rel="noopener"><?= htmlspecialchars($contactWebsite); ?></a></li>
-                        <li><span aria-hidden="true">📞</span> <a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $contactPhone), ENT_QUOTES); ?>"><?= htmlspecialchars($contactPhone); ?></a></li>
-                        <li><span aria-hidden="true">📠</span> <?= htmlspecialchars($contactFax); ?></li>
-                    </ul>
+                    <div class="sales-advisers" aria-labelledby="sales-advisers-title">
+                        <h4 id="sales-advisers-title">Asesores de Venta</h4>
+                        <p class="sales-advisers__description">¿Necesitas ayuda? Chatea con un especialista por WhatsApp.</p>
+                        <div class="sales-advisers__list">
+                            <?php foreach ($salesAdvisers as $advisor): ?>
+                                <article class="sales-adviser-card">
+                                    <div class="sales-adviser-card__avatar" aria-hidden="true"><?= htmlspecialchars($advisor['initials']); ?></div>
+                                    <div class="sales-adviser-card__body">
+                                        <h5><?= htmlspecialchars($advisor['name']); ?></h5>
+                                        <?php if ($advisor['role'] !== ''): ?>
+                                            <p><?= htmlspecialchars($advisor['role']); ?></p>
+                                        <?php endif; ?>
+                                    </div>
+                                    <a class="sales-adviser-card__cta" href="<?= htmlspecialchars($advisor['whatsapp'], ENT_QUOTES); ?>" target="_blank" rel="noopener">
+                                        <span aria-hidden="true">💬</span>
+                                        Chatear
+                                    </a>
+                                </article>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
                 </section>
             </aside>
         </div>
