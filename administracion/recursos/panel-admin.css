@@ -58,7 +58,7 @@
 .admin-card {
     background: #ffffff;
     border-radius: 28px;
-    padding: clamp(1.8rem, 3vw, 2.6rem);
+    padding: 20px;
     box-shadow: 0 25px 65px rgba(15, 23, 42, 0.12);
     border: 1px solid rgba(148, 163, 184, 0.25);
     display: grid;
