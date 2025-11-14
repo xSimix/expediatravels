@@ -1331,7 +1331,7 @@ a:hover {
     position: relative;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(244, 247, 254, 0.92) 100%);
     border-radius: 28px;
-    padding: clamp(1.65rem, 3vw, 1.9rem) clamp(1.85rem, 3.2vw, 2.2rem);
+    padding: 15px;
     display: grid;
     gap: clamp(1.5rem, 3vw, 1.8rem);
     width: 100%;
