@@ -17,6 +17,14 @@ $categorias = [
 $errores = [];
 $mensajeExito = null;
 
+$nombre = '';
+$cargo = '';
+$telefono = '';
+$correo = '';
+$categoria = RepositorioEquipo::CATEGORIA_ASESOR_VENTAS;
+$prioridad = 0;
+$activo = 1;
+
 $accion = $_POST['action'] ?? null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -98,7 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $integrantes = $repo->obtenerTodos();
 $integrantesPorCategoria = [];
 foreach ($integrantes as $integrante) {
-    $clave = $integrante['categoria'] ?? RepositorioEquipo::CATEGORIA_OTRO;
+    $clave = (string) ($integrante['categoria'] ?? '');
+    if ($clave === '' || !array_key_exists($clave, $categorias)) {
+        $clave = RepositorioEquipo::CATEGORIA_OTRO;
+    }
     if (!array_key_exists($clave, $integrantesPorCategoria)) {
         $integrantesPorCategoria[$clave] = [];
     }
@@ -211,8 +222,11 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 </td>
                                 <td>
                                     <?php
-                                    $categoriaResumen = (string) ($integranteResumen['categoria'] ?? RepositorioEquipo::CATEGORIA_OTRO);
-                                    $etiquetaCategoria = $categorias[$categoriaResumen] ?? $categorias[RepositorioEquipo::CATEGORIA_OTRO];
+                                    $categoriaResumen = (string) ($integranteResumen['categoria'] ?? '');
+                                    if ($categoriaResumen === '' || !array_key_exists($categoriaResumen, $categorias)) {
+                                        $categoriaResumen = RepositorioEquipo::CATEGORIA_OTRO;
+                                    }
+                                    $etiquetaCategoria = $categorias[$categoriaResumen];
                                     ?>
                                     <?= htmlspecialchars($etiquetaCategoria, ENT_QUOTES, 'UTF-8'); ?>
                                 </td>
@@ -294,9 +308,15 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <div class="admin-grid two-columns">
                                                 <div class="admin-field">
                                                     <label for="categoria-<?= $miembroId; ?>">Categoría</label>
+                                                    <?php
+                                                    $categoriaActual = (string) ($integrante['categoria'] ?? '');
+                                                    if ($categoriaActual === '' || !array_key_exists($categoriaActual, $categorias)) {
+                                                        $categoriaActual = RepositorioEquipo::CATEGORIA_OTRO;
+                                                    }
+                                                    ?>
                                                     <select id="categoria-<?= $miembroId; ?>" name="categoria">
                                                         <?php foreach ($categorias as $clave => $etiqueta) : ?>
-                                                            <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $clave === ($integrante['categoria'] ?? '') ? 'selected' : ''; ?>>
+                                                            <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $clave === $categoriaActual ? 'selected' : ''; ?>>
                                                                 <?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?>
                                                             </option>
                                                         <?php endforeach; ?>
