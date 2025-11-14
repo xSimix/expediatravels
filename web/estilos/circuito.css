@@ -153,16 +153,16 @@
 .tour-detail__left {
   display: flex;
   flex-direction: column;
-  gap: clamp(1.2rem, 1vw, 2.8rem);
+  gap: clamp(0.85rem, 1vw, 1.8rem);
 }
 
 .detail-section {
   background: var(--tour-surface);
   border-radius: var(--tour-radius-lg);
   box-shadow: 0 20px 40px rgba(15, 23, 42, 0.06);
-  padding: clamp(2rem, 3vw, 2.5rem);
+  padding: 20px;
   display: grid;
-  gap: 1.2rem;
+  gap: 1rem;
 }
 
 .detail-section--gallery {
@@ -170,13 +170,12 @@
 }
 
 .detail-gallery {
-  --gallery-gap: clamp(0.75rem, 1vw, 1.35rem);
-  --gallery-row: clamp(160px, 20vw, 230px);
+  --gallery-gap: clamp(0.55rem, 0.9vw, 1rem);
+  --gallery-row: clamp(140px, 16vw, 200px);
   display: grid;
   gap: var(--gallery-gap);
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   grid-auto-rows: var(--gallery-row);
-  grid-auto-flow: dense;
 }
 
 .detail-gallery__item {
@@ -184,7 +183,7 @@
   border-radius: var(--tour-radius-lg);
   overflow: hidden;
   background: rgba(15, 23, 42, 0.05);
-  min-height: 180px;
+  min-height: 150px;
   display: flex;
   isolation: isolate;
 }
@@ -241,39 +240,18 @@
 
 @media (min-width: 600px) {
   .detail-gallery {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    --gallery-row: clamp(150px, 14vw, 210px);
   }
 }
 
 @media (min-width: 768px) {
   .detail-gallery {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   }
 
   .detail-gallery__item {
-    grid-column: span 3;
-    grid-row: span 1;
-  }
-
-  .detail-gallery__item:nth-child(6n + 1),
-  .detail-gallery__item:nth-child(6n + 4) {
-    grid-column: span 4;
-    grid-row: span 2;
-  }
-
-  .detail-gallery__item:nth-child(6n + 2),
-  .detail-gallery__item:nth-child(6n + 5) {
-    grid-column: span 2;
-    grid-row: span 2;
-  }
-
-  .detail-gallery__item:nth-child(6n + 3) {
-    grid-column: span 3;
-    grid-row: span 2;
-  }
-
-  .detail-gallery__item:nth-child(6n) {
-    grid-column: span 3;
+    grid-column: span 1;
     grid-row: span 1;
   }
 }
