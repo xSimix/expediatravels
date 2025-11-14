@@ -15,8 +15,8 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia, c.servicios,
-                        c.galeria,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia,
+                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -69,8 +69,8 @@ class RepositorioCircuitos
         try {
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
-                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia, c.servicios,
-                        c.galeria,
+                'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia,
+                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -123,12 +123,13 @@ class RepositorioCircuitos
         $destination = $circuit['destino'] ?? $circuit['location'] ?? $circuit['region'] ?? '';
         $region = $circuit['region'] ?? '';
         $price = $circuit['precio'] ?? $circuit['precio_desde'] ?? null;
-        $rawGroup = $circuit['grupo'] ?? $circuit['grupo_maximo'] ?? $circuit['capacidad'] ?? $circuit['capacidad_maxima'] ?? $circuit['group'] ?? null;
+        $rawGroup = $circuit['tamano_grupo'] ?? $circuit['grupo'] ?? $circuit['grupo_maximo'] ?? $circuit['capacidad'] ?? $circuit['capacidad_maxima'] ?? $circuit['group'] ?? null;
         $rawNextDeparture = $circuit['proxima_salida'] ?? $circuit['proximaSalida'] ?? $circuit['nextDeparture'] ?? $circuit['frecuencia'] ?? null;
         $rawRating = $circuit['calificacion'] ?? $circuit['calificación'] ?? $circuit['rating'] ?? $circuit['rating_promedio'] ?? $circuit['ratingAverage'] ?? $circuit['ratingPromedio'] ?? null;
         $rawReviews = $circuit['resenas'] ?? $circuit['reseñas'] ?? $circuit['reviews'] ?? $circuit['reviewsCount'] ?? $circuit['totalResenas'] ?? null;
         $rawIsNew = $circuit['es_nuevo'] ?? $circuit['esNuevo'] ?? $circuit['nuevo'] ?? $circuit['isNew'] ?? null;
         $rawIsExclusive = $circuit['es_exclusivo'] ?? $circuit['esExclusivo'] ?? $circuit['exclusivo'] ?? $circuit['isExclusive'] ?? null;
+        $rawLanguages = $circuit['idiomas'] ?? $circuit['languages'] ?? null;
 
         if (is_string($price)) {
             $price = filter_var($price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION | FILTER_FLAG_ALLOW_THOUSAND);
@@ -192,6 +193,8 @@ class RepositorioCircuitos
             }
         }
 
+        $languages = $this->normalizeLanguages($rawLanguages);
+
         $base = array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
             'slug' => $circuit['slug'] ?? $this->generateSlug((string) $name),
@@ -209,12 +212,15 @@ class RepositorioCircuitos
             'frecuencia' => isset($circuit['frecuencia']) ? (string) $circuit['frecuencia'] : $nextDepartureText,
             'proximaSalida' => $nextDepartureText,
             'grupo' => $groupText,
+            'tamano_grupo' => $groupText,
             'experiencia' => (string) ($circuit['experiencia'] ?? $circuit['dificultad'] ?? ''),
             'ratingPromedio' => $ratingValue,
             'totalResenas' => $reviewsCount,
             'esNuevo' => $parseBoolean($rawIsNew),
             'esExclusivo' => $parseBoolean($rawIsExclusive),
             'servicios' => $services,
+            'idiomas' => $languages,
+            'languages' => $languages,
         ]);
 
         $circuitId = (int) ($base['id'] ?? 0);
@@ -400,6 +406,37 @@ $itineraryStmt = $pdo->prepare(
         }
 
         return $images;
+    }
+
+    private function normalizeLanguages($value): array
+    {
+        if (is_array($value)) {
+            $items = $value;
+        } elseif (is_string($value) && trim($value) !== '') {
+            $text = trim($value);
+            $decoded = json_decode($text, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $items = $decoded;
+            } else {
+                $items = preg_split('/\r\n|\r|\n|[,;]+/', $text) ?: [];
+            }
+        } else {
+            $items = [];
+        }
+
+        $languages = [];
+        foreach ($items as $item) {
+            if (is_array($item)) {
+                $item = $item['label'] ?? $item['nombre'] ?? $item['idioma'] ?? $item['valor'] ?? $item['value'] ?? '';
+            }
+
+            $text = trim((string) $item);
+            if ($text !== '') {
+                $languages[] = $text;
+            }
+        }
+
+        return array_values(array_unique($languages));
     }
 
     private function fallbackCircuits(): array
