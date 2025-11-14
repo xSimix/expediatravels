@@ -104,17 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $integrantes = $repo->obtenerTodos();
-$integrantesPorCategoria = [];
-foreach ($integrantes as $integrante) {
-    $clave = (string) ($integrante['categoria'] ?? '');
-    if ($clave === '' || !array_key_exists($clave, $categorias)) {
-        $clave = RepositorioEquipo::CATEGORIA_OTRO;
-    }
-    if (!array_key_exists($clave, $integrantesPorCategoria)) {
-        $integrantesPorCategoria[$clave] = [];
-    }
-    $integrantesPorCategoria[$clave][] = $integrante;
-}
 
 $paginaActiva = 'equipo';
 $tituloPagina = 'Equipo — Panel de Control';
@@ -212,10 +201,12 @@ require __DIR__ . '/plantilla/cabecera.php';
                             <th>Correo</th>
                             <th>Prioridad</th>
                             <th>Estado</th>
+                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($integrantes as $integranteResumen) : ?>
+                            <?php $miembroId = (int) ($integranteResumen['id'] ?? 0); ?>
                             <tr>
                                 <td>
                                     <strong><?= htmlspecialchars((string) ($integranteResumen['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
@@ -235,86 +226,42 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars((string) ($integranteResumen['correo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?= (int) ($integranteResumen['prioridad'] ?? 0); ?></td>
                                 <td><?= ((int) ($integranteResumen['activo'] ?? 0) === 1) ? 'Activo' : 'Oculto'; ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </section>
-
-    <?php foreach ($categorias as $claveCategoria => $etiquetaCategoria) : ?>
-        <?php $lista = $integrantesPorCategoria[$claveCategoria] ?? []; ?>
-        <section class="admin-card admin-card--flush">
-            <h2><?= htmlspecialchars($etiquetaCategoria, ENT_QUOTES, 'UTF-8'); ?></h2>
-            <?php if (empty($lista)) : ?>
-                <p class="admin-empty">No hay integrantes registrados en esta categoría.</p>
-            <?php else : ?>
-                <div class="admin-table-wrapper">
-                    <table class="admin-table admin-table--users">
-                        <thead>
-                            <tr>
-                                <th>Nombre</th>
-                                <th>Contacto</th>
-                                <th>Prioridad</th>
-                                <th>Estado</th>
-                                <th>Gestión</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($lista as $integrante) : ?>
-                                <?php $miembroId = (int) ($integrante['id'] ?? 0); ?>
-                                <tr>
-                                    <td>
-                                        <strong><?= htmlspecialchars((string) ($integrante['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                        <?php if (!empty($integrante['cargo'])) : ?>
-                                            <p class="admin-table__meta"><?= htmlspecialchars((string) $integrante['cargo'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <?php if (!empty($integrante['telefono'])) : ?>
-                                            <p><?= htmlspecialchars((string) $integrante['telefono'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                        <?php endif; ?>
-                                        <?php if (!empty($integrante['correo'])) : ?>
-                                            <p class="admin-table__meta"><?= htmlspecialchars((string) $integrante['correo'], ENT_QUOTES, 'UTF-8'); ?></p>
-                                        <?php endif; ?>
-                                    </td>
-                                    <td><?= (int) ($integrante['prioridad'] ?? 0); ?></td>
-                                    <td><?= ((int) ($integrante['activo'] ?? 0) === 1) ? 'Activo' : 'Oculto'; ?></td>
-                                    <td>
+                                <td class="admin-table__actions">
+                                    <details>
+                                        <summary class="admin-button admin-button--secondary">Editar</summary>
                                         <form method="post" class="admin-table__form">
                                             <input type="hidden" name="action" value="update" />
                                             <input type="hidden" name="member_id" value="<?= $miembroId; ?>" />
                                             <div class="admin-grid two-columns">
                                                 <div class="admin-field">
-                                                    <label for="nombre-<?= $miembroId; ?>">Nombre</label>
-                                                    <input type="text" id="nombre-<?= $miembroId; ?>" name="nombre" required value="<?= htmlspecialchars((string) ($integrante['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+                                                    <label for="editar-nombre-<?= $miembroId; ?>">Nombre</label>
+                                                    <input type="text" id="editar-nombre-<?= $miembroId; ?>" name="nombre" required value="<?= htmlspecialchars((string) ($integranteResumen['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
                                                 </div>
                                                 <div class="admin-field">
-                                                    <label for="cargo-<?= $miembroId; ?>">Cargo</label>
-                                                    <input type="text" id="cargo-<?= $miembroId; ?>" name="cargo" value="<?= htmlspecialchars((string) ($integrante['cargo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-                                                </div>
-                                            </div>
-                                            <div class="admin-grid two-columns">
-                                                <div class="admin-field">
-                                                    <label for="telefono-<?= $miembroId; ?>">Teléfono</label>
-                                                    <input type="text" id="telefono-<?= $miembroId; ?>" name="telefono" value="<?= htmlspecialchars((string) ($integrante['telefono'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
-                                                </div>
-                                                <div class="admin-field">
-                                                    <label for="correo-<?= $miembroId; ?>">Correo</label>
-                                                    <input type="email" id="correo-<?= $miembroId; ?>" name="correo" value="<?= htmlspecialchars((string) ($integrante['correo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+                                                    <label for="editar-cargo-<?= $miembroId; ?>">Cargo</label>
+                                                    <input type="text" id="editar-cargo-<?= $miembroId; ?>" name="cargo" value="<?= htmlspecialchars((string) ($integranteResumen['cargo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
                                                 </div>
                                             </div>
                                             <div class="admin-grid two-columns">
                                                 <div class="admin-field">
-                                                    <label for="categoria-<?= $miembroId; ?>">Categoría</label>
+                                                    <label for="editar-telefono-<?= $miembroId; ?>">Teléfono</label>
+                                                    <input type="text" id="editar-telefono-<?= $miembroId; ?>" name="telefono" value="<?= htmlspecialchars((string) ($integranteResumen['telefono'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+                                                </div>
+                                                <div class="admin-field">
+                                                    <label for="editar-correo-<?= $miembroId; ?>">Correo</label>
+                                                    <input type="email" id="editar-correo-<?= $miembroId; ?>" name="correo" value="<?= htmlspecialchars((string) ($integranteResumen['correo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" />
+                                                </div>
+                                            </div>
+                                            <div class="admin-grid two-columns">
+                                                <div class="admin-field">
+                                                    <label for="editar-categoria-<?= $miembroId; ?>">Categoría</label>
                                                     <?php
-                                                    $categoriaActual = (string) ($integrante['categoria'] ?? '');
+                                                    $categoriaActual = (string) ($integranteResumen['categoria'] ?? '');
                                                     if ($categoriaActual === '' || !array_key_exists($categoriaActual, $categorias)) {
                                                         $categoriaActual = RepositorioEquipo::CATEGORIA_OTRO;
                                                     }
                                                     ?>
-                                                    <select id="categoria-<?= $miembroId; ?>" name="categoria">
+                                                    <select id="editar-categoria-<?= $miembroId; ?>" name="categoria">
                                                         <?php foreach ($categorias as $clave => $etiqueta) : ?>
                                                             <option value="<?= htmlspecialchars($clave, ENT_QUOTES, 'UTF-8'); ?>" <?= $clave === $categoriaActual ? 'selected' : ''; ?>>
                                                                 <?= htmlspecialchars($etiqueta, ENT_QUOTES, 'UTF-8'); ?>
@@ -323,32 +270,33 @@ require __DIR__ . '/plantilla/cabecera.php';
                                                     </select>
                                                 </div>
                                                 <div class="admin-field">
-                                                    <label for="prioridad-<?= $miembroId; ?>">Prioridad</label>
-                                                    <input type="number" id="prioridad-<?= $miembroId; ?>" name="prioridad" value="<?= (int) ($integrante['prioridad'] ?? 0); ?>" min="0" max="999" />
+                                                    <label for="editar-prioridad-<?= $miembroId; ?>">Prioridad</label>
+                                                    <input type="number" id="editar-prioridad-<?= $miembroId; ?>" name="prioridad" value="<?= (int) ($integranteResumen['prioridad'] ?? 0); ?>" min="0" max="999" />
                                                 </div>
                                             </div>
-                                            <label class="admin-checkbox">
-                                                <input type="checkbox" name="activo" value="1" <?= ((int) ($integrante['activo'] ?? 0) === 1) ? 'checked' : ''; ?> />
+                                            <label class="admin-checkbox" for="editar-activo-<?= $miembroId; ?>">
+                                                <input type="checkbox" id="editar-activo-<?= $miembroId; ?>" name="activo" value="1" <?= ((int) ($integranteResumen['activo'] ?? 0) === 1) ? 'checked' : ''; ?> />
                                                 <span>Mostrar en la web</span>
                                             </label>
-                                            <div class="admin-table__actions">
+                                            <div class="admin-actions">
                                                 <button type="submit" class="admin-button">Actualizar</button>
                                             </div>
                                         </form>
-                                        <form method="post" class="admin-table__form" onsubmit="return confirm('¿Seguro que deseas eliminar este integrante?');">
-                                            <input type="hidden" name="action" value="delete" />
-                                            <input type="hidden" name="member_id" value="<?= $miembroId; ?>" />
-                                            <button type="submit" class="admin-button admin-button--danger">Eliminar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </section>
-    <?php endforeach; ?>
+                                    </details>
+                                    <form method="post" class="admin-table__form" onsubmit="return confirm('¿Seguro que deseas eliminar este integrante?');">
+                                        <input type="hidden" name="action" value="delete" />
+                                        <input type="hidden" name="member_id" value="<?= $miembroId; ?>" />
+                                        <button type="submit" class="admin-button admin-button--danger">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+
 </div>
 
 <?php require __DIR__ . '/plantilla/pie.php'; ?>
