@@ -67,6 +67,8 @@ CREATE TABLE circuitos (
     categoria ENUM('naturaleza', 'cultural', 'aventura', 'gastronomico', 'bienestar') NOT NULL DEFAULT 'naturaleza',
     dificultad ENUM('relajado', 'moderado', 'intenso') NOT NULL DEFAULT 'relajado',
     frecuencia VARCHAR(120) DEFAULT NULL,
+    tamano_grupo VARCHAR(120) DEFAULT NULL,
+    idiomas JSON DEFAULT NULL,
     estado ENUM('borrador', 'activo', 'inactivo') NOT NULL DEFAULT 'borrador',
     estado_publicacion ENUM('borrador', 'publicado') NOT NULL DEFAULT 'borrador',
     vigencia_desde DATETIME DEFAULT NULL,

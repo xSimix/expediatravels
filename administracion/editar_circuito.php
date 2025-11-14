@@ -64,6 +64,8 @@ if ($circuitoSeleccionado === null) {
         'categoria' => 'naturaleza',
         'dificultad' => 'relajado',
         'frecuencia' => '',
+        'tamano_grupo' => '',
+        'idiomas' => [],
         'estado' => 'borrador',
         'estado_publicacion' => 'borrador',
         'visibilidad' => 'publico',
@@ -92,6 +94,8 @@ $datos = [
     'categoria' => $circuitoSeleccionado['categoria'] ?? 'naturaleza',
     'dificultad' => $circuitoSeleccionado['dificultad'] ?? 'relajado',
     'frecuencia' => $circuitoSeleccionado['frecuencia'] ?? '',
+    'tamano_grupo' => $circuitoSeleccionado['tamano_grupo'] ?? '',
+    'idiomas' => circuitosNormalizarIdiomas($circuitoSeleccionado['idiomas'] ?? []),
     'estado' => $circuitoSeleccionado['estado'] ?? 'borrador',
     'estado_publicacion' => $circuitoSeleccionado['estado_publicacion'] ?? 'borrador',
     'visibilidad' => $circuitoSeleccionado['visibilidad'] ?? 'publico',
@@ -118,6 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
     $datos['categoria'] = strtolower(trim((string) ($_POST['categoria'] ?? $datos['categoria'])));
     $datos['dificultad'] = strtolower(trim((string) ($_POST['dificultad'] ?? $datos['dificultad'])));
     $datos['frecuencia'] = trim((string) ($_POST['frecuencia'] ?? $datos['frecuencia']));
+    $datos['tamano_grupo'] = trim((string) ($_POST['tamano_grupo'] ?? $datos['tamano_grupo']));
+    $datos['idiomas'] = circuitosNormalizarIdiomas($_POST['idiomas'] ?? $datos['idiomas']);
     $datos['estado'] = strtolower(trim((string) ($_POST['estado'] ?? $datos['estado'])));
     $datos['estado_publicacion'] = strtolower(trim((string) ($_POST['estado_publicacion'] ?? $datos['estado_publicacion'])));
     $datos['visibilidad'] = strtolower(trim((string) ($_POST['visibilidad'] ?? $datos['visibilidad'])));
@@ -204,6 +210,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errores)) {
             'categoria' => $datos['categoria'],
             'dificultad' => $datos['dificultad'],
             'frecuencia' => $datos['frecuencia'],
+            'tamano_grupo' => $datos['tamano_grupo'],
+            'idiomas' => $datos['idiomas'],
             'estado' => $datos['estado'],
             'estado_publicacion' => $datos['estado_publicacion'],
             'visibilidad' => $datos['visibilidad'],
@@ -385,6 +393,19 @@ require __DIR__ . '/plantilla/cabecera.php';
                         <div class="admin-field">
                             <label for="frecuencia">Frecuencia de salida</label>
                             <input type="text" id="frecuencia" name="frecuencia" value="<?= htmlspecialchars($datos['frecuencia'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Diario / fines de semana" />
+                        </div>
+                    </div>
+                    <div class="admin-grid two-columns">
+                        <div class="admin-field">
+                            <label for="tamano_grupo">Tamaño del grupo</label>
+                            <input type="text" id="tamano_grupo" name="tamano_grupo" value="<?= htmlspecialchars($datos['tamano_grupo'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Hasta 12 viajeros" />
+                            <p class="admin-help">Actualiza el número máximo recomendado de participantes.</p>
+                        </div>
+                        <div class="admin-field">
+                            <?php $idiomasTexto = circuitosIdiomasComoTexto($datos['idiomas']); ?>
+                            <label for="idiomas">Idiomas disponibles</label>
+                            <input type="text" id="idiomas" name="idiomas" value="<?= htmlspecialchars($idiomasTexto, ENT_QUOTES, 'UTF-8'); ?>" placeholder="Español, Inglés" />
+                            <p class="admin-help">Separa cada idioma con comas o saltos de línea.</p>
                         </div>
                     </div>
                     <div class="admin-field">
