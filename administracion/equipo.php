@@ -14,6 +14,28 @@ $categorias = [
     RepositorioEquipo::CATEGORIA_OTRO => 'Otro',
 ];
 
+$parametrosPaginacion = [];
+foreach (array_keys($categorias) as $claveCategoria) {
+    $parametro = 'page_' . $claveCategoria;
+    $valorPagina = null;
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST[$parametro])) {
+        $valorPagina = $_POST[$parametro];
+    } elseif (isset($_GET[$parametro])) {
+        $valorPagina = $_GET[$parametro];
+    }
+
+    $paginaSolicitada = 1;
+    if (is_string($valorPagina) || is_numeric($valorPagina)) {
+        $paginaSolicitada = (int) $valorPagina;
+        if ($paginaSolicitada < 1) {
+            $paginaSolicitada = 1;
+        }
+    }
+
+    $parametrosPaginacion[$parametro] = $paginaSolicitada;
+}
+
 $errores = [];
 $mensajeExito = null;
 
@@ -186,7 +208,46 @@ require __DIR__ . '/plantilla/cabecera.php';
     </section>
 
     <?php foreach ($categorias as $claveCategoria => $etiquetaCategoria) : ?>
-        <?php $lista = $integrantesPorCategoria[$claveCategoria] ?? []; ?>
+        <?php
+        $lista = $integrantesPorCategoria[$claveCategoria] ?? [];
+        $pageParam = 'page_' . $claveCategoria;
+        $paginaActual = $parametrosPaginacion[$pageParam] ?? 1;
+        $totalIntegrantes = count($lista);
+        $listaPaginada = $lista;
+        $totalPaginas = 1;
+
+        if ($claveCategoria === RepositorioEquipo::CATEGORIA_ASESOR_VENTAS && $totalIntegrantes > 0) {
+            $porPagina = 5;
+            $totalPaginas = (int) ceil($totalIntegrantes / $porPagina);
+            if ($totalPaginas < 1) {
+                $totalPaginas = 1;
+            }
+
+            if ($paginaActual > $totalPaginas) {
+                $paginaActual = $totalPaginas;
+            }
+
+            $offset = ($paginaActual - 1) * $porPagina;
+            if ($offset < 0) {
+                $offset = 0;
+            }
+
+            $listaPaginada = array_slice($lista, $offset, $porPagina);
+        } else {
+            $paginaActual = 1;
+        }
+
+        $queryBase = [];
+        foreach ($_GET as $claveGet => $valorGet) {
+            if ($claveGet === $pageParam) {
+                continue;
+            }
+
+            if (!is_array($valorGet)) {
+                $queryBase[$claveGet] = $valorGet;
+            }
+        }
+        ?>
         <section class="admin-card admin-card--flush">
             <h2><?= htmlspecialchars($etiquetaCategoria, ENT_QUOTES, 'UTF-8'); ?></h2>
             <?php if (empty($lista)) : ?>
@@ -204,7 +265,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                             </tr>
                         </thead>
                         <tbody>
-                            <?php foreach ($lista as $integrante) : ?>
+                            <?php foreach ($listaPaginada as $integrante) : ?>
                                 <?php $miembroId = (int) ($integrante['id'] ?? 0); ?>
                                 <tr>
                                     <td>
@@ -227,6 +288,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <form method="post" class="admin-table__form">
                                             <input type="hidden" name="action" value="update" />
                                             <input type="hidden" name="member_id" value="<?= $miembroId; ?>" />
+                                            <input type="hidden" name="<?= htmlspecialchars($pageParam, ENT_QUOTES, 'UTF-8'); ?>" value="<?= $paginaActual; ?>" />
                                             <div class="admin-grid two-columns">
                                                 <div class="admin-field">
                                                     <label for="nombre-<?= $miembroId; ?>">Nombre</label>
@@ -274,6 +336,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <form method="post" class="admin-table__form" onsubmit="return confirm('¿Seguro que deseas eliminar este integrante?');">
                                             <input type="hidden" name="action" value="delete" />
                                             <input type="hidden" name="member_id" value="<?= $miembroId; ?>" />
+                                            <input type="hidden" name="<?= htmlspecialchars($pageParam, ENT_QUOTES, 'UTF-8'); ?>" value="<?= $paginaActual; ?>" />
                                             <button type="submit" class="admin-button admin-button--danger">Eliminar</button>
                                         </form>
                                     </td>
@@ -282,6 +345,29 @@ require __DIR__ . '/plantilla/cabecera.php';
                         </tbody>
                     </table>
                 </div>
+                <?php if ($claveCategoria === RepositorioEquipo::CATEGORIA_ASESOR_VENTAS && $totalPaginas > 1) : ?>
+                    <nav class="admin-pagination" aria-label="Paginación de asesores de ventas">
+                        <?php if ($paginaActual > 1) : ?>
+                            <?php $prevQuery = $queryBase; $prevQuery[$pageParam] = $paginaActual - 1; $prevHref = '?' . http_build_query($prevQuery); ?>
+                            <a class="admin-pagination__link admin-pagination__link--prev" href="<?= htmlspecialchars($prevHref, ENT_QUOTES, 'UTF-8'); ?>">&laquo; Anterior</a>
+                        <?php endif; ?>
+                        <ul class="admin-pagination__list">
+                            <?php for ($pagina = 1; $pagina <= $totalPaginas; $pagina++) :
+                                $pageQuery = $queryBase;
+                                $pageQuery[$pageParam] = $pagina;
+                                $pageHref = '?' . http_build_query($pageQuery);
+                            ?>
+                                <li>
+                                    <a class="admin-pagination__link<?= $pagina === $paginaActual ? ' is-active' : ''; ?>" href="<?= htmlspecialchars($pageHref, ENT_QUOTES, 'UTF-8'); ?>"<?= $pagina === $paginaActual ? ' aria-current="page"' : ''; ?>><?= $pagina; ?></a>
+                                </li>
+                            <?php endfor; ?>
+                        </ul>
+                        <?php if ($paginaActual < $totalPaginas) : ?>
+                            <?php $nextQuery = $queryBase; $nextQuery[$pageParam] = $paginaActual + 1; $nextHref = '?' . http_build_query($nextQuery); ?>
+                            <a class="admin-pagination__link admin-pagination__link--next" href="<?= htmlspecialchars($nextHref, ENT_QUOTES, 'UTF-8'); ?>">Siguiente &raquo;</a>
+                        <?php endif; ?>
+                    </nav>
+                <?php endif; ?>
             <?php endif; ?>
         </section>
     <?php endforeach; ?>
