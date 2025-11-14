@@ -122,6 +122,111 @@
     font-size: 1.45rem;
 }
 
+.admin-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.admin-card__subtitle {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.admin-card--team {
+    gap: clamp(1.75rem, 2.5vw, 2.35rem);
+}
+
+.admin-empty--team {
+    margin: 0;
+    padding: 1.2rem 1.5rem;
+    border-radius: 22px;
+    background: rgba(226, 232, 240, 0.45);
+    color: #475569;
+    font-size: 0.95rem;
+}
+
+.team-management {
+    display: grid;
+    gap: clamp(1.5rem, 2vw, 2rem);
+}
+
+@media (min-width: 1024px) {
+    .team-management {
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+        align-items: flex-start;
+    }
+}
+
+.team-management__list,
+.team-management__editor {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.team-editor-card {
+    background: linear-gradient(135deg, rgba(248, 250, 252, 0.85), rgba(255, 255, 255, 0.95));
+    border-radius: 24px;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.14);
+    padding: clamp(1.5rem, 2.5vw, 1.9rem);
+    display: grid;
+    gap: 1.5rem;
+}
+
+.team-editor-card__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.team-editor-card__header h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #0f172a;
+}
+
+.team-editor-card__header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.team-editor-card__form {
+    gap: 1.5rem;
+}
+
+.team-table__row--selected {
+    background: rgba(14, 165, 233, 0.12);
+    box-shadow: inset 4px 0 0 #0ea5e9;
+}
+
+.team-table__row--selected strong {
+    color: #0f172a;
+}
+
+.team-table__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    align-items: flex-end;
+}
+
+.team-table__delete {
+    margin: 0;
+}
+
+@media (max-width: 767px) {
+    .team-table__actions {
+        align-items: stretch;
+    }
+
+    .team-table__actions .admin-button {
+        width: 100%;
+    }
+}
+
 .service-create-form {
     display: grid;
     gap: 1.75rem;
