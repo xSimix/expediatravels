@@ -3,6 +3,7 @@
 namespace Aplicacion\BaseDatos;
 
 use PDO;
+use PDOException;
 
 class Conexion
 {
@@ -11,6 +12,17 @@ class Conexion
     public static function obtener(): PDO
     {
         if (self::$pdo === null) {
+            self::$pdo = self::crearConexion();
+
+            return self::$pdo;
+        }
+
+        try {
+            $ping = self::$pdo->query('SELECT 1');
+            if ($ping !== false) {
+                $ping->closeCursor();
+            }
+        } catch (PDOException $exception) {
             self::$pdo = self::crearConexion();
         }
 
