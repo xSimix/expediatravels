@@ -166,11 +166,11 @@
 }
 
 .detail-section--gallery {
-  gap: 1.6rem;
+  gap: 1.4rem;
 }
 
 .detail-gallery {
-  --gallery-gap: clamp(0.6rem, 0.9vw, 1.1rem);
+  --gallery-gap: 10px;
   position: relative;
   background: var(--tour-surface);
   border-radius: var(--tour-radius-lg);
@@ -196,7 +196,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--gallery-gap);
-  padding: clamp(0.25rem, 0.8vw, 1rem);
+  padding: 0;
   box-sizing: border-box;
 }
 
