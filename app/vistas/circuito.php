@@ -25,6 +25,69 @@ if ($heroImage === '') {
     $heroImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80';
 }
 
+$galleryRaw = $detail['gallery'] ?? ($detail['galeria'] ?? []);
+if (is_string($galleryRaw) && trim($galleryRaw) !== '') {
+    $decodedGallery = json_decode($galleryRaw, true);
+    if (is_array($decodedGallery)) {
+        $galleryRaw = $decodedGallery;
+    } else {
+        $galleryRaw = preg_split("/\r\n|\r|\n/", trim($galleryRaw)) ?: [];
+    }
+}
+if (!is_array($galleryRaw)) {
+    $galleryRaw = [];
+}
+
+$galleryImages = [];
+foreach ($galleryRaw as $galleryItem) {
+    if (is_string($galleryItem)) {
+        $src = trim($galleryItem);
+        if ($src === '') {
+            continue;
+        }
+        $galleryImages[] = [
+            'src' => $src,
+            'alt' => $title,
+        ];
+        continue;
+    }
+
+    if (!is_array($galleryItem)) {
+        continue;
+    }
+
+    $src = $galleryItem['src'] ?? $galleryItem['url'] ?? $galleryItem['image'] ?? null;
+    if (is_string($src)) {
+        $src = trim($src);
+    } else {
+        $src = '';
+    }
+    if ($src === '') {
+        continue;
+    }
+
+    $alt = $galleryItem['alt'] ?? $galleryItem['label'] ?? $galleryItem['title'] ?? '';
+    if (!is_string($alt)) {
+        $alt = '';
+    }
+    $alt = trim($alt);
+    if ($alt === '') {
+        $alt = $title;
+    }
+
+    $galleryImages[] = [
+        'src' => $src,
+        'alt' => $alt,
+    ];
+}
+
+if (empty($galleryImages) && $heroImage !== '') {
+    $galleryImages[] = [
+        'src' => $heroImage,
+        'alt' => $title,
+    ];
+}
+
 $locationParts = [
     trim((string) ($detail['location'] ?? ($detail['destino'] ?? ''))),
     trim((string) ($detail['region'] ?? ($detail['pais'] ?? ''))),
@@ -191,6 +254,7 @@ foreach ($itineraryRaw as $index => $day) {
         $itineraryDays[] = [
             'title' => $titleDay,
             'description' => '',
+            'mapUrl' => '',
         ];
         continue;
     }
@@ -199,19 +263,24 @@ foreach ($itineraryRaw as $index => $day) {
     }
     $titleDay = trim((string) ($day['title'] ?? ($day['nombre'] ?? '')));
     $summaryDay = trim((string) ($day['summary'] ?? ($day['description'] ?? ($day['descripcion'] ?? ''))));
+    $mapUrl = trim((string) ($day['map_url'] ?? ($day['map'] ?? ($day['maps'] ?? ($day['ubicacion_maps'] ?? '')))));
+    if ($mapUrl !== '' && !preg_match('/^https?:\/\//i', $mapUrl)) {
+        $mapUrl = '';
+    }
     if ($titleDay === '') {
         $titleDay = 'Experiencia destacada';
     }
     $itineraryDays[] = [
         'title' => $titleDay,
         'description' => $summaryDay,
+        'mapUrl' => $mapUrl,
     ];
 }
 if (empty($itineraryDays)) {
     $itineraryDays = [
-        ['title' => 'Bienvenida y exploración urbana', 'description' => 'Recorrido panorámico por los principales atractivos con tiempo libre para fotografía y degustaciones locales.'],
-        ['title' => 'Aventuras al aire libre', 'description' => 'Caminatas guiadas por senderos icónicos y visitas a miradores exclusivos.'],
-        ['title' => 'Experiencia cultural y despedida', 'description' => 'Intercambio cultural con comunidades locales y almuerzo de despedida.'],
+        ['title' => 'Bienvenida y exploración urbana', 'description' => 'Recorrido panorámico por los principales atractivos con tiempo libre para fotografía y degustaciones locales.', 'mapUrl' => ''],
+        ['title' => 'Aventuras al aire libre', 'description' => 'Caminatas guiadas por senderos icónicos y visitas a miradores exclusivos.', 'mapUrl' => ''],
+        ['title' => 'Experiencia cultural y despedida', 'description' => 'Intercambio cultural con comunidades locales y almuerzo de despedida.', 'mapUrl' => ''],
     ];
 }
 
@@ -419,6 +488,31 @@ $pageTitle = $title . ' — ' . $siteTitle;
 
         <div class="tour-detail__layout">
             <div class="tour-detail__left">
+                <?php if (!empty($galleryImages)): ?>
+                    <section class="detail-section detail-section--gallery" id="galeria">
+                        <header>
+                            <h2>Galería del circuito</h2>
+                            <p>Explora una selección de momentos destacados de esta experiencia.</p>
+                        </header>
+                        <div class="detail-gallery">
+                            <?php foreach ($galleryImages as $image):
+                                $src = $image['src'] ?? '';
+                                if ($src === '') {
+                                    continue;
+                                }
+                                $alt = $image['alt'] ?? $title;
+                                if (!is_string($alt) || trim($alt) === '') {
+                                    $alt = $title;
+                                }
+                            ?>
+                                <figure class="detail-gallery__item">
+                                    <img src="<?= htmlspecialchars($src, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($alt); ?>" loading="lazy" />
+                                </figure>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+
                 <section class="detail-section detail-section--about" id="about">
                     <header>
                         <h2>Sobre este circuito</h2>
@@ -477,7 +571,14 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                     <span class="accordion__icon" aria-hidden="true"></span>
                                 </button>
                                 <div class="accordion__content" data-accordion-content<?= $isOpen ? '' : ' hidden'; ?>>
-                                    <p><?= htmlspecialchars($day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del circuito.'); ?></p>
+                                    <?php $descriptionText = $day['description'] !== '' ? $day['description'] : 'Descubre actividades seleccionadas para este día del circuito.'; ?>
+                                    <p><?= htmlspecialchars($descriptionText); ?></p>
+                                    <?php if (!empty($day['mapUrl'])): ?>
+                                        <a class="accordion__map-link" href="<?= htmlspecialchars($day['mapUrl'], ENT_QUOTES); ?>" target="_blank" rel="noopener noreferrer">
+                                            <span aria-hidden="true">📍</span>
+                                            <span>Ubicación en Google Maps</span>
+                                        </a>
+                                    <?php endif; ?>
                                 </div>
                             </article>
                         <?php endforeach; ?>
