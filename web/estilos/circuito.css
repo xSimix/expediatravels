@@ -501,32 +501,43 @@ body.is-lightbox-open {
   padding: 0;
   display: grid;
   gap: 0.75rem;
-  color: var(--tour-muted);
 }
 
 .split-columns__item li {
   display: flex;
-  gap: 0.75rem;
-  align-items: flex-start;
+  gap: 0.85rem;
+  align-items: center;
 }
 
 .split-columns__icon {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 2.25rem;
+  height: 2.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(22, 163, 74, 0.12);
-  color: var(--tour-highlight);
-  font-size: 0.9rem;
+  border-radius: 999px;
   flex-shrink: 0;
-  margin-top: 0.1rem;
 }
 
-.split-columns__icon--negative {
+.split-columns__icon svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.split-columns__icon--include {
+  background: rgba(22, 163, 74, 0.12);
+  color: var(--tour-highlight);
+}
+
+.split-columns__icon--exclude {
   background: rgba(239, 68, 68, 0.12);
   color: var(--tour-error);
+}
+
+.split-columns__text {
+  color: var(--tour-ink);
+  font-weight: 500;
+  line-height: 1.45;
 }
 
 .accordion {
@@ -708,28 +719,61 @@ body.is-lightbox-open {
   gap: 1.25rem;
 }
 
+.aside-card--pricing {
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(59, 130, 246, 0.12));
+  border: 1px solid rgba(37, 99, 235, 0.1);
+  gap: 1rem;
+}
+
+.pricing-header {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.pricing-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--tour-muted);
+}
+
+.pricing-amount {
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--tour-brand);
+  line-height: 1;
+}
+
+.pricing-note {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--tour-muted);
+}
+
 .aside-card--booking {
   position: sticky;
   top: 110px;
   width: min(420px, 100%);
+  padding: 15px;
 }
 
-.booking-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.45rem;
+.booking-form__header {
+  display: grid;
+  gap: 0.35rem;
 }
 
-.booking-price {
-  font-size: 2rem;
+.booking-form__title {
+  margin: 0;
+  font-size: 1.35rem;
   font-weight: 700;
 }
 
-.booking-rating {
-  display: inline-flex;
-  gap: 0.4rem;
-  align-items: center;
+.booking-form__subtitle {
+  margin: 0;
   color: var(--tour-muted);
+  font-size: 0.95rem;
 }
 
 .booking-form {
@@ -837,6 +881,94 @@ body.is-lightbox-open {
   box-shadow: none;
 }
 
+.sales-advisers {
+  border-top: 1px solid var(--tour-border);
+  padding-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.sales-advisers h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.sales-advisers__description {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--tour-muted);
+}
+
+.sales-advisers__list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.sales-adviser-card {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--tour-radius-md);
+  border: 1px solid var(--tour-border);
+  background: rgba(241, 245, 255, 0.6);
+}
+
+.sales-adviser-card__avatar {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: var(--tour-brand);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+}
+
+.sales-adviser-card__body {
+  display: grid;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.sales-adviser-card__body h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.sales-adviser-card__body p {
+  margin: 0;
+  color: var(--tour-muted);
+  font-size: 0.9rem;
+}
+
+.sales-adviser-card__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  background: #25d366;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform var(--tour-transition), box-shadow var(--tour-transition);
+}
+
+.sales-adviser-card__cta:hover,
+.sales-adviser-card__cta:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 20px rgba(37, 211, 102, 0.25);
+}
+
+.sales-adviser-card__cta span {
+  font-size: 1.1rem;
+}
+
 .aside-card--guide {
   text-align: center;
 }
@@ -866,32 +998,6 @@ body.is-lightbox-open {
 .guide-button:focus-visible {
   background: var(--tour-brand);
   color: #fff;
-}
-
-.aside-card--contact ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.7rem;
-}
-
-.aside-card--contact li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: var(--tour-muted);
-}
-
-.aside-card--contact a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.aside-card--contact a:hover,
-.aside-card--contact a:focus-visible {
-  color: var(--tour-brand);
-  text-decoration: underline;
 }
 
 @media (max-width: 1080px) {
