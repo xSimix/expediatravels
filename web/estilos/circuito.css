@@ -107,30 +107,6 @@
   backdrop-filter: blur(6px);
 }
 
-.tour-banner__video-button {
-  border: 0;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  background: rgba(15, 23, 42, 0.55);
-  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.tour-banner__video-button:focus {
-  outline: none;
-}
-
-.tour-banner__video-button:is(:hover, :focus-visible) {
-  background: rgba(15, 23, 42, 0.75);
-  transform: translateY(-1px);
-  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.3);
-}
-
-.tour-banner__video-button:focus-visible {
-  outline: 2px solid rgba(148, 163, 184, 0.65);
-  outline-offset: 2px;
-}
-
 .tour-banner__icon {
   font-size: 1.15rem;
 }
@@ -408,87 +384,6 @@
   background: rgba(37, 99, 235, 0.85);
   color: #fff;
   transform: scale(1.05);
-}
-
-.video-modal {
-  position: fixed;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: clamp(1.5rem, 5vw, 3rem);
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(6px);
-  z-index: 1400;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.video-modal[hidden] {
-  display: none;
-}
-
-.video-modal.is-open {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.video-modal__backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.45);
-}
-
-.video-modal__dialog {
-  position: relative;
-  z-index: 1;
-  width: min(960px, 92vw);
-  display: grid;
-  gap: clamp(1rem, 2.6vw, 1.75rem);
-  background: rgba(15, 23, 42, 0.95);
-  border-radius: clamp(16px, 3vw, 26px);
-  padding: clamp(1rem, 2.6vw, 2rem);
-  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.45);
-  color: #f8fafc;
-}
-
-.video-modal__content {
-  position: relative;
-  width: 100%;
-}
-
-.video-modal__frame {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border: 0;
-  border-radius: clamp(12px, 2.5vw, 20px);
-  background: #000;
-}
-
-.video-modal__close {
-  position: absolute;
-  top: clamp(0.4rem, 1vw, 0.75rem);
-  right: clamp(0.4rem, 1vw, 0.75rem);
-  border: 0;
-  background: rgba(15, 23, 42, 0.4);
-  color: #e2e8f0;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 999px;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.video-modal__close:is(:hover, :focus-visible) {
-  background: rgba(37, 99, 235, 0.85);
-  color: #fff;
-  transform: scale(1.05);
-}
-
-body.video-modal-open {
-  overflow: hidden;
 }
 
 body.is-lightbox-open {
