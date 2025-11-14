@@ -16,7 +16,7 @@ class RepositorioCircuitos
             $pdo = Conexion::obtener();
             $statement = $pdo->prepare(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia,
-                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria,
+                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria, c.video_destacado_url,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -70,7 +70,7 @@ class RepositorioCircuitos
             $pdo = Conexion::obtener();
             $statement = $pdo->query(
                 'SELECT c.id, c.nombre, c.descripcion, c.duracion, c.precio, c.categoria, c.dificultad, c.frecuencia,
-                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria,
+                        c.tamano_grupo, c.idiomas, c.servicios, c.galeria, c.video_destacado_url,
                         COALESCE(c.destino_personalizado, destino_destacado.nombre) AS destino,
                         destino_destacado.region,
                         COALESCE(c.imagen_destacada, c.imagen_portada) AS imagen
@@ -195,6 +195,26 @@ class RepositorioCircuitos
 
         $languages = $this->normalizeLanguages($rawLanguages);
 
+        $videoCandidates = [
+            $circuit['video_destacado_url'] ?? null,
+            $circuit['video_destacado'] ?? null,
+            $circuit['featured_video_url'] ?? null,
+            $circuit['featuredVideoUrl'] ?? null,
+            $circuit['video'] ?? null,
+        ];
+        $videoUrl = '';
+        foreach ($videoCandidates as $candidate) {
+            if (!is_string($candidate)) {
+                continue;
+            }
+            $candidate = trim($candidate);
+            if ($candidate === '') {
+                continue;
+            }
+            $videoUrl = $candidate;
+            break;
+        }
+
         $base = array_merge($circuit, [
             'id' => (int) ($circuit['id'] ?? 0),
             'slug' => $circuit['slug'] ?? $this->generateSlug((string) $name),
@@ -222,6 +242,18 @@ class RepositorioCircuitos
             'idiomas' => $languages,
             'languages' => $languages,
         ]);
+
+        if ($videoUrl !== '') {
+            $base['video_destacado_url'] = $videoUrl;
+            $base['video_destacado'] = $videoUrl;
+            $base['featured_video_url'] = $videoUrl;
+            $base['featuredVideoUrl'] = $videoUrl;
+        } else {
+            $base['video_destacado_url'] = isset($base['video_destacado_url']) ? trim((string) $base['video_destacado_url']) : '';
+            $base['video_destacado'] = isset($base['video_destacado']) ? trim((string) $base['video_destacado']) : '';
+            $base['featured_video_url'] = isset($base['featured_video_url']) ? trim((string) $base['featured_video_url']) : '';
+            $base['featuredVideoUrl'] = isset($base['featuredVideoUrl']) ? trim((string) $base['featuredVideoUrl']) : '';
+        }
 
         $circuitId = (int) ($base['id'] ?? 0);
         if ($circuitId > 0) {
