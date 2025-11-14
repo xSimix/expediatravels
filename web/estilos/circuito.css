@@ -145,7 +145,7 @@
 
 .tour-detail__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 450px);
   gap: clamp(2.5rem, 4vw, 2.5rem);
   align-items: start;
 }
@@ -708,6 +708,7 @@ body.is-lightbox-open {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  width: min(450px, 100%);
 }
 
 .aside-card {
@@ -755,7 +756,7 @@ body.is-lightbox-open {
 .aside-card--booking {
   position: sticky;
   top: 110px;
-  width: min(420px, 100%);
+  width: min(450px, 100%);
   padding: 15px;
 }
 
@@ -1002,7 +1003,7 @@ body.is-lightbox-open {
 
 @media (max-width: 1080px) {
   .tour-detail__layout {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
   }
 }
 
