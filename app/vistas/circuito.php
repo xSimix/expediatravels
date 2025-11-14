@@ -531,7 +531,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
         <section class="tour-banner" style="--banner-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');">
             <div class="tour-banner__overlay" aria-hidden="true"></div>
             <div class="tour-banner__content">
-                <span class="tour-banner__pill"><?= htmlspecialchars($typeLabel); ?></span>
                 <h1><?= htmlspecialchars($title); ?></h1>
                 <?php if ($tagline !== ''): ?>
                     <p class="tour-banner__tagline"><?= htmlspecialchars($tagline); ?></p>
