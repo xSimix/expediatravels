@@ -185,6 +185,50 @@ require __DIR__ . '/plantilla/cabecera.php';
         </form>
     </section>
 
+    <section class="admin-card admin-card--flush">
+        <h2>Integrantes registrados</h2>
+        <?php if (empty($integrantes)) : ?>
+            <p class="admin-empty">Aún no has registrado integrantes.</p>
+        <?php else : ?>
+            <div class="admin-table-wrapper">
+                <table class="admin-table admin-table--users">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Cargo</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($integrantes as $integranteResumen) : ?>
+                            <tr>
+                                <td>
+                                    <strong><?= htmlspecialchars((string) ($integranteResumen['nombre'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                </td>
+                                <td>
+                                    <?php
+                                    $categoriaResumen = (string) ($integranteResumen['categoria'] ?? RepositorioEquipo::CATEGORIA_OTRO);
+                                    $etiquetaCategoria = $categorias[$categoriaResumen] ?? $categorias[RepositorioEquipo::CATEGORIA_OTRO];
+                                    ?>
+                                    <?= htmlspecialchars($etiquetaCategoria, ENT_QUOTES, 'UTF-8'); ?>
+                                </td>
+                                <td><?= htmlspecialchars((string) ($integranteResumen['cargo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?= htmlspecialchars((string) ($integranteResumen['telefono'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?= htmlspecialchars((string) ($integranteResumen['correo'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?= (int) ($integranteResumen['prioridad'] ?? 0); ?></td>
+                                <td><?= ((int) ($integranteResumen['activo'] ?? 0) === 1) ? 'Activo' : 'Oculto'; ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        <?php endif; ?>
+    </section>
+
     <?php foreach ($categorias as $claveCategoria => $etiquetaCategoria) : ?>
         <?php $lista = $integrantesPorCategoria[$claveCategoria] ?? []; ?>
         <section class="admin-card admin-card--flush">
