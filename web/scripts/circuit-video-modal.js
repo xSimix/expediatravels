@@ -19,67 +19,17 @@
         return modal.dataset.videoSrc || '';
     };
 
-    const setFrameSource = (src) => {
-        if (!frame) {
-            return;
-        }
-
-        if (frame instanceof HTMLIFrameElement) {
-            frame.src = src;
-            return;
-        }
-
-        if (frame instanceof HTMLVideoElement) {
-            frame.src = src;
-            frame.load();
-            if (typeof frame.play === 'function') {
-                const playPromise = frame.play();
-                if (playPromise && typeof playPromise.catch === 'function') {
-                    playPromise.catch(() => {});
-                }
-            }
-            return;
-        }
-
-        frame.setAttribute('src', src);
-    };
-
-    const clearFrameSource = () => {
-        if (!frame) {
-            return;
-        }
-
-        if (frame instanceof HTMLIFrameElement) {
-            frame.src = '';
-            return;
-        }
-
-        if (frame instanceof HTMLVideoElement) {
-            if (typeof frame.pause === 'function') {
-                frame.pause();
-            }
-            frame.removeAttribute('src');
-            if (typeof frame.load === 'function') {
-                frame.load();
-            }
-            return;
-        }
-
-        frame.removeAttribute('src');
-    };
-
     const openModal = (src) => {
         if (!src || !frame) {
             return;
         }
 
-        lastActiveElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        setFrameSource(src);
+        lastActiveElement = document.activeElement;
+        frame.src = src;
         modal.hidden = false;
         body.classList.add('video-modal-open');
 
         window.requestAnimationFrame(() => {
-            modal.classList.add('is-open');
             if (dialog) {
                 dialog.focus();
             }
@@ -87,35 +37,15 @@
     };
 
     const closeModal = () => {
-        clearFrameSource();
-        modal.classList.remove('is-open');
-        body.classList.remove('video-modal-open');
-
-        const finalizeClose = () => {
-            modal.hidden = true;
-        };
-
-        if (typeof modal.addEventListener === 'function') {
-            const handleTransitionEnd = (event) => {
-                if (event.target !== modal) {
-                    return;
-                }
-                modal.removeEventListener('transitionend', handleTransitionEnd);
-                finalizeClose();
-            };
-            modal.addEventListener('transitionend', handleTransitionEnd);
-            window.setTimeout(() => {
-                modal.removeEventListener('transitionend', handleTransitionEnd);
-                finalizeClose();
-            }, 350);
-        } else {
-            finalizeClose();
+        if (frame) {
+            frame.src = '';
         }
+        modal.hidden = true;
+        body.classList.remove('video-modal-open');
 
         if (lastActiveElement && typeof lastActiveElement.focus === 'function') {
             lastActiveElement.focus();
         }
-        lastActiveElement = null;
     };
 
     openButtons.forEach((button) => {
