@@ -16,6 +16,12 @@ VALUES (1, 'https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?q=80&w=400
 INSERT INTO usuario_fotos_portada (usuario_id, ruta, es_actual)
 VALUES (1, 'https://images.unsplash.com/photo-1529923188384-5e545b81d48d?auto=format&fit=crop&w=1600&q=80', 1);
 
+INSERT INTO equipo (nombre, cargo, telefono, correo, categoria, prioridad, activo)
+VALUES
+('María López', 'Especialista en circuitos', '+51 987 654 321', 'maria.lopez@expediatravels.pe', 'asesor_ventas', 10, 1),
+('Jorge Ramírez', 'Atención personalizada', '+51 945 123 456', 'jorge.ramirez@expediatravels.pe', 'asesor_ventas', 8, 1),
+('Lucía Quispe', 'Guía senior', '+51 912 345 678', 'lucia.quispe@expediatravels.pe', 'guia', 5, 1);
+
 INSERT INTO destinos (
     nombre,
     slug,

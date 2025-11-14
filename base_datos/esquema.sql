@@ -35,6 +35,22 @@ CREATE TABLE usuario_fotos_portada (
     INDEX idx_usuario_fotos_portada_usuario_actual (usuario_id, es_actual)
 );
 
+CREATE TABLE equipo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    cargo VARCHAR(150) DEFAULT NULL,
+    telefono VARCHAR(60) DEFAULT NULL,
+    correo VARCHAR(150) DEFAULT NULL,
+    categoria ENUM('asesor_ventas', 'guia', 'operaciones', 'otro') NOT NULL DEFAULT 'otro',
+    descripcion TEXT DEFAULT NULL,
+    prioridad INT NOT NULL DEFAULT 0,
+    activo TINYINT(1) NOT NULL DEFAULT 1,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_equipo_categoria_activo (categoria, activo, prioridad),
+    UNIQUE KEY uniq_equipo_nombre_categoria (nombre, categoria)
+);
+
 CREATE TABLE destinos (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(120) NOT NULL,

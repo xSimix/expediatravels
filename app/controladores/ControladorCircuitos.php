@@ -3,6 +3,7 @@
 namespace Aplicacion\Controladores;
 
 use Aplicacion\Repositorios\RepositorioCircuitos;
+use Aplicacion\Repositorios\RepositorioEquipo;
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
 use Aplicacion\Servicios\ServicioAutenticacion;
 use Aplicacion\Vistas\Vista;
@@ -55,14 +56,35 @@ class ControladorCircuitos
             $reviewsCount = (int) $circuit['totalResenas'];
         }
 
+        $teamRepository = new RepositorioEquipo();
+        $salesTeam = $teamRepository->obtenerActivosPorCategoria(RepositorioEquipo::CATEGORIA_ASESOR_VENTAS);
+
+        $salesAdvisers = [];
+        foreach ($salesTeam as $member) {
+            $name = trim((string) ($member['nombre'] ?? ($member['name'] ?? '')));
+            if ($name === '') {
+                continue;
+            }
+
+            $salesAdvisers[] = [
+                'name' => $name,
+                'phone' => trim((string) ($member['telefono'] ?? ($member['phone'] ?? ''))),
+                'role' => trim((string) ($member['cargo'] ?? ($member['role'] ?? ''))),
+            ];
+        }
+
+        $detail = is_array($circuit) ? $circuit : [];
+        $detail['reviewsList'] = $reviewsList;
+        if (!empty($salesAdvisers)) {
+            $detail['salesAdvisers'] = $salesAdvisers;
+        }
+
         $view = new Vista('circuito');
         $view->render([
             'title' => $pageTitle,
             'siteSettings' => $siteSettings,
             'currentUser' => $authService->currentUser(),
-            'detail' => array_merge($circuit, [
-                'reviewsList' => $reviewsList,
-            ]),
+            'detail' => $detail,
             'reviewsSummary' => [
                 'average' => $reviewsAverage,
                 'count' => $reviewsCount,
