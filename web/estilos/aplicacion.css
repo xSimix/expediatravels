@@ -624,7 +624,6 @@ body::-webkit-scrollbar-thumb:hover {
     overflow: hidden;
     border-radius: 24px;
     position: relative;
-    box-shadow: 0 24px 40px rgba(15, 23, 42, 0.18);
 }
 
 .detail-gallery__item img {
