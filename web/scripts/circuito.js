@@ -81,7 +81,8 @@
   const gallerySliders = doc.querySelectorAll('[data-gallery-slider]');
   gallerySliders.forEach((slider) => {
     const track = slider.querySelector('[data-gallery-track]');
-    if (!track) {
+    const viewport = slider.querySelector('[data-gallery-viewport]');
+    if (!track || !viewport) {
       return;
     }
 
@@ -90,9 +91,14 @@
       return;
     }
 
+    viewport.style.touchAction = 'pan-y';
+
     const dots = Array.from(slider.querySelectorAll('[data-gallery-dot]'));
     let currentIndex = 0;
     let autoplayId;
+    let isPointerDown = false;
+    let startX = 0;
+    let preventClick = false;
 
     const intervalAttr = Number(slider.getAttribute('data-gallery-interval'));
     const autoplayInterval = Number.isFinite(intervalAttr) && intervalAttr > 0 ? intervalAttr : 5000;
@@ -115,6 +121,7 @@
       }
       const total = slides.length;
       currentIndex = ((index % total) + total) % total;
+      track.style.transition = '';
       track.style.transform = `translateX(-${currentIndex * 100}%)`;
       setActiveDot(currentIndex);
     };
@@ -175,6 +182,106 @@
     slider.addEventListener('touchend', startAutoplay);
     slider.addEventListener('touchcancel', startAutoplay);
 
+    const getViewportWidth = () => viewport.getBoundingClientRect().width || 1;
+
+    const finishDrag = (event) => {
+      if (!isPointerDown) {
+        return;
+      }
+      isPointerDown = false;
+      track.style.transition = '';
+      if (typeof viewport.releasePointerCapture === 'function' && typeof event.pointerId === 'number') {
+        try {
+          viewport.releasePointerCapture(event.pointerId);
+        } catch (error) {
+          // ignore release errors
+        }
+      }
+
+      const clientX = typeof event.clientX === 'number' ? event.clientX : startX;
+      const delta = clientX - startX;
+      const width = getViewportWidth();
+      const threshold = width * 0.18;
+
+      if (Math.abs(delta) > threshold) {
+        if (delta < 0) {
+          goTo(currentIndex + 1);
+        } else {
+          goTo(currentIndex - 1);
+        }
+      } else {
+        goTo(currentIndex);
+      }
+
+      window.setTimeout(() => {
+        preventClick = false;
+      }, 0);
+      startAutoplay();
+    };
+
+    viewport.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (event.button !== undefined && event.button !== 0 && event.pointerType === 'mouse') {
+          return;
+        }
+        isPointerDown = true;
+        preventClick = false;
+        startX = event.clientX;
+        track.style.transition = 'none';
+        stopAutoplay();
+
+        if (typeof viewport.setPointerCapture === 'function' && typeof event.pointerId === 'number') {
+          try {
+            viewport.setPointerCapture(event.pointerId);
+          } catch (error) {
+            // ignore capture errors
+          }
+        }
+
+        if (event.pointerType === 'mouse') {
+          event.preventDefault();
+        }
+      },
+      { passive: false }
+    );
+
+    viewport.addEventListener(
+      'pointermove',
+      (event) => {
+        if (!isPointerDown) {
+          return;
+        }
+
+        const clientX = typeof event.clientX === 'number' ? event.clientX : startX;
+        const delta = clientX - startX;
+        const width = getViewportWidth();
+        if (Math.abs(delta) > 5) {
+          preventClick = true;
+        }
+
+        const percentDelta = (delta / width) * 100;
+        track.style.transform = `translateX(${-(currentIndex * 100) + percentDelta}%)`;
+      },
+      { passive: true }
+    );
+
+    viewport.addEventListener('pointerup', finishDrag, { passive: true });
+    viewport.addEventListener('pointercancel', finishDrag, { passive: true });
+
+    viewport.addEventListener(
+      'click',
+      (event) => {
+        if (!preventClick) {
+          return;
+        }
+        event.preventDefault();
+        event.stopPropagation();
+        preventClick = false;
+      },
+      true
+    );
+
     goTo(0);
     startAutoplay();
   });
@@ -188,10 +295,15 @@
       return;
     }
 
-    const scope = lightbox.closest('.detail-section--gallery') || doc;
+    const gallerySection = lightbox.closest('.detail-section--gallery');
+    const scope = gallerySection || doc;
     const triggers = scope.querySelectorAll('[data-gallery-lightbox-trigger]');
     if (!triggers.length) {
       return;
+    }
+
+    if (gallerySection && lightbox.parentElement !== doc.body) {
+      doc.body.appendChild(lightbox);
     }
 
     let lastTrigger = null;
