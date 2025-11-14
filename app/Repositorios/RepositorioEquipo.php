@@ -15,6 +15,8 @@ class RepositorioEquipo
     public const CATEGORIA_OPERACIONES = 'operaciones';
     public const CATEGORIA_OTRO = 'otro';
 
+    private const FALLBACK_ARCHIVO = '/almacenamiento/datos/equipo.json';
+
     /**
      * @return array<int, array<string, mixed>>
      */
@@ -84,7 +86,7 @@ class RepositorioEquipo
 
             return $registro !== false ? $this->mapear($registro) : null;
         } catch (PDOException $exception) {
-            foreach ($this->fallback() as $miembro) {
+            foreach ($this->obtenerFallbackPersistente() as $miembro) {
                 if ((int) ($miembro['id'] ?? 0) === $id) {
                     return $this->mapear($miembro);
                 }
@@ -124,7 +126,7 @@ class RepositorioEquipo
 
             return (int) $pdo->lastInsertId();
         } catch (PDOException $exception) {
-            return 0;
+            return $this->crearEnFallback($datos);
         }
     }
 
@@ -160,7 +162,7 @@ class RepositorioEquipo
 
             return $sentencia->execute();
         } catch (PDOException $exception) {
-            return false;
+            return $this->actualizarEnFallback($id, $datos);
         }
     }
 
@@ -173,7 +175,7 @@ class RepositorioEquipo
 
             return $sentencia->execute();
         } catch (PDOException $exception) {
-            return false;
+            return $this->eliminarEnFallback($id);
         }
     }
 
@@ -243,7 +245,7 @@ class RepositorioEquipo
      */
     private function filtrarFallback(?string $categoria, bool $soloActivos): array
     {
-        $miembros = $this->fallback();
+        $miembros = $this->obtenerFallbackPersistente();
 
         if ($categoria !== null && $categoria !== '') {
             $miembros = array_values(array_filter(
@@ -274,5 +276,173 @@ class RepositorioEquipo
         );
 
         return array_map(fn (array $miembro): array => $this->mapear($miembro), $miembros);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function obtenerFallbackPersistente(): array
+    {
+        $ruta = $this->obtenerRutaFallback();
+
+        if (!is_file($ruta)) {
+            $miembros = $this->fallback();
+            $this->guardarFallbackPersistente($miembros);
+
+            return $miembros;
+        }
+
+        $contenido = @file_get_contents($ruta);
+        if ($contenido === false || trim($contenido) === '') {
+            $miembros = $this->fallback();
+            $this->guardarFallbackPersistente($miembros);
+
+            return $miembros;
+        }
+
+        $datos = json_decode($contenido, true);
+        if (!is_array($datos)) {
+            $miembros = $this->fallback();
+            $this->guardarFallbackPersistente($miembros);
+
+            return $miembros;
+        }
+
+        return array_values(array_filter(
+            array_map(
+                static function ($fila): array {
+                    if (!is_array($fila)) {
+                        return [];
+                    }
+
+                    return $fila;
+                },
+                $datos
+            ),
+            static fn (array $fila): bool => !empty($fila)
+        ));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $miembros
+     */
+    private function guardarFallbackPersistente(array $miembros): void
+    {
+        $ruta = $this->obtenerRutaFallback();
+        $directorio = dirname($ruta);
+
+        if (!is_dir($directorio)) {
+            @mkdir($directorio, 0775, true);
+        }
+
+        $contenido = json_encode(array_values($miembros), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        if ($contenido !== false) {
+            @file_put_contents($ruta, $contenido);
+        }
+    }
+
+    private function obtenerRutaFallback(): string
+    {
+        return dirname(__DIR__, 2) . self::FALLBACK_ARCHIVO;
+    }
+
+    /**
+     * @param array<string, mixed> $datos
+     */
+    private function crearEnFallback(array $datos): int
+    {
+        $miembros = $this->obtenerFallbackPersistente();
+
+        $ids = array_map(
+            static fn (array $miembro): int => (int) ($miembro['id'] ?? 0),
+            $miembros
+        );
+        $nuevoId = empty($ids) ? 1 : (max($ids) + 1);
+
+        $cargo = $datos['cargo'] ?? null;
+        $telefono = $datos['telefono'] ?? null;
+        $correo = $datos['correo'] ?? null;
+        $categoria = $datos['categoria'] ?? self::CATEGORIA_OTRO;
+        $descripcion = $datos['descripcion'] ?? null;
+        $prioridad = (int) ($datos['prioridad'] ?? 0);
+        $activo = (int) ($datos['activo'] ?? 1);
+
+        $miembros[] = [
+            'id' => $nuevoId,
+            'nombre' => (string) ($datos['nombre'] ?? ''),
+            'cargo' => $cargo !== null ? (string) $cargo : null,
+            'telefono' => $telefono !== null ? (string) $telefono : null,
+            'correo' => $correo !== null ? (string) $correo : null,
+            'categoria' => (string) $categoria,
+            'descripcion' => $descripcion !== null ? (string) $descripcion : null,
+            'prioridad' => $prioridad,
+            'activo' => $activo,
+        ];
+
+        $this->guardarFallbackPersistente($miembros);
+
+        return $nuevoId;
+    }
+
+    /**
+     * @param array<string, mixed> $datos
+     */
+    private function actualizarEnFallback(int $id, array $datos): bool
+    {
+        $miembros = $this->obtenerFallbackPersistente();
+        $actualizado = false;
+
+        foreach ($miembros as &$miembro) {
+            if ((int) ($miembro['id'] ?? 0) !== $id) {
+                continue;
+            }
+
+            $cargo = $datos['cargo'] ?? null;
+            $telefono = $datos['telefono'] ?? null;
+            $correo = $datos['correo'] ?? null;
+            $categoria = $datos['categoria'] ?? self::CATEGORIA_OTRO;
+            $descripcion = $datos['descripcion'] ?? null;
+            $prioridad = (int) ($datos['prioridad'] ?? 0);
+            $activo = (int) ($datos['activo'] ?? 1);
+
+            $miembro['nombre'] = (string) ($datos['nombre'] ?? '');
+            $miembro['cargo'] = $cargo !== null ? (string) $cargo : null;
+            $miembro['telefono'] = $telefono !== null ? (string) $telefono : null;
+            $miembro['correo'] = $correo !== null ? (string) $correo : null;
+            $miembro['categoria'] = (string) $categoria;
+            $miembro['descripcion'] = $descripcion !== null ? (string) $descripcion : null;
+            $miembro['prioridad'] = $prioridad;
+            $miembro['activo'] = $activo;
+            $actualizado = true;
+            break;
+        }
+
+        unset($miembro);
+
+        if ($actualizado) {
+            $this->guardarFallbackPersistente($miembros);
+        }
+
+        return $actualizado;
+    }
+
+    private function eliminarEnFallback(int $id): bool
+    {
+        $miembros = $this->obtenerFallbackPersistente();
+        $total = count($miembros);
+
+        $miembros = array_values(array_filter(
+            $miembros,
+            static fn (array $miembro): bool => (int) ($miembro['id'] ?? 0) !== $id
+        ));
+
+        if (count($miembros) === $total) {
+            return false;
+        }
+
+        $this->guardarFallbackPersistente($miembros);
+
+        return true;
     }
 }
