@@ -108,6 +108,7 @@ foreach ($integrantes as $integrante) {
 $paginaActiva = 'equipo';
 $tituloPagina = 'Equipo — Panel de Control';
 $estilosExtra = ['recursos/panel-admin.css'];
+$scriptsExtra = ['recursos/equipo.js'];
 
 require __DIR__ . '/plantilla/cabecera.php';
 ?>
@@ -193,7 +194,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                 <p class="admin-empty">No hay integrantes registrados en esta categoría.</p>
             <?php else : ?>
                 <div class="admin-table-wrapper">
-                    <table class="admin-table admin-table--users">
+                    <table class="admin-table admin-table--users" data-page-size="5">
                         <thead>
                             <tr>
                                 <th>Nombre</th>
