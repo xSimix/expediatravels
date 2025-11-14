@@ -498,6 +498,13 @@ function adjuntarRelacionesCircuito(array $circuito, array &$errores): array
 
     try {
         $pdo = Conexion::obtener();
+        $detallesStatement = $pdo->prepare('SELECT tamano_grupo, idiomas FROM circuitos WHERE id = :id');
+        $detallesStatement->execute([':id' => $circuitoId]);
+        if ($detalles = $detallesStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $tamanoGrupo = trim((string) ($detalles['tamano_grupo'] ?? ''));
+            $circuito['tamano_grupo'] = $tamanoGrupo;
+            $circuito['idiomas'] = circuitosNormalizarIdiomas($detalles['idiomas'] ?? []);
+        }
         $destinosIds = circuitosObtenerRelacionesPorId(
             $pdo,
             $circuitoId,
