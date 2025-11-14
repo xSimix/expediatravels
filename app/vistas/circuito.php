@@ -516,9 +516,13 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                 if (!is_string($alt) || trim($alt) === '') {
                                     $alt = $title;
                                 }
+                                $caption = trim($alt);
                             ?>
                                 <figure class="detail-gallery__item">
-                                    <img src="<?= htmlspecialchars($src, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($alt); ?>" loading="lazy" />
+                                    <img class="detail-gallery__image" src="<?= htmlspecialchars($src, ENT_QUOTES); ?>" alt="<?= htmlspecialchars($alt); ?>" loading="lazy" />
+                                    <?php if ($caption !== ''): ?>
+                                        <figcaption class="detail-gallery__caption"><?= htmlspecialchars($caption); ?></figcaption>
+                                    <?php endif; ?>
                                 </figure>
                             <?php endforeach; ?>
                         </div>
