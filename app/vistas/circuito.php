@@ -168,6 +168,116 @@ if (empty($languagesList)) {
     $languagesList = ['Español', 'Inglés'];
 }
 
+$videoUrlCandidates = [
+    $detail['featuredVideo'] ?? null,
+    $detail['featuredVideoUrl'] ?? null,
+    $detail['video_destacado_url'] ?? null,
+    $detail['videoUrl'] ?? null,
+    $detail['video'] ?? null,
+];
+
+$featuredVideoUrl = '';
+foreach ($videoUrlCandidates as $candidateUrl) {
+    if (!is_string($candidateUrl)) {
+        continue;
+    }
+    $candidateUrl = trim($candidateUrl);
+    if ($candidateUrl === '') {
+        continue;
+    }
+    $featuredVideoUrl = $candidateUrl;
+    break;
+}
+
+$buildFeaturedVideo = static function (string $url) use ($title): ?array {
+    $trimmedUrl = trim($url);
+    if ($trimmedUrl === '') {
+        return null;
+    }
+
+    $parsed = parse_url($trimmedUrl);
+    $host = isset($parsed['host']) ? strtolower($parsed['host']) : '';
+    $path = isset($parsed['path']) ? (string) $parsed['path'] : '';
+    $query = isset($parsed['query']) ? (string) $parsed['query'] : '';
+
+    $normalizeHost = static function (?string $value): string {
+        if (!is_string($value) || $value === '') {
+            return '';
+        }
+        return preg_replace('/^www\./', '', strtolower($value)) ?: '';
+    };
+
+    $normalizedHost = $normalizeHost($host);
+
+    $buildYoutubeEmbed = static function () use ($path, $query, $normalizedHost): ?string {
+        $videoId = '';
+
+        if ($normalizedHost === 'youtu.be') {
+            $videoId = trim($path, '/');
+        } elseif ($normalizedHost === 'youtube.com' || $normalizedHost === 'm.youtube.com') {
+            if (strpos($path, '/embed/') === 0) {
+                $videoId = substr($path, strlen('/embed/')) ?: '';
+            } elseif (strpos($path, '/shorts/') === 0) {
+                $videoId = substr($path, strlen('/shorts/')) ?: '';
+            } else {
+                parse_str($query, $params);
+                if (isset($params['v']) && is_string($params['v'])) {
+                    $videoId = $params['v'];
+                }
+            }
+        }
+
+        $videoId = trim((string) $videoId);
+        if ($videoId === '') {
+            return null;
+        }
+
+        return 'https://www.youtube.com/embed/' . rawurlencode($videoId);
+    };
+
+    $buildVimeoEmbed = static function () use ($path): ?string {
+        $segments = array_values(array_filter(explode('/', $path), static fn ($segment) => $segment !== ''));
+        if (empty($segments)) {
+            return null;
+        }
+
+        $videoId = end($segments);
+        if (!is_string($videoId) || trim($videoId) === '') {
+            return null;
+        }
+
+        return 'https://player.vimeo.com/video/' . rawurlencode($videoId);
+    };
+
+    $embedSrc = null;
+    $embedType = 'iframe';
+
+    if ($normalizedHost === 'youtu.be' || $normalizedHost === 'youtube.com' || $normalizedHost === 'm.youtube.com') {
+        $embedSrc = $buildYoutubeEmbed();
+    } elseif ($normalizedHost === 'vimeo.com') {
+        $embedSrc = $buildVimeoEmbed();
+    } elseif (preg_match('/\.(mp4|webm|ogg|ogv)(\?.*)?$/i', $trimmedUrl)) {
+        $embedType = 'video';
+        $embedSrc = $trimmedUrl;
+    }
+
+    if ($embedSrc === null) {
+        $embedSrc = $trimmedUrl;
+    }
+
+    return [
+        'type' => $embedType,
+        'src' => $embedSrc,
+        'title' => $title,
+        'original' => $trimmedUrl,
+    ];
+};
+
+$featuredVideo = null;
+if ($featuredVideoUrl !== '') {
+    $featuredVideo = $buildFeaturedVideo($featuredVideoUrl);
+}
+
 $summaryRaw = $detail['summary'] ?? ($detail['descripcion_larga'] ?? ($detail['descripcion'] ?? ''));
 $summaryText = is_string($summaryRaw) ? trim($summaryRaw) : '';
 if ($summaryText === '') {
@@ -546,6 +656,18 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <?= htmlspecialchars($location); ?>
                         </span>
                     <?php endif; ?>
+                    <?php if ($featuredVideo !== null && isset($featuredVideo['src'])): ?>
+                        <button
+                            type="button"
+                            class="tour-banner__meta-item tour-banner__video-button"
+                            data-video-modal-open
+                            data-video-src="<?= htmlspecialchars((string) $featuredVideo['src'], ENT_QUOTES); ?>"
+                            aria-label="Ver video de <?= htmlspecialchars($title); ?>"
+                        >
+                            <span class="tour-banner__icon" aria-hidden="true">▶</span>
+                            Ver video
+                        </button>
+                    <?php endif; ?>
                 </div>
                 <div class="tour-banner__info">
                     <article class="tour-banner__info-item">
@@ -834,9 +956,56 @@ $pageTitle = $title . ' — ' . $siteTitle;
         </div>
     </main>
 
+    <?php if ($featuredVideo !== null && isset($featuredVideo['src'])):
+        $videoFrameType = $featuredVideo['type'] ?? 'iframe';
+        $videoFrameTitle = $featuredVideo['title'] ?? $title;
+    ?>
+        <div
+            class="video-modal"
+            data-video-modal
+            hidden
+            data-video-src="<?= htmlspecialchars((string) $featuredVideo['src'], ENT_QUOTES); ?>"
+        >
+            <div class="video-modal__backdrop" data-video-modal-close aria-hidden="true"></div>
+            <div
+                class="video-modal__dialog"
+                data-video-modal-dialog
+                role="dialog"
+                aria-modal="true"
+                tabindex="-1"
+                aria-label="Video de <?= htmlspecialchars($title); ?>"
+            >
+                <button type="button" class="video-modal__close" data-video-modal-close aria-label="Cerrar video">×</button>
+                <div class="video-modal__content">
+                    <?php if ($videoFrameType === 'video'): ?>
+                        <video
+                            class="video-modal__frame"
+                            data-video-modal-frame
+                            controls
+                            playsinline
+                        ></video>
+                    <?php else: ?>
+                        <iframe
+                            class="video-modal__frame"
+                            data-video-modal-frame
+                            src=""
+                            title="<?= htmlspecialchars($videoFrameTitle); ?>"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowfullscreen
+                        ></iframe>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <?php include __DIR__ . '/partials/site-footer.php'; ?>
 
     <script src="scripts/circuito.js" defer></script>
+    <?php if ($featuredVideo !== null && isset($featuredVideo['src'])): ?>
+        <script src="scripts/circuit-video-modal.js" defer></script>
+    <?php endif; ?>
     <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
 </body>
 </html>
