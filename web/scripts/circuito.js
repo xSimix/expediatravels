@@ -364,4 +364,90 @@
       }
     });
   });
+
+  const videoLightbox = doc.querySelector('[data-video-lightbox]');
+  if (videoLightbox) {
+    const frame = videoLightbox.querySelector('[data-video-frame]');
+    const player = videoLightbox.querySelector('[data-video-player]');
+    const closeElements = videoLightbox.querySelectorAll('[data-lightbox-close]');
+    const triggers = doc.querySelectorAll('[data-video-lightbox-trigger]');
+
+    if (frame && player && triggers.length) {
+      let lastTrigger = null;
+
+      const resetSources = () => {
+        frame.setAttribute('src', '');
+        frame.hidden = true;
+        player.pause();
+        player.removeAttribute('src');
+        player.hidden = true;
+      };
+
+      const closeLightbox = () => {
+        videoLightbox.classList.remove('is-open');
+        videoLightbox.hidden = true;
+        resetSources();
+        doc.body.classList.remove('is-lightbox-open');
+        if (lastTrigger) {
+          lastTrigger.focus();
+          lastTrigger = null;
+        }
+      };
+
+      const openLightbox = (trigger) => {
+        const src = trigger.getAttribute('data-video-src');
+        const kind = trigger.getAttribute('data-video-kind');
+        if (!src) {
+          return;
+        }
+
+        resetSources();
+        lastTrigger = trigger;
+
+        if (kind === 'file') {
+          player.hidden = false;
+          player.setAttribute('src', src);
+          player.load();
+          const playPromise = player.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {});
+          }
+        } else {
+          frame.hidden = false;
+          const hasQuery = src.includes('?');
+          const autoplaySrc = `${src}${hasQuery ? '&' : '?'}autoplay=1`;
+          frame.setAttribute('src', autoplaySrc);
+        }
+
+        videoLightbox.hidden = false;
+        doc.body.classList.add('is-lightbox-open');
+        window.requestAnimationFrame(() => {
+          videoLightbox.classList.add('is-open');
+          videoLightbox.focus();
+        });
+      };
+
+      triggers.forEach((trigger) => {
+        trigger.addEventListener('click', () => {
+          openLightbox(trigger);
+        });
+      });
+
+      closeElements.forEach((element) => {
+        element.addEventListener('click', closeLightbox);
+      });
+
+      videoLightbox.addEventListener('click', (event) => {
+        if (event.target === videoLightbox) {
+          closeLightbox();
+        }
+      });
+
+      doc.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !videoLightbox.hidden) {
+          closeLightbox();
+        }
+      });
+    }
+  }
 })();

@@ -25,6 +25,67 @@ if ($heroImage === '') {
     $heroImage = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1600&q=80';
 }
 
+$videoUrlCandidates = [
+    $detail['video_destacado_url'] ?? null,
+    $detail['video_destacado'] ?? null,
+    $detail['featured_video_url'] ?? null,
+    $detail['featuredVideoUrl'] ?? null,
+    $detail['video'] ?? null,
+];
+$featuredVideoUrl = '';
+foreach ($videoUrlCandidates as $candidate) {
+    if (!is_string($candidate)) {
+        continue;
+    }
+    $candidate = trim($candidate);
+    if ($candidate === '') {
+        continue;
+    }
+    $featuredVideoUrl = $candidate;
+    break;
+}
+
+$videoLightboxSource = '';
+$videoLightboxKind = 'embed';
+if ($featuredVideoUrl !== '') {
+    $videoLightboxSource = $featuredVideoUrl;
+    $parsedUrl = parse_url($featuredVideoUrl);
+    $host = strtolower($parsedUrl['host'] ?? '');
+    $path = $parsedUrl['path'] ?? '';
+    $extension = strtolower(pathinfo($path ?? '', PATHINFO_EXTENSION));
+
+    if (in_array($extension, ['mp4', 'm4v', 'webm', 'ogv', 'ogg'], true)) {
+        $videoLightboxKind = 'file';
+    } elseif ($host !== '') {
+        if (str_contains($host, 'youtube.com') || str_contains($host, 'youtu.be')) {
+            $videoId = '';
+            if (str_contains($host, 'youtu.be')) {
+                $videoId = ltrim((string) $path, '/');
+            } else {
+                if (str_starts_with((string) $path, '/embed/')) {
+                    $videoId = trim(substr((string) $path, 7));
+                } elseif (str_starts_with((string) $path, '/shorts/')) {
+                    $videoId = trim(substr((string) $path, 8));
+                } else {
+                    parse_str($parsedUrl['query'] ?? '', $queryParams);
+                    $videoId = (string) ($queryParams['v'] ?? '');
+                }
+            }
+            $videoId = preg_replace('/[^a-zA-Z0-9_-]/', '', $videoId ?? '') ?? '';
+            if ($videoId !== '') {
+                $videoLightboxSource = 'https://www.youtube.com/embed/' . $videoId;
+            }
+        } elseif (str_contains($host, 'vimeo.com')) {
+            $segments = array_values(array_filter(explode('/', (string) $path)));
+            $videoId = end($segments);
+            $videoId = preg_replace('/[^0-9]/', '', $videoId ?? '') ?? '';
+            if ($videoId !== '') {
+                $videoLightboxSource = 'https://player.vimeo.com/video/' . $videoId;
+            }
+        }
+    }
+}
+
 $galleryRaw = $detail['gallery'] ?? ($detail['galeria'] ?? []);
 if (is_string($galleryRaw) && trim($galleryRaw) !== '') {
     $decodedGallery = json_decode($galleryRaw, true);
@@ -546,6 +607,19 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <?= htmlspecialchars($location); ?>
                         </span>
                     <?php endif; ?>
+                    <?php if ($videoLightboxSource !== ''): ?>
+                        <button
+                            type="button"
+                            class="tour-banner__meta-item tour-banner__meta-button"
+                            data-video-lightbox-trigger
+                            data-video-src="<?= htmlspecialchars($videoLightboxSource, ENT_QUOTES); ?>"
+                            data-video-kind="<?= htmlspecialchars($videoLightboxKind, ENT_QUOTES); ?>"
+                            aria-haspopup="dialog"
+                        >
+                            <span class="tour-banner__icon" aria-hidden="true">▶️</span>
+                            Ver video
+                        </button>
+                    <?php endif; ?>
                 </div>
                 <div class="tour-banner__info">
                     <article class="tour-banner__info-item">
@@ -671,6 +745,28 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <button type="button" class="detail-lightbox__close" data-lightbox-close aria-label="Cerrar galería">×</button>
                             <img class="detail-lightbox__image" src="" alt="" data-lightbox-image />
                             <figcaption class="detail-lightbox__caption" data-lightbox-caption></figcaption>
+                        </figure>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($videoLightboxSource !== ''): ?>
+                    <div class="detail-lightbox" data-video-lightbox role="dialog" aria-modal="true" aria-label="Video destacado del circuito" tabindex="-1" hidden>
+                        <div class="detail-lightbox__backdrop" data-lightbox-close aria-hidden="true"></div>
+                        <figure class="detail-lightbox__figure">
+                            <button type="button" class="detail-lightbox__close" data-lightbox-close aria-label="Cerrar video">×</button>
+                            <div class="detail-lightbox__video" data-video-lightbox-container>
+                                <iframe
+                                    class="detail-lightbox__video-frame"
+                                    src=""
+                                    title="Video destacado"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    data-video-frame
+                                    hidden
+                                ></iframe>
+                                <video class="detail-lightbox__video-player" controls playsinline data-video-player hidden></video>
+                            </div>
+                            <figcaption class="detail-lightbox__caption">Disfruta una vista previa del circuito.</figcaption>
                         </figure>
                     </div>
                 <?php endif; ?>
