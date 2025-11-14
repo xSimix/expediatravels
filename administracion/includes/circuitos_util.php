@@ -183,6 +183,8 @@ function normalizarCircuito(array $circuito, array $destinos): array
     $serviciosIncluidos = prepararArrayCircuito($circuito['servicios_incluidos'] ?? $circuito['servicios'] ?? []);
     $serviciosExcluidos = prepararArrayCircuito($circuito['servicios_excluidos'] ?? []);
     $galeria = prepararArrayCircuito($circuito['galeria'] ?? []);
+    $tamanoGrupo = trim((string) ($circuito['tamano_grupo'] ?? $circuito['tamanoGrupo'] ?? $circuito['group_size'] ?? $circuito['capacidad'] ?? ''));
+    $idiomas = circuitosNormalizarIdiomas($circuito['idiomas'] ?? $circuito['languages'] ?? []);
     $precioBruto = $circuito['precio'] ?? $circuito['precio_desde'] ?? null;
     if (is_string($precioBruto)) {
         $precioSanitizado = preg_replace('/[^0-9,\.\-]/', '', $precioBruto);
@@ -217,6 +219,8 @@ function normalizarCircuito(array $circuito, array $destinos): array
         'categoria' => $categoria,
         'dificultad' => $dificultad,
         'frecuencia' => trim((string) ($circuito['frecuencia'] ?? '')),
+        'tamano_grupo' => $tamanoGrupo,
+        'idiomas' => $idiomas,
         'descripcion' => trim((string) ($circuito['descripcion'] ?? '')),
         'imagen_portada' => trim((string) ($circuito['imagen_portada'] ?? '')),
         'imagen_destacada' => trim((string) ($circuito['imagen_destacada'] ?? '')),
@@ -283,9 +287,10 @@ function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
         $destinoPrincipal = $destinosSeleccionados[0] ?? null;
 
         $statement = $pdo->prepare(
-            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, precio, categoria, dificultad, frecuencia, estado, estado_publicacion, vigencia_desde, vigencia_hasta, visibilidad, descripcion, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
-             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :precio, :categoria, :dificultad, :frecuencia, :estado, :estado_publicacion, :vigencia_desde, :vigencia_hasta, :visibilidad, :descripcion, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
+            'INSERT INTO circuitos (destino_id, destino_personalizado, nombre, duracion, precio, categoria, dificultad, frecuencia, tamano_grupo, idiomas, estado, estado_publicacion, vigencia_desde, vigencia_hasta, visibilidad, descripcion, servicios, imagen_portada, imagen_destacada, galeria, video_destacado_url)
+             VALUES (:destino_id, :destino_personalizado, :nombre, :duracion, :precio, :categoria, :dificultad, :frecuencia, :tamano_grupo, :idiomas, :estado, :estado_publicacion, :vigencia_desde, :vigencia_hasta, :visibilidad, :descripcion, :servicios, :imagen_portada, :imagen_destacada, :galeria, :video)'
         );
+        $idiomasLista = circuitosNormalizarIdiomas($circuito['idiomas'] ?? []);
         $statement->execute([
             ':destino_id' => $destinoPrincipal !== null ? $destinoPrincipal : null,
             ':destino_personalizado' => $circuito['destino_personalizado'] !== '' ? $circuito['destino_personalizado'] : null,
@@ -295,6 +300,8 @@ function crearCircuitoCatalogo(array $circuito, array &$errores): ?int
             ':categoria' => $circuito['categoria'],
             ':dificultad' => $circuito['dificultad'],
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
+            ':tamano_grupo' => $circuito['tamano_grupo'] !== '' ? $circuito['tamano_grupo'] : null,
+            ':idiomas' => prepararJsonListaCircuito($idiomasLista),
             ':estado' => $circuito['estado'],
             ':estado_publicacion' => $circuito['estado_publicacion'],
             ':vigencia_desde' => $circuito['vigencia_desde'] ?? null,
@@ -351,6 +358,8 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
                  categoria = :categoria,
                  dificultad = :dificultad,
                  frecuencia = :frecuencia,
+                 tamano_grupo = :tamano_grupo,
+                 idiomas = :idiomas,
                  estado = :estado,
                  estado_publicacion = :estado_publicacion,
                  vigencia_desde = :vigencia_desde,
@@ -364,6 +373,7 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
                  video_destacado_url = :video
              WHERE id = :id'
         );
+        $idiomasLista = circuitosNormalizarIdiomas($circuito['idiomas'] ?? []);
         $statement->execute([
             ':id' => $circuitoId,
             ':destino_id' => $destinoPrincipal !== null ? $destinoPrincipal : null,
@@ -374,6 +384,8 @@ function actualizarCircuitoCatalogo(int $circuitoId, array $circuito, array &$er
             ':categoria' => $circuito['categoria'],
             ':dificultad' => $circuito['dificultad'],
             ':frecuencia' => $circuito['frecuencia'] !== '' ? $circuito['frecuencia'] : null,
+            ':tamano_grupo' => $circuito['tamano_grupo'] !== '' ? $circuito['tamano_grupo'] : null,
+            ':idiomas' => prepararJsonListaCircuito($idiomasLista),
             ':estado' => $circuito['estado'],
             ':estado_publicacion' => $circuito['estado_publicacion'],
             ':vigencia_desde' => $circuito['vigencia_desde'] ?? null,
@@ -550,6 +562,50 @@ function prepararJsonListaCircuito(array $valores): ?string
     }
 
     return json_encode(array_values($valores), JSON_UNESCAPED_UNICODE);
+}
+
+function circuitosNormalizarIdiomas($valor): array
+{
+    if (is_array($valor)) {
+        $items = $valor;
+    } elseif (is_string($valor) && trim($valor) !== '') {
+        $texto = trim($valor);
+        $decodificado = json_decode($texto, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decodificado)) {
+            $items = $decodificado;
+        } else {
+            $items = preg_split('/\r\n|\r|\n|[,;]+/', $texto) ?: [];
+        }
+    } else {
+        $items = [];
+    }
+
+    $resultado = [];
+    foreach ($items as $item) {
+        if (is_array($item)) {
+            $item = $item['label'] ?? $item['nombre'] ?? $item['idioma'] ?? $item['valor'] ?? $item['value'] ?? '';
+        }
+
+        $texto = trim((string) $item);
+        if ($texto !== '') {
+            $resultado[] = $texto;
+        }
+    }
+
+    return array_values(array_unique($resultado));
+}
+
+function circuitosIdiomasComoTexto($idiomas): string
+{
+    if (!is_array($idiomas)) {
+        $idiomas = circuitosNormalizarIdiomas($idiomas);
+    }
+
+    if (empty($idiomas)) {
+        return '';
+    }
+
+    return implode(', ', $idiomas);
 }
 
 if (!function_exists('convertirListado')) {

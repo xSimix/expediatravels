@@ -129,6 +129,14 @@ require __DIR__ . '/plantilla/cabecera.php';
                                         <?php if ($circuito['frecuencia'] !== ''): ?>
                                             <li><strong>Frecuencia:</strong> <?= htmlspecialchars($circuito['frecuencia'], ENT_QUOTES, 'UTF-8'); ?></li>
                                         <?php endif; ?>
+                                        <?php $tamanoGrupo = trim((string) ($circuito['tamano_grupo'] ?? '')); ?>
+                                        <?php if ($tamanoGrupo !== ''): ?>
+                                            <li><strong>Tamaño del grupo:</strong> <?= htmlspecialchars($tamanoGrupo, ENT_QUOTES, 'UTF-8'); ?></li>
+                                        <?php endif; ?>
+                                        <?php $idiomasTexto = circuitosIdiomasComoTexto($circuito['idiomas'] ?? []); ?>
+                                        <?php if ($idiomasTexto !== ''): ?>
+                                            <li><strong>Idiomas:</strong> <?= htmlspecialchars($idiomasTexto, ENT_QUOTES, 'UTF-8'); ?></li>
+                                        <?php endif; ?>
                                         <li><strong>Categoría:</strong> <?= htmlspecialchars(categoriaCircuitoEtiqueta($circuito['categoria']), ENT_QUOTES, 'UTF-8'); ?></li>
                                         <li><strong>Dificultad:</strong> <?= htmlspecialchars(dificultadCircuitoEtiqueta($circuito['dificultad']), ENT_QUOTES, 'UTF-8'); ?></li>
                                     </ul>
