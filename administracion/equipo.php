@@ -378,7 +378,7 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <form method="post" class="admin-form team-editor-card__form">
                                     <input type="hidden" name="action" value="update" />
                                     <input type="hidden" name="member_id" value="<?= $integranteSeleccionadoId; ?>" />
-                                    <div class="admin-grid two-columns">
+                                    <div class="team-editor-card__grid">
                                         <div class="admin-field">
                                             <label for="editar-nombre">Nombre</label>
                                             <input type="text" id="editar-nombre" name="nombre" required value="<?= htmlspecialchars($editarNombre, ENT_QUOTES, 'UTF-8'); ?>" />
@@ -387,8 +387,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <label for="editar-cargo">Cargo</label>
                                             <input type="text" id="editar-cargo" name="cargo" value="<?= htmlspecialchars($editarCargo, ENT_QUOTES, 'UTF-8'); ?>" />
                                         </div>
-                                    </div>
-                                    <div class="admin-grid two-columns">
                                         <div class="admin-field">
                                             <label for="editar-telefono">Teléfono</label>
                                             <input type="text" id="editar-telefono" name="telefono" value="<?= htmlspecialchars($editarTelefono, ENT_QUOTES, 'UTF-8'); ?>" />
@@ -397,8 +395,6 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <label for="editar-correo">Correo</label>
                                             <input type="email" id="editar-correo" name="correo" value="<?= htmlspecialchars($editarCorreo, ENT_QUOTES, 'UTF-8'); ?>" />
                                         </div>
-                                    </div>
-                                    <div class="admin-grid two-columns">
                                         <div class="admin-field">
                                             <label for="editar-categoria">Categoría</label>
                                             <select id="editar-categoria" name="categoria">
@@ -414,13 +410,13 @@ require __DIR__ . '/plantilla/cabecera.php';
                                             <input type="number" id="editar-prioridad" name="prioridad" value="<?= (int) $editarPrioridad; ?>" min="0" max="999" />
                                             <p class="admin-help">Mayor prioridad aparece primero en la web.</p>
                                         </div>
-                                    </div>
-                                    <label class="admin-checkbox" for="editar-activo">
-                                        <input type="checkbox" id="editar-activo" name="activo" value="1" <?= $editarActivo === 1 ? 'checked' : ''; ?> />
-                                        <span>Mostrar en la web</span>
-                                    </label>
-                                    <div class="admin-actions">
-                                        <button type="submit" class="admin-button">Actualizar integrante</button>
+                                        <label class="admin-checkbox team-editor-card__checkbox" for="editar-activo">
+                                            <input type="checkbox" id="editar-activo" name="activo" value="1" <?= $editarActivo === 1 ? 'checked' : ''; ?> />
+                                            <span>Mostrar en la web</span>
+                                        </label>
+                                        <div class="admin-actions team-editor-card__actions">
+                                            <button type="submit" class="admin-button">Actualizar integrante</button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>

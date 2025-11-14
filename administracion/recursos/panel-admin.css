@@ -165,6 +165,10 @@
     gap: 1.25rem;
 }
 
+.team-management__list {
+    width: 100%;
+}
+
 .team-editor-card {
     background: linear-gradient(135deg, rgba(248, 250, 252, 0.85), rgba(255, 255, 255, 0.95));
     border-radius: 24px;
@@ -195,6 +199,28 @@
 
 .team-editor-card__form {
     gap: 1.5rem;
+}
+
+.team-editor-card__grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .team-editor-card__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.team-editor-card__checkbox,
+.team-editor-card__actions {
+    grid-column: 1 / -1;
+}
+
+.team-editor-card__actions {
+    display: flex;
+    justify-content: flex-end;
 }
 
 .team-table__row--selected {
