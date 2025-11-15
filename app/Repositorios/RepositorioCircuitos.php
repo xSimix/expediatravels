@@ -3,6 +3,7 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\BaseDatos\Conexion;
+use Aplicacion\Servicios\ServicioUrls;
 use PDO;
 use PDOException;
 
@@ -614,21 +615,33 @@ $itineraryStmt = $pdo->prepare(
                         'badge' => 'Destino',
                         'title' => 'Oxapampa Esencial',
                         'summary' => 'Tres días entre casonas, cataratas y reservas de biosfera.',
-                        'href' => 'destino.php?slug=oxapampa',
+                        'href' => ServicioUrls::destino([
+                            'slug' => 'oxapampa',
+                            'region' => 'Pasco',
+                            'nombre' => 'Oxapampa',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Paquete',
                         'title' => 'Escapada Pozuzo Boutique',
                         'summary' => 'Experiencia de fin de semana con hospedaje histórico y gastronomía fusión.',
-                        'href' => 'paquete.php?slug=pozuzo-boutique',
+                        'href' => ServicioUrls::paquete([
+                            'slug' => 'pozuzo-boutique',
+                            'region' => 'Pasco',
+                            'nombre' => 'Pozuzo Heritage Boutique',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Circuito',
                         'title' => 'Aventura Cataratas Perené',
                         'summary' => 'Recorrido lleno de adrenalina y contacto comunitario.',
-                        'href' => 'circuito.php?slug=aventura-perene',
+                        'href' => ServicioUrls::circuito([
+                            'slug' => 'aventura-perene',
+                            'region' => 'Junín',
+                            'nombre' => 'Aventura Cataratas del Perené',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
@@ -750,14 +763,22 @@ $itineraryStmt = $pdo->prepare(
                         'badge' => 'Paquete',
                         'title' => 'Full Day Selva Mágica',
                         'summary' => 'Un día para visitar Bayoz, Velo de la Novia y mariposario.',
-                        'href' => 'paquete.php?slug=selva-magica',
+                        'href' => ServicioUrls::paquete([
+                            'slug' => 'selva-magica',
+                            'region' => 'Junín',
+                            'nombre' => 'Full Day Selva Mágica',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Destino',
                         'title' => 'Perené',
                         'summary' => 'Puerta a cataratas y comunidades vibrantes.',
-                        'href' => 'destino.php?slug=perene',
+                        'href' => ServicioUrls::destino([
+                            'slug' => 'perene',
+                            'region' => 'Junín',
+                            'nombre' => 'Perené',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
