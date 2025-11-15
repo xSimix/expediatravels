@@ -877,30 +877,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             </p>
                         </header>
                         <div class="reservation-form__fields">
-                            <div class="reservation-form__field-grid">
-                                <label class="reservation-field">
-                                    <span class="reservation-field__label">Nombre completo</span>
-                                    <input
-                                        class="reservation-field__input"
-                                        type="text"
-                                        name="name"
-                                        placeholder="Escribe tu nombre"
-                                        autocomplete="name"
-                                        required
-                                    />
-                                </label>
-                                <label class="reservation-field">
-                                    <span class="reservation-field__label">Teléfono de contacto</span>
-                                    <input
-                                        class="reservation-field__input"
-                                        type="tel"
-                                        name="phone"
-                                        placeholder="Ej. +51 900 000 000"
-                                        autocomplete="tel"
-                                        required
-                                    />
-                                </label>
-                            </div>
                             <label class="reservation-field reservation-field--full">
                                 <span class="reservation-field__label">Fecha de viaje</span>
                                 <input
