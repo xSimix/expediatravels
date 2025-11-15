@@ -126,12 +126,7 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
     a { color: var(--brand); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    .wrap {
-      width: min(100%, var(--page-max-width, 1440px));
-      margin: 0 auto;
-      padding: clamp(1.5rem, 4vw, 3rem);
-      position: relative;
-    }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; position: relative; }
 
     .top-actions {
       display: flex;

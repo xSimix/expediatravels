@@ -648,9 +648,8 @@ $pageTitle = $title . ' — ' . $siteTitle;
             </div>
         </section>
 
-        <div class="layout-container layout-container--flush">
-            <div class="tour-detail__layout">
-                <div class="tour-detail__left">
+        <div class="tour-detail__layout">
+            <div class="tour-detail__left">
 
                             <section class="detail-section detail-section--about" id="about">
                     <header>
@@ -1099,7 +1098,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                     </div>
                 </section>
             </aside>
-            </div>
         </div>
     </main>
 
