@@ -809,11 +809,11 @@ body.is-lightbox-open {
   gap: 1.75rem;
   padding: clamp(1.8rem, 4vw, 2.4rem);
   border-radius: 24px;
-  background: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(37, 99, 235, 0.9));
+  background: linear-gradient(165deg, rgba(15, 23, 42, 0.92) 0%, rgba(37, 99, 235, 0.88) 52%, rgba(14, 165, 233, 0.85) 100%);
   color: #f8fafc;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  box-shadow: 0 28px 42px -18px rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 30px 48px -18px rgba(15, 23, 42, 0.55);
 }
 
 .reservation-form::before {
@@ -823,8 +823,8 @@ body.is-lightbox-open {
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(59, 130, 246, 0.45), rgba(59, 130, 246, 0));
-  opacity: 0.6;
+  background: radial-gradient(circle at center, rgba(125, 211, 252, 0.45), rgba(125, 211, 252, 0));
+  opacity: 0.7;
   pointer-events: none;
 }
 
@@ -845,8 +845,9 @@ body.is-lightbox-open {
   font-size: 0.8rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  background: rgba(226, 232, 240, 0.2);
-  color: rgba(226, 232, 240, 0.95);
+  background: rgba(226, 232, 240, 0.25);
+  color: rgba(241, 245, 249, 0.95);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.25);
 }
 
 .reservation-form__title {
@@ -925,8 +926,9 @@ body.is-lightbox-open {
   gap: 1.1rem;
   padding: 1.4rem 1.6rem 1.6rem;
   border-radius: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.55);
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.15);
   z-index: 1;
 }
 
@@ -953,9 +955,9 @@ body.is-lightbox-open {
   gap: 0.6rem;
   padding: 0.85rem 1rem;
   border-radius: 16px;
-  background: rgba(30, 41, 59, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  box-shadow: 0 16px 28px -18px rgba(15, 23, 42, 0.6);
+  background: rgba(30, 41, 59, 0.78);
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  box-shadow: 0 18px 30px -18px rgba(15, 23, 42, 0.6);
 }
 
 .reservation-counter__label {
@@ -971,8 +973,8 @@ body.is-lightbox-open {
   gap: 0.75rem;
   padding: 0.45rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.82);
 }
 
 .reservation-counter__btn {
@@ -980,7 +982,7 @@ body.is-lightbox-open {
   height: 2.3rem;
   border-radius: 50%;
   border: none;
-  background: rgba(59, 130, 246, 0.95);
+  background: linear-gradient(135deg, #38bdf8, #2563eb);
   color: #fff;
   font-size: 1.35rem;
   line-height: 1;
@@ -999,7 +1001,7 @@ body.is-lightbox-open {
 .reservation-counter__btn:not(:disabled):hover,
 .reservation-counter__btn:not(:disabled):focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 14px 25px rgba(59, 130, 246, 0.35);
+  box-shadow: 0 16px 28px rgba(56, 189, 248, 0.38);
 }
 
 .reservation-counter input {
@@ -1014,6 +1016,107 @@ body.is-lightbox-open {
 
 .reservation-counter input:focus-visible {
   outline: none;
+}
+
+.reservation-field__input--select {
+  appearance: none;
+  background-image: linear-gradient(to bottom, rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' viewBox='0 0 12 8'%3E%3Cpath fill='%23e2e8f0' d='M10.59.59 6 5.17 1.41.59 0 2l6 6 6-6L10.59.59Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 100% 100%, 0.85rem;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+.reservation-field__input--select:focus-visible {
+  outline: none;
+  border-color: rgba(148, 163, 184, 0.6);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.35);
+}
+
+.reservation-more {
+  position: relative;
+  display: grid;
+  gap: 1rem;
+  z-index: 1;
+}
+
+.reservation-more__control {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  overflow: hidden;
+}
+
+.reservation-more__label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  background: rgba(15, 23, 42, 0.5);
+  color: rgba(226, 232, 240, 0.95);
+  cursor: pointer;
+  transition: background var(--tour-transition), border-color var(--tour-transition), transform var(--tour-transition);
+}
+
+.reservation-more__label::after {
+  content: '';
+  align-self: flex-end;
+  width: 1.15rem;
+  height: 1.15rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.35);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' viewBox='0 0 12 8'%3E%3Cpath fill='%23000' d='M10.59.59 6 5.17 1.41.59 0 2l6 6 6-6L10.59.59Z'/%3E%3C/svg%3E") center/0.7rem 0.7rem no-repeat;
+  transition: transform var(--tour-transition), background var(--tour-transition);
+}
+
+.reservation-more__title {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.reservation-more__description {
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.75);
+}
+
+.reservation-more-options {
+  display: none;
+  gap: 1.35rem;
+  padding: 1.3rem 1.4rem 1.4rem;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(15, 23, 42, 0.52);
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
+}
+
+.reservation-more__control:focus-visible + .reservation-more__label {
+  outline: 3px solid rgba(165, 180, 252, 0.55);
+  outline-offset: 3px;
+}
+
+.reservation-more__control:checked + .reservation-more__label {
+  background: rgba(37, 99, 235, 0.55);
+  border-color: rgba(148, 163, 184, 0.5);
+  transform: translateY(-1px);
+}
+
+.reservation-more__control:checked + .reservation-more__label::after {
+  transform: rotate(180deg);
+  background: rgba(56, 189, 248, 0.55);
+}
+
+.reservation-more__control:checked ~ .reservation-more-options {
+  display: grid;
 }
 
 .reservation-form__footer {
