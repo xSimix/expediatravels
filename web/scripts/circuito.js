@@ -458,7 +458,10 @@
 
       const formData = new FormData(bookingForm);
       const nameValue = String(formData.get('name') ?? '').trim();
+      const phoneValue = String(formData.get('phone') ?? '').trim();
+      const emailValue = String(formData.get('email') ?? '').trim();
       const dateValue = String(formData.get('date') ?? '').trim();
+      const notesValue = String(formData.get('message') ?? '').trim();
       const packageName = String(bookingForm.getAttribute('data-package-name') ?? '').trim();
 
       let formattedDate = '';
@@ -492,6 +495,12 @@
       if (nameValue) {
         messageLines.push(`*Nombre:* ${nameValue}`);
       }
+      if (phoneValue) {
+        messageLines.push(`*Teléfono:* ${phoneValue}`);
+      }
+      if (emailValue) {
+        messageLines.push(`*Correo:* ${emailValue}`);
+      }
       if (dateValue) {
         messageLines.push(`*Fecha de viaje:* ${formattedDate || dateValue}`);
       }
@@ -511,6 +520,12 @@
         messageLines.push('');
         messageLines.push('*Detalle de viajeros*');
         messageLines.push(...travellerLines.map((line) => `• ${line}`));
+      }
+
+      if (notesValue) {
+        messageLines.push('');
+        messageLines.push('*Comentarios adicionales*');
+        messageLines.push(notesValue);
       }
 
       if (messageLines.length === 1) {
