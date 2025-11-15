@@ -78,29 +78,6 @@
     sync();
   });
 
-  const moreOptionContainers = doc.querySelectorAll('[data-more-container]');
-  moreOptionContainers.forEach((container) => {
-    const toggle = container.querySelector('[data-more-toggle]');
-    const content = container.querySelector('[data-more-content]');
-    const icon = container.querySelector('[data-more-icon]');
-    if (!toggle || !content) {
-      return;
-    }
-
-    const updateState = () => {
-      const isChecked = toggle.checked;
-      content.hidden = !isChecked;
-      container.classList.toggle('is-open', isChecked);
-      toggle.setAttribute('aria-expanded', isChecked ? 'true' : 'false');
-      if (icon) {
-        icon.textContent = isChecked ? '−' : '+';
-      }
-    };
-
-    toggle.addEventListener('change', updateState);
-    updateState();
-  });
-
   const gallerySliders = doc.querySelectorAll('[data-gallery-slider]');
   gallerySliders.forEach((slider) => {
     const track = slider.querySelector('[data-gallery-track]');
@@ -506,12 +483,8 @@
       const travellerDefinitions = [
         { name: 'adults', label: 'Adultos' },
         { name: 'children', label: 'Niños' },
-        { name: 'seniors', label: 'Personas mayores' },
+        { name: 'infant', label: 'Infantes' },
       ];
-
-      const disabilityDetails = String(formData.get('disability_details') ?? '').trim();
-      const petDetails = String(formData.get('pet_details') ?? '').trim();
-      const medicalConditions = String(formData.get('medical_conditions') ?? '').trim();
 
       const messageLines = [];
       messageLines.push('*🧾 Solicitud de reserva*');
@@ -547,23 +520,6 @@
         messageLines.push('');
         messageLines.push('*Detalle de viajeros*');
         messageLines.push(...travellerLines.map((line) => `• ${line}`));
-      }
-
-      const specialNotes = [];
-      if (disabilityDetails) {
-        specialNotes.push(`• Personas con discapacidad: ${disabilityDetails}`);
-      }
-      if (petDetails) {
-        specialNotes.push(`• Mascotas: ${petDetails}`);
-      }
-      if (medicalConditions) {
-        specialNotes.push(`• Condición médica especial: ${medicalConditions}`);
-      }
-
-      if (specialNotes.length) {
-        messageLines.push('');
-        messageLines.push('*Detalles especiales*');
-        messageLines.push(...specialNotes);
       }
 
       if (notesValue) {
