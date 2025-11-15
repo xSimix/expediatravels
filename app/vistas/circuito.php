@@ -900,16 +900,6 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                         required
                                     />
                                 </label>
-                                <label class="reservation-field reservation-field--full">
-                                    <span class="reservation-field__label">Correo electrónico</span>
-                                    <input
-                                        class="reservation-field__input"
-                                        type="email"
-                                        name="email"
-                                        placeholder="Ej. nombre@correo.com"
-                                        autocomplete="email"
-                                    />
-                                </label>
                             </div>
                             <label class="reservation-field reservation-field--full">
                                 <span class="reservation-field__label">Fecha de viaje</span>
