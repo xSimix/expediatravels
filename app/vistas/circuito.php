@@ -426,12 +426,6 @@ if ($priceFrom === null) {
     $priceFrom = 'S/ 1,299.00';
 }
 
-$bookingUrlRaw = $detail['booking_url'] ?? ($detail['bookingUrl'] ?? null);
-$bookingUrl = is_string($bookingUrlRaw) ? trim($bookingUrlRaw) : '';
-if ($bookingUrl === '') {
-    $bookingUrl = null;
-}
-
 $departuresRaw = $detail['departures'] ?? ($detail['fechas'] ?? null);
 $departureOptions = $normalizeList($departuresRaw);
 if (empty($departureOptions)) {
@@ -872,10 +866,14 @@ $pageTitle = $title . ' — ' . $siteTitle;
                         <h3 class="booking-form__title">Formulario de reserva</h3>
                         <p class="booking-form__subtitle">Selecciona la fecha y cantidad de viajeros para iniciar tu solicitud.</p>
                     </header>
-                    <form class="booking-form" action="<?= $bookingUrl ? htmlspecialchars($bookingUrl, ENT_QUOTES) : '#'; ?>" method="get">
+                    <form class="booking-form" action="https://wa.me/51930140668" method="get" data-whatsapp-booking>
+                        <label class="booking-field">
+                            <span>Nombre</span>
+                            <input type="text" name="name" placeholder="Tu nombre" required />
+                        </label>
                         <label class="booking-field">
                             <span>Fecha</span>
-                            <select name="date" <?= $bookingUrl ? '' : 'disabled'; ?>>
+                            <select name="date">
                                 <?php foreach ($departureOptions as $option): ?>
                                     <option value="<?= htmlspecialchars($option, ENT_QUOTES); ?>"><?= htmlspecialchars($option); ?></option>
                                 <?php endforeach; ?>
@@ -902,7 +900,14 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        <button type="submit" class="booking-submit" <?= $bookingUrl ? '' : 'disabled'; ?>>Reservar ahora</button>
+                        <button type="submit" class="booking-submit">
+                            <span class="booking-submit__icon" aria-hidden="true">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" focusable="false">
+                                    <path d="M12 2a10 10 0 0 0-8.66 15.16L2 22l4.95-1.3A10 10 0 1 0 12 2Zm0 18a7.93 7.93 0 0 1-4.09-1.12l-.29-.17-2.94.77.79-2.87-.18-.3A8 8 0 1 1 12 20Zm4.42-5.42c-.24-.12-1.44-.71-1.66-.79s-.39-.12-.55.12-.63.79-.78.95-.29.18-.53.06a6.52 6.52 0 0 1-1.92-1.18 7.19 7.19 0 0 1-1.33-1.65c-.14-.24 0-.36.1-.48s.24-.28.36-.42a1.58 1.58 0 0 0 .24-.4.45.45 0 0 0 0-.42c-.06-.12-.53-1.26-.73-1.74s-.38-.4-.53-.4-.3 0-.47 0a.9.9 0 0 0-.65.3 2.74 2.74 0 0 0-.86 2 4.74 4.74 0 0 0 1 2.49 10.7 10.7 0 0 0 4.08 3.48 14 14 0 0 0 1.36.5 3.25 3.25 0 0 0 1.49.09 2.42 2.42 0 0 0 1.59-1.12 2 2 0 0 0 .14-1.12c-.05-.09-.21-.15-.45-.27Z" />
+                                </svg>
+                            </span>
+                            <span class="booking-submit__label">Reservar ahora</span>
+                        </button>
                     </form>
                     <div class="sales-advisers" aria-labelledby="sales-advisers-title">
                         <h4 id="sales-advisers-title">Asesores de Venta</h4>
