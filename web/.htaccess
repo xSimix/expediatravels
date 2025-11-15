@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /web/
+
+RewriteRule ^destino/(.+)$ destino.php [L,QSA]
+RewriteRule ^paquete/(.+)$ paquete.php [L,QSA]
+RewriteRule ^circuito/(.+)$ circuito.php [L,QSA]

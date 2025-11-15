@@ -3,6 +3,7 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\BaseDatos\Conexion;
+use Aplicacion\Servicios\ServicioUrls;
 use PDO;
 use PDOException;
 
@@ -269,14 +270,22 @@ class RepositorioPaquetes
                         'badge' => 'Destino',
                         'title' => 'Oxapampa',
                         'summary' => 'Descubre el encanto patrimonial y natural de la capital cafetalera.',
-                        'href' => 'destino.php?slug=oxapampa',
+                        'href' => ServicioUrls::destino([
+                            'slug' => 'oxapampa',
+                            'region' => 'Pasco',
+                            'nombre' => 'Oxapampa',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Circuito',
                         'title' => 'Esencia Selva Central',
                         'summary' => 'Circuito de 4 días enlazando Oxapampa, Villa Rica y Perené.',
-                        'href' => 'circuito.php?slug=selva-central-signature',
+                        'href' => ServicioUrls::circuito([
+                            'slug' => 'selva-central-signature',
+                            'region' => 'Pasco y Junín',
+                            'nombre' => 'Esencia Selva Central',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
@@ -393,14 +402,22 @@ class RepositorioPaquetes
                         'badge' => 'Destino',
                         'title' => 'Pozuzo',
                         'summary' => 'Historia, cultura y naturaleza en la colonia austroalemana.',
-                        'href' => 'destino.php?slug=oxapampa',
+                        'href' => ServicioUrls::destino([
+                            'slug' => 'oxapampa',
+                            'region' => 'Pasco',
+                            'nombre' => 'Oxapampa',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1499678329028-101435549a4e?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Circuito',
                         'title' => 'Esencia Selva Central',
                         'summary' => 'Incluye visita a Pozuzo y experiencias cafetaleras.',
-                        'href' => 'circuito.php?slug=selva-central-signature',
+                        'href' => ServicioUrls::circuito([
+                            'slug' => 'selva-central-signature',
+                            'region' => 'Pasco y Junín',
+                            'nombre' => 'Esencia Selva Central',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
@@ -505,7 +522,11 @@ class RepositorioPaquetes
                     'primaryLabel' => 'Reservar full day',
                     'primaryHref' => 'explorar.php?categoria=paquetes&slug=selva-magica',
                     'secondaryLabel' => 'Explorar circuitos cercanos',
-                    'secondaryHref' => 'circuito.php?slug=aventura-perene',
+                    'secondaryHref' => ServicioUrls::circuito([
+                        'slug' => 'aventura-perene',
+                        'region' => 'Junín',
+                        'nombre' => 'Aventura en el Perené',
+                    ]),
                 ],
                 'gallery' => [
                     ['src' => 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80', 'alt' => 'Catarata Bayoz'],
@@ -517,7 +538,11 @@ class RepositorioPaquetes
                         'badge' => 'Destino',
                         'title' => 'Perené',
                         'summary' => 'Explora el valle completo con rutas de aventura.',
-                        'href' => 'destino.php?slug=perene',
+                        'href' => ServicioUrls::destino([
+                            'slug' => 'perene',
+                            'region' => 'Junín',
+                            'nombre' => 'Perené',
+                        ]),
                         'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
