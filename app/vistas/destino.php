@@ -21,10 +21,12 @@ $currentUser = $currentUser ?? null;
     <?php endif; ?>
 </head>
 <body class="page page--detail">
-    <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
-    <?php include __DIR__ . '/partials/detail-page.php'; ?>
-    <?php include __DIR__ . '/partials/site-footer.php'; ?>
-    <?php include __DIR__ . '/partials/auth-modal.php'; ?>
+    <div class="layout-shell">
+        <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
+        <?php include __DIR__ . '/partials/detail-page.php'; ?>
+        <?php include __DIR__ . '/partials/site-footer.php'; ?>
+        <?php include __DIR__ . '/partials/auth-modal.php'; ?>
+    </div>
     <script src="scripts/modal-autenticacion.js" defer></script>
     <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
 </body>
