@@ -450,4 +450,57 @@
       });
     }
   }
+
+  const bookingForm = doc.querySelector('[data-whatsapp-booking]');
+  if (bookingForm) {
+    bookingForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const formData = new FormData(bookingForm);
+      const nameValue = String(formData.get('name') ?? '').trim();
+      const dateValue = String(formData.get('date') ?? '').trim();
+
+      const travellerDefinitions = [
+        { name: 'adults', label: 'Adultos' },
+        { name: 'children', label: 'Niños' },
+        { name: 'infant', label: 'Infantes' },
+      ];
+
+      const messageLines = [];
+      if (nameValue) {
+        messageLines.push(`Nombre: ${nameValue}`);
+      }
+      if (dateValue) {
+        messageLines.push(`Fecha seleccionada: ${dateValue}`);
+      }
+
+      const travellerLines = travellerDefinitions
+        .map(({ name, label }) => {
+          const rawValue = formData.get(name);
+          const numericValue = typeof rawValue === 'string' && rawValue.trim() !== '' ? Number(rawValue) : 0;
+          if (!Number.isFinite(numericValue)) {
+            return null;
+          }
+          return `${label}: ${numericValue}`;
+        })
+        .filter((line) => line);
+
+      if (travellerLines.length) {
+        messageLines.push('Detalle de viajeros:');
+        messageLines.push(...travellerLines);
+      }
+
+      if (!messageLines.length) {
+        messageLines.push('Solicitud de reserva desde la web.');
+      }
+
+      const whatsappNumber = '51930140668';
+      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageLines.join('\n'))}`;
+
+      const newWindow = window.open(whatsappUrl, '_blank', 'noopener');
+      if (!newWindow) {
+        window.location.href = whatsappUrl;
+      }
+    });
+  }
 })();
