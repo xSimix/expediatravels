@@ -138,8 +138,7 @@ $hasFilters = !empty($activeChips);
         </div>
     </section>
     <main class="explore">
-        <div class="layout-container layout-stack">
-            <section class="explore__layout">
+        <section class="explore__layout">
             <aside class="explore__filters" id="filters-panel" data-filters-panel>
                 <div class="explore__filters-header">
                     <h2>Filtrar resultados</h2>
@@ -299,7 +298,7 @@ $hasFilters = !empty($activeChips);
             </section>
         </section>
 
-            <section class="explore__cta">
+        <section class="explore__cta">
             <div class="explore__cta-content">
                 <h2>¿Necesitas una propuesta a medida?</h2>
                 <p>Cuéntanos el estilo de viaje que buscas y diseñaremos un itinerario exclusivo con alojamientos, actividades y traslados coordinados.</p>
@@ -308,8 +307,7 @@ $hasFilters = !empty($activeChips);
                 <a class="button button--primary" href="mailto:reservas@expediatravels.pe">Escribir a un asesor</a>
                 <a class="button button--ghost" href="index.php#contacto">Ver canales de contacto</a>
             </div>
-            </section>
-        </div>
+        </section>
     </main>
     <?php include __DIR__ . '/partials/site-footer.php'; ?>
     <?php include __DIR__ . '/partials/auth-modal.php'; ?>
