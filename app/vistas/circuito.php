@@ -901,79 +901,17 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                     />
                                 </label>
                             </div>
-                            <div class="reservation-form__field-grid">
-                                <label class="reservation-field">
-                                    <span class="reservation-field__label">Correo electrónico</span>
-                                    <input
-                                        class="reservation-field__input"
-                                        type="email"
-                                        name="email"
-                                        placeholder="tucorreo@ejemplo.com"
-                                        autocomplete="email"
-                                    />
-                                </label>
-                                <label class="reservation-field">
-                                    <span class="reservation-field__label">Fecha de viaje</span>
-                                    <input
-                                        class="reservation-field__input"
-                                        type="date"
-                                        name="date"
-                                        min="<?= htmlspecialchars(date('Y-m-d')); ?>"
-                                        required
-                                    />
-                                </label>
-                            </div>
                             <label class="reservation-field reservation-field--full">
-                                <span class="reservation-field__label">Mensaje opcional</span>
-                                <textarea
-                                    class="reservation-field__input reservation-field__input--textarea"
-                                    name="message"
-                                    rows="3"
-                                    placeholder="Cuéntanos detalles adicionales sobre tu viaje soñado"
-                                ></textarea>
+                                <span class="reservation-field__label">Fecha de viaje</span>
+                                <input
+                                    class="reservation-field__input"
+                                    type="date"
+                                    name="date"
+                                    min="<?= htmlspecialchars(date('Y-m-d')); ?>"
+                                    required
+                                />
                             </label>
                         </div>
-                        <fieldset class="reservation-form__travellers">
-                            <legend>Detalle de viajeros</legend>
-                            <p>Indica cuántas personas participarán en la experiencia.</p>
-                            <div class="reservation-form__counter-grid">
-                                <?php $travellers = [
-                                    ['label' => 'Adultos', 'name' => 'adults', 'min' => 1],
-                                    ['label' => 'Niños', 'name' => 'children', 'min' => 0],
-                                    ['label' => 'Infantes', 'name' => 'infant', 'min' => 0],
-                                ]; ?>
-                                <?php foreach ($travellers as $traveller): ?>
-                                    <div class="reservation-counter" data-counter>
-                                        <span class="reservation-counter__label"><?= htmlspecialchars($traveller['label']); ?></span>
-                                        <div class="reservation-counter__controls">
-                                            <button
-                                                type="button"
-                                                class="reservation-counter__btn"
-                                                data-counter-decrease
-                                                aria-label="Restar"
-                                            >
-                                                −
-                                            </button>
-                                            <input
-                                                type="number"
-                                                name="<?= htmlspecialchars($traveller['name'], ENT_QUOTES); ?>"
-                                                value="<?= $traveller['min']; ?>"
-                                                min="<?= $traveller['min']; ?>"
-                                                readonly
-                                            />
-                                            <button
-                                                type="button"
-                                                class="reservation-counter__btn"
-                                                data-counter-increase
-                                                aria-label="Sumar"
-                                            >
-                                                +
-                                            </button>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </fieldset>
                         <footer class="reservation-form__footer">
                             <button type="submit" class="reservation-form__submit">
                                 <span class="reservation-form__submit-icon" aria-hidden="true">
