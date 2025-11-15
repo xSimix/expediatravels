@@ -6,8 +6,6 @@ require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 require_once __DIR__ . '/includes/paquetes_util.php';
 
-use Aplicacion\Servicios\ServicioUrls;
-
 $errores = [];
 $mensajeExito = null;
 $mensajeInfo = null;
@@ -194,18 +192,9 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($paquete['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <div class="admin-table__actions">
-                                        <?php
-                                            $paqueteUrl = ServicioUrls::paquete([
-                                                'slug' => $paquete['slug'] ?? '',
-                                                'region' => $paquete['region'] ?? '',
-                                                'destino' => $paquete['destino'] ?? '',
-                                                'nombre' => $paquete['nombre'] ?? '',
-                                            ]);
-                                            $paqueteUrl = '../web/' . ltrim($paqueteUrl, '/');
-                                        ?>
                                         <a
                                             class="admin-chip"
-                                            href="<?= htmlspecialchars($paqueteUrl, ENT_QUOTES, 'UTF-8'); ?>"
+                                            href="../web/paquete.php?slug=<?= urlencode((string) ($paquete['slug'] ?? '')); ?>"
                                             target="_blank"
                                             rel="noopener"
                                         >Ver</a>

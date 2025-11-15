@@ -5,16 +5,15 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Repositorios\RepositorioCircuitos;
 use Aplicacion\Repositorios\RepositorioEquipo;
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
-use Aplicacion\Repositorios\RepositorioResenasCircuitos;
 use Aplicacion\Servicios\ServicioAutenticacion;
-use Aplicacion\Servicios\ServicioUrls;
 use Aplicacion\Vistas\Vista;
+use Aplicacion\Repositorios\RepositorioResenasCircuitos;
 
 class ControladorCircuitos
 {
     public function show(): void
     {
-        $slug = ServicioUrls::extraerSlugDesdeRequest('circuito');
+        $slug = (string) ($_GET['slug'] ?? '');
 
         $circuitRepository = new RepositorioCircuitos();
         $circuit = $circuitRepository->findBySlug($slug);

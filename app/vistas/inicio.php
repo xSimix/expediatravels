@@ -573,18 +573,12 @@
 
                     $destinationSlug = $destination['slug'] ?? $slugify($destinationName);
 
-                    $destinationHref = \Aplicacion\Servicios\ServicioUrls::destino([
-                        'slug' => $destinationSlug,
-                        'region' => $region,
-                        'nombre' => $destinationName,
-                    ]);
-
                     $destinationsByRegion[$region][] = [
                         'title' => $destinationName,
                         'tags' => $metaSegments,
                         'img' => $imagePath,
                         'slug' => $destinationSlug,
-                        'href' => $destinationHref,
+                        'href' => 'destino.php?slug=' . urlencode($destinationSlug),
                     ];
                 }
 
@@ -674,21 +668,15 @@
                     <?php
                         $circuitName = (string) ($experience['nombre'] ?? ($experience['title'] ?? 'Circuito destacado'));
                         $circuitSlug = $experience['slug'] ?? $slugify($circuitName);
-                        $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
-                        $circuitRegion = $experience['region'] ?? '';
-                        $circuitHref = \Aplicacion\Servicios\ServicioUrls::circuito([
-                            'slug' => $circuitSlug,
-                            'region' => $circuitRegion !== '' ? $circuitRegion : $circuitDestination,
-                            'location' => $experience['location'] ?? null,
-                            'destino' => $circuitDestination,
-                            'nombre' => $circuitName,
-                        ]);
+                        $circuitHref = 'circuito.php?slug=' . urlencode($circuitSlug);
                         $circuitCurrency = $experience['moneda'] ?? 'PEN';
                         $circuitPrice = $parsePriceFromString($experience['precio'] ?? $experience['priceFrom'] ?? null);
                         if ($circuitPrice === null && isset($experience['priceFrom'])) {
                             $circuitPrice = $parsePriceFromString($experience['priceFrom']);
                         }
                         $circuitImage = isset($experience['imagen']) ? ($resolveMediaPath)($experience['imagen']) : null;
+                        $circuitDestination = $experience['destino'] ?? ($experience['location'] ?? 'Selva Central');
+                        $circuitRegion = $experience['region'] ?? '';
                         $circuitDuration = trim((string) ($experience['duracion'] ?? ($experience['duration'] ?? '')));
                         $circuitDurationDisplay = $circuitDuration !== '' ? $circuitDuration : '1 día';
                         $circuitGroupRaw = $experience['grupo'] ?? $experience['personas'] ?? $experience['capacidad'] ?? $experience['capacidad_maxima'] ?? $experience['group'] ?? null;
@@ -979,13 +967,7 @@
                     <?php
                         $packageName = (string) ($package['nombre'] ?? '');
                         $packageSlug = $package['slug'] ?? $slugify($packageName);
-                        $packageHref = \Aplicacion\Servicios\ServicioUrls::paquete([
-                            'slug' => $packageSlug,
-                            'region' => $package['region'] ?? '',
-                            'location' => $package['location'] ?? null,
-                            'destino' => $package['destino'] ?? null,
-                            'nombre' => $packageName,
-                        ]);
+                        $packageHref = 'paquete.php?slug=' . urlencode($packageSlug);
                         $packageCurrency = $package['moneda'] ?? 'PEN';
                         $packagePrice = $parsePriceFromString($package['precio'] ?? null);
                         $originalPrice = $packagePrice !== null ? $packagePrice * 1.18 : null;
