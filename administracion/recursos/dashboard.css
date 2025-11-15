@@ -34,8 +34,6 @@ body {
   display: grid;
   grid-template-columns: 260px 1fr;
   min-height: 100vh;
-  width: min(100%, 1440px);
-  margin: 0 auto;
 }
 
 .sidebar {

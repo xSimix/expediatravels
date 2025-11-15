@@ -153,7 +153,6 @@
     <script src="scripts/quick-view.js" defer></script>
 </head>
 <body class="page">
-    <div class="layout-shell">
 
     <header class="site-header" data-site-header>
         <div class="site-header__inner">
@@ -1309,8 +1308,6 @@
             <path d="M12 11a1 1 0 0 1 .78.37l3 3.5a1 1 0 0 1-1.56 1.26L12 13.89l-2.22 2.24a1 1 0 0 1-1.56-1.26l3-3.5A1 1 0 0 1 12 11Z" fill="currentColor" opacity="0.65" />
         </svg>
     </button>
-
-    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {

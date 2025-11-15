@@ -763,9 +763,8 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
   </style>
   <script src="scripts/modal-autenticacion.js" defer></script>
 </head>
-<body class="page">
-  <div class="layout-shell">
-    <header class="wrap">
+<body>
+  <header class="wrap">
     <div class="top-actions">
       <a class="action-button" href="index.php">
         <span class="action-button__emoji"><?= $renderEmoji('home', 'emoji--sm'); ?></span>
@@ -821,9 +820,9 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
         </div>
       </div>
     </div>
-    </header>
+  </header>
 
-    <main class="wrap" id="content">
+  <main class="wrap" id="content">
     <?php if (!empty($flash) && !empty($flash['message'])): ?>
       <?php $flashType = $flash['type'] ?? 'info'; ?>
       <div class="alert <?= $flashType === 'success' ? 'alert--success' : ($flashType === 'error' ? 'alert--error' : 'alert--info'); ?>">
@@ -1225,10 +1224,9 @@ $renderEmoji = static function (string $name, string $sizeClass = '') use ($emoj
         </div>
       </section>
     </div>
-    </main>
+  </main>
 
-    <footer class="footer wrap">© <?= date('Y'); ?> Expediatravels — Perfil de usuario</footer>
-  </div>
+  <footer class="footer wrap">© <?= date('Y'); ?> Expediatravels — Perfil de usuario</footer>
 
   <script>
     const tabButtons = Array.from(document.querySelectorAll('[data-tab-button]'));

@@ -97,10 +97,9 @@ $hasFilters = !empty($activeChips);
     <?php endif; ?>
 </head>
 <body class="page page--explorar">
-    <div class="layout-shell">
-        <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
-        <section class="hero hero--explore">
-            <?php if ($heroImage !== ''): ?>
+    <?php $activeNav = 'destinos'; include __DIR__ . '/partials/site-header.php'; ?>
+    <section class="hero hero--explore">
+        <?php if ($heroImage !== ''): ?>
             <div class="hero__backgrounds">
                 <div
                     class="hero__background hero__background--active"
@@ -109,8 +108,8 @@ $hasFilters = !empty($activeChips);
                     aria-label="<?= htmlspecialchars($heroAlt, ENT_QUOTES); ?>"
                 ></div>
             </div>
-            <?php endif; ?>
-            <div class="hero__content explore__hero">
+        <?php endif; ?>
+        <div class="hero__content explore__hero">
             <div class="hero__copy explore__hero-copy">
                 <span class="hero__badge">Explorador Expediatravels</span>
                 <h1 class="hero__title">Explora la Selva Central a tu manera</h1>
@@ -137,9 +136,9 @@ $hasFilters = !empty($activeChips);
                 </div>
             </aside>
         </div>
-        </section>
-        <main class="explore">
-            <section class="explore__layout">
+    </section>
+    <main class="explore">
+        <section class="explore__layout">
             <aside class="explore__filters" id="filters-panel" data-filters-panel>
                 <div class="explore__filters-header">
                     <h2>Filtrar resultados</h2>
@@ -309,10 +308,9 @@ $hasFilters = !empty($activeChips);
                 <a class="button button--ghost" href="index.php#contacto">Ver canales de contacto</a>
             </div>
         </section>
-        </main>
-        <?php include __DIR__ . '/partials/site-footer.php'; ?>
-        <?php include __DIR__ . '/partials/auth-modal.php'; ?>
-    </div>
+    </main>
+    <?php include __DIR__ . '/partials/site-footer.php'; ?>
+    <?php include __DIR__ . '/partials/auth-modal.php'; ?>
     <script src="scripts/modal-autenticacion.js" defer></script>
     <script src="scripts/explorar.js" defer></script>
     <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
