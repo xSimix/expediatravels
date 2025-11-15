@@ -456,7 +456,8 @@
     </section>
 
     <main>
-        <section class="destinations-showcase" id="destinos">
+        <div class="layout-container layout-stack">
+            <section class="destinations-showcase" id="destinos">
             <?php
                 $destinationStatsPresets = [
                     ['tours' => 1, 'departures' => 32, 'guests' => 12_774],
@@ -1179,6 +1180,7 @@
                 <?php endif; ?>
             </div>-->
         </section>
+        </div>
     </main>
 
     <?php include __DIR__ . '/partials/site-footer.php'; ?>

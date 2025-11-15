@@ -99,6 +99,7 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
         <?php endif; ?>
     </section>
 
+    <div class="detail-page__content layout-container layout-stack">
     <nav class="detail-anchors" aria-label="Secciones del contenido">
         <a href="#detalle">Descripción</a>
         <?php if (!empty($itinerary)): ?><a href="#itinerario">Itinerario</a><?php endif; ?>
@@ -347,4 +348,5 @@ $summaryParagraphs = preg_split('/\n\s*\n/', trim((string) $summary)) ?: [];
             </div>
         </section>
     <?php endif; ?>
+    </div>
 </main>
