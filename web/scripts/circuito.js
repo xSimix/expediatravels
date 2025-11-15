@@ -480,7 +480,6 @@
       const formData = new FormData(bookingForm);
       const nameValue = String(formData.get('name') ?? '').trim();
       const phoneValue = String(formData.get('phone') ?? '').trim();
-      const emailValue = String(formData.get('email') ?? '').trim();
       const dateValue = String(formData.get('date') ?? '').trim();
       const disabilityValue = String(formData.get('disabilitySupport') ?? '').trim();
       const petsValue = String(formData.get('pets') ?? '').trim();
@@ -521,9 +520,6 @@
       }
       if (phoneValue) {
         messageLines.push(`*Teléfono:* ${phoneValue}`);
-      }
-      if (emailValue) {
-        messageLines.push(`*Correo:* ${emailValue}`);
       }
       if (dateValue) {
         messageLines.push(`*Fecha de viaje:* ${formattedDate || dateValue}`);
