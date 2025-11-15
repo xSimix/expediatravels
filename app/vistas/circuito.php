@@ -740,7 +740,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             <img class="detail-lightbox__image" src="" alt="" data-lightbox-image />
                             <figcaption class="detail-lightbox__caption" data-lightbox-caption></figcaption>
                         </figure>
-                    </div>
+                        </div>
                 <?php endif; ?>
 
                 <?php if ($videoLightboxSource !== ''): ?>
@@ -762,7 +762,7 @@ $pageTitle = $title . ' — ' . $siteTitle;
                             </div>
                             <figcaption class="detail-lightbox__caption">Disfruta una vista previa del circuito.</figcaption>
                         </figure>
-                    </div>
+                        </div>
                 <?php endif; ?>
 
 
@@ -900,6 +900,16 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                         required
                                     />
                                 </label>
+                                <label class="reservation-field reservation-field--full">
+                                    <span class="reservation-field__label">Correo electrónico</span>
+                                    <input
+                                        class="reservation-field__input"
+                                        type="email"
+                                        name="email"
+                                        placeholder="Ej. nombre@correo.com"
+                                        autocomplete="email"
+                                    />
+                                </label>
                             </div>
                             <label class="reservation-field reservation-field--full">
                                 <span class="reservation-field__label">Fecha de viaje</span>
@@ -911,6 +921,154 @@ $pageTitle = $title . ' — ' . $siteTitle;
                                     required
                                 />
                             </label>
+                            <fieldset class="reservation-form__travellers">
+                                <legend>Viajeros</legend>
+                                <p>Indica la cantidad de viajeros de cada grupo de edad.</p>
+                                <div class="reservation-form__counter-grid">
+                                    <div class="reservation-counter" data-counter>
+                                        <span class="reservation-counter__label">Adultos</span>
+                                        <div class="reservation-counter__controls">
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-decrease
+                                                aria-label="Reducir adultos"
+                                            >
+                                                &minus;
+                                            </button>
+                                            <input
+                                                type="number"
+                                                name="adults"
+                                                value="2"
+                                                min="1"
+                                                inputmode="numeric"
+                                                aria-label="Número de adultos"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-increase
+                                                aria-label="Aumentar adultos"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="reservation-counter" data-counter>
+                                        <span class="reservation-counter__label">Niños</span>
+                                        <div class="reservation-counter__controls">
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-decrease
+                                                aria-label="Reducir niños"
+                                            >
+                                                &minus;
+                                            </button>
+                                            <input
+                                                type="number"
+                                                name="children"
+                                                value="0"
+                                                min="0"
+                                                inputmode="numeric"
+                                                aria-label="Número de niños"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-increase
+                                                aria-label="Aumentar niños"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="reservation-counter" data-counter>
+                                        <span class="reservation-counter__label">Adultos mayores</span>
+                                        <div class="reservation-counter__controls">
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-decrease
+                                                aria-label="Reducir adultos mayores"
+                                            >
+                                                &minus;
+                                            </button>
+                                            <input
+                                                type="number"
+                                                name="seniors"
+                                                value="0"
+                                                min="0"
+                                                inputmode="numeric"
+                                                aria-label="Número de adultos mayores"
+                                            />
+                                            <button
+                                                type="button"
+                                                class="reservation-counter__btn"
+                                                data-counter-increase
+                                                aria-label="Aumentar adultos mayores"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <div class="reservation-more">
+                                <input
+                                    type="checkbox"
+                                    class="reservation-more__control"
+                                    id="reservation-more-control"
+                                    data-more-options-toggle
+                                    aria-controls="reservation-more-content"
+                                    aria-expanded="false"
+                                />
+                                <label class="reservation-more__label" for="reservation-more-control">
+                                    <span class="reservation-more__title">Más opciones</span>
+                                    <span class="reservation-more__description">Comparte detalles especiales de tu reserva.</span>
+                                </label>
+                                <div class="reservation-more-options" id="reservation-more-content" data-more-options>
+                                    <div class="reservation-form__field-grid">
+                                        <label class="reservation-field">
+                                            <span class="reservation-field__label">Personas con discapacidad</span>
+                                            <select
+                                                class="reservation-field__input reservation-field__input--select"
+                                                name="disabilitySupport"
+                                            >
+                                                <option value="">Sin requerimientos especiales</option>
+                                                <option value="Se requiere asistencia para personas con discapacidad">Se requiere asistencia para personas con discapacidad</option>
+                                                <option value="Se confirmará más adelante">Se confirmará más adelante</option>
+                                            </select>
+                                        </label>
+                                        <label class="reservation-field">
+                                            <span class="reservation-field__label">Mascotas</span>
+                                            <select
+                                                class="reservation-field__input reservation-field__input--select"
+                                                name="pets"
+                                            >
+                                                <option value="">No viajamos con mascotas</option>
+                                                <option value="Viajaremos con mascotas">Viajaremos con mascotas</option>
+                                            </select>
+                                        </label>
+                                    </div>
+                                    <label class="reservation-field reservation-field--full">
+                                        <span class="reservation-field__label">Condición médica especial</span>
+                                        <textarea
+                                            class="reservation-field__input reservation-field__input--textarea"
+                                            name="medicalNotes"
+                                            placeholder="Describe alergias, tratamientos o asistencia médica requerida"
+                                        ></textarea>
+                                    </label>
+                                    <label class="reservation-field reservation-field--full">
+                                        <span class="reservation-field__label">Comentarios adicionales</span>
+                                        <textarea
+                                            class="reservation-field__input reservation-field__input--textarea"
+                                            name="message"
+                                            placeholder="Información extra que debamos tener en cuenta"
+                                        ></textarea>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <footer class="reservation-form__footer">
                             <button type="submit" class="reservation-form__submit">

@@ -75,6 +75,16 @@
       sync();
     });
 
+    input.addEventListener('input', () => {
+      const numericValue = Number(input.value);
+      if (!Number.isFinite(numericValue)) {
+        input.value = String(min);
+      } else {
+        input.value = String(Math.max(min, Math.round(numericValue)));
+      }
+      sync();
+    });
+
     sync();
   });
 
@@ -453,6 +463,17 @@
 
   const bookingForm = doc.querySelector('[data-whatsapp-booking]');
   if (bookingForm) {
+    const moreOptionsToggle = bookingForm.querySelector('[data-more-options-toggle]');
+    const moreOptions = bookingForm.querySelector('[data-more-options]');
+    if (moreOptionsToggle && moreOptions) {
+      const syncMoreOptions = () => {
+        moreOptionsToggle.setAttribute('aria-expanded', moreOptionsToggle.checked ? 'true' : 'false');
+      };
+
+      moreOptionsToggle.addEventListener('change', syncMoreOptions);
+      syncMoreOptions();
+    }
+
     bookingForm.addEventListener('submit', (event) => {
       event.preventDefault();
 
@@ -461,6 +482,9 @@
       const phoneValue = String(formData.get('phone') ?? '').trim();
       const emailValue = String(formData.get('email') ?? '').trim();
       const dateValue = String(formData.get('date') ?? '').trim();
+      const disabilityValue = String(formData.get('disabilitySupport') ?? '').trim();
+      const petsValue = String(formData.get('pets') ?? '').trim();
+      const medicalValue = String(formData.get('medicalNotes') ?? '').trim();
       const notesValue = String(formData.get('message') ?? '').trim();
       const packageName = String(bookingForm.getAttribute('data-package-name') ?? '').trim();
 
@@ -483,7 +507,7 @@
       const travellerDefinitions = [
         { name: 'adults', label: 'Adultos' },
         { name: 'children', label: 'Niños' },
-        { name: 'infant', label: 'Infantes' },
+        { name: 'seniors', label: 'Adultos mayores' },
       ];
 
       const messageLines = [];
@@ -520,6 +544,23 @@
         messageLines.push('');
         messageLines.push('*Detalle de viajeros*');
         messageLines.push(...travellerLines.map((line) => `• ${line}`));
+      }
+
+      const specialRequestLines = [];
+      if (disabilityValue) {
+        specialRequestLines.push(`*Personas con discapacidad:* ${disabilityValue}`);
+      }
+      if (petsValue) {
+        specialRequestLines.push(`*Mascotas:* ${petsValue}`);
+      }
+      if (medicalValue) {
+        specialRequestLines.push(`*Condición médica especial:* ${medicalValue}`);
+      }
+
+      if (specialRequestLines.length) {
+        messageLines.push('');
+        messageLines.push('*Requerimientos especiales*');
+        messageLines.push(...specialRequestLines.map((line) => `• ${line}`));
       }
 
       if (notesValue) {
