@@ -459,6 +459,23 @@
       const formData = new FormData(bookingForm);
       const nameValue = String(formData.get('name') ?? '').trim();
       const dateValue = String(formData.get('date') ?? '').trim();
+      const packageName = String(bookingForm.getAttribute('data-package-name') ?? '').trim();
+
+      let formattedDate = '';
+      if (dateValue) {
+        const parsedDate = new Date(`${dateValue}T00:00:00`);
+        if (!Number.isNaN(parsedDate.getTime())) {
+          try {
+            formattedDate = new Intl.DateTimeFormat('es-PE', {
+              dateStyle: 'long',
+            }).format(parsedDate);
+          } catch (error) {
+            formattedDate = dateValue;
+          }
+        } else {
+          formattedDate = dateValue;
+        }
+      }
 
       const travellerDefinitions = [
         { name: 'adults', label: 'Adultos' },
@@ -467,11 +484,16 @@
       ];
 
       const messageLines = [];
+      messageLines.push('*🧾 Solicitud de reserva*');
+
+      if (packageName) {
+        messageLines.push(`*Circuito:* ${packageName}`);
+      }
       if (nameValue) {
-        messageLines.push(`Nombre: ${nameValue}`);
+        messageLines.push(`*Nombre:* ${nameValue}`);
       }
       if (dateValue) {
-        messageLines.push(`Fecha seleccionada: ${dateValue}`);
+        messageLines.push(`*Fecha de viaje:* ${formattedDate || dateValue}`);
       }
 
       const travellerLines = travellerDefinitions
@@ -481,18 +503,22 @@
           if (!Number.isFinite(numericValue)) {
             return null;
           }
-          return `${label}: ${numericValue}`;
+          return `*${label}:* ${numericValue}`;
         })
         .filter((line) => line);
 
       if (travellerLines.length) {
-        messageLines.push('Detalle de viajeros:');
-        messageLines.push(...travellerLines);
+        messageLines.push('');
+        messageLines.push('*Detalle de viajeros*');
+        messageLines.push(...travellerLines.map((line) => `• ${line}`));
       }
 
-      if (!messageLines.length) {
+      if (messageLines.length === 1) {
         messageLines.push('Solicitud de reserva desde la web.');
       }
+
+      messageLines.push('');
+      messageLines.push('*Enviado desde la web de Expedia Travels*');
 
       const whatsappNumber = '51930140668';
       const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(messageLines.join('\n'))}`;
