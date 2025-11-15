@@ -3,7 +3,6 @@
 namespace Aplicacion\Repositorios;
 
 use Aplicacion\BaseDatos\Conexion;
-use Aplicacion\Servicios\ServicioUrls;
 use PDO;
 use PDOException;
 
@@ -238,11 +237,7 @@ class RepositorioDestinos
                     'primaryLabel' => 'Diseñar mi viaje',
                     'primaryHref' => 'explorar.php?categoria=destinos&slug=oxapampa',
                     'secondaryLabel' => 'Ver circuitos sugeridos',
-                    'secondaryHref' => ServicioUrls::circuito([
-                        'slug' => 'selva-central-signature',
-                        'region' => 'Pasco y Junín',
-                        'nombre' => 'Esencia Selva Central',
-                    ]),
+                    'secondaryHref' => 'circuito.php?slug=selva-central-signature',
                 ],
                 'gallery' => [
                     ['src' => 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=800&q=80', 'alt' => 'Paisaje montañoso en Oxapampa'],
@@ -254,22 +249,14 @@ class RepositorioDestinos
                         'badge' => 'Circuito',
                         'title' => 'Esencia Selva Central',
                         'summary' => 'Circuito de cuatro días entre Oxapampa, Villa Rica y Perené.',
-                        'href' => ServicioUrls::circuito([
-                            'slug' => 'selva-central-signature',
-                            'region' => 'Pasco y Junín',
-                            'nombre' => 'Esencia Selva Central',
-                        ]),
+                        'href' => 'circuito.php?slug=selva-central-signature',
                         'image' => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Paquete',
                         'title' => 'Oxapampa Slow Travel',
                         'summary' => 'Experiencia boutique con hospedajes con encanto.',
-                        'href' => ServicioUrls::paquete([
-                            'slug' => 'oxapampa-slow',
-                            'region' => 'Pasco',
-                            'nombre' => 'Oxapampa Slow Travel',
-                        ]),
+                        'href' => 'paquete.php?slug=oxapampa-slow',
                         'image' => 'https://images.unsplash.com/photo-1528909514045-2fa4ac7a08ba?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
@@ -376,11 +363,7 @@ class RepositorioDestinos
                     'primaryLabel' => 'Planificar visita',
                     'primaryHref' => 'explorar.php?categoria=destinos&slug=villa-rica',
                     'secondaryLabel' => 'Ver experiencias de café',
-                    'secondaryHref' => ServicioUrls::paquete([
-                        'slug' => 'villa-rica-cafe',
-                        'region' => 'Pasco',
-                        'nombre' => 'Villa Rica Café de Altura',
-                    ]),
+                    'secondaryHref' => 'paquete.php?slug=villa-rica-cafe',
                 ],
                 'gallery' => [
                     ['src' => 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80', 'alt' => 'Café de especialidad servido en taza'],
@@ -392,11 +375,7 @@ class RepositorioDestinos
                         'badge' => 'Circuito',
                         'title' => 'Ruta del Café y la Niebla',
                         'summary' => 'Dos días combinando Villa Rica y Oxapampa.',
-                        'href' => ServicioUrls::circuito([
-                            'slug' => 'selva-central-signature',
-                            'region' => 'Pasco y Junín',
-                            'nombre' => 'Esencia Selva Central',
-                        ]),
+                        'href' => 'circuito.php?slug=selva-central-signature',
                         'image' => 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],
@@ -503,11 +482,7 @@ class RepositorioDestinos
                     'primaryLabel' => 'Quiero ir',
                     'primaryHref' => 'explorar.php?categoria=destinos&slug=perene',
                     'secondaryLabel' => 'Ver circuitos de aventura',
-                    'secondaryHref' => ServicioUrls::circuito([
-                        'slug' => 'aventura-perene',
-                        'region' => 'Junín',
-                        'nombre' => 'Aventura Cataratas del Perené',
-                    ]),
+                    'secondaryHref' => 'circuito.php?slug=aventura-perene',
                 ],
                 'gallery' => [
                     ['src' => 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=800&q=80', 'alt' => 'Cascada del valle del Perené'],
@@ -519,22 +494,14 @@ class RepositorioDestinos
                         'badge' => 'Circuito',
                         'title' => 'Aventura Cataratas del Perené',
                         'summary' => 'Programa activo de dos días con rafting y comunidad asháninka.',
-                        'href' => ServicioUrls::circuito([
-                            'slug' => 'aventura-perene',
-                            'region' => 'Junín',
-                            'nombre' => 'Aventura Cataratas del Perené',
-                        ]),
+                        'href' => 'circuito.php?slug=aventura-perene',
                         'image' => 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
                     ],
                     [
                         'badge' => 'Paquete',
                         'title' => 'Full Day Selva Mágica',
                         'summary' => 'Tour guiado a Bayoz, Velo de la Novia y mariposario Zhaveta Yard.',
-                        'href' => ServicioUrls::paquete([
-                            'slug' => 'selva-magica',
-                            'region' => 'Junín',
-                            'nombre' => 'Full Day Selva Mágica',
-                        ]),
+                        'href' => 'paquete.php?slug=selva-magica',
                         'image' => 'https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=600&q=80',
                     ],
                 ],

@@ -6,8 +6,6 @@ require_once __DIR__ . '/../app/configuracion/arranque.php';
 
 require_once __DIR__ . '/includes/destinos_util.php';
 
-use Aplicacion\Servicios\ServicioUrls;
-
 $errores = [];
 $mensajeExito = null;
 $mensajeInfo = null;
@@ -155,17 +153,9 @@ require __DIR__ . '/plantilla/cabecera.php';
                                 <td><?= htmlspecialchars(formatearMarcaTiempo($destino['actualizado_en'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
                                     <div class="admin-table__actions">
-                                        <?php
-                                            $destinoUrl = ServicioUrls::destino([
-                                                'slug' => $destino['slug'] ?? '',
-                                                'region' => $destino['region'] ?? '',
-                                                'nombre' => $destino['nombre'] ?? '',
-                                            ]);
-                                            $destinoUrl = '../web/' . ltrim($destinoUrl, '/');
-                                        ?>
                                         <a
                                             class="admin-chip"
-                                            href="<?= htmlspecialchars($destinoUrl, ENT_QUOTES, 'UTF-8'); ?>"
+                                            href="../web/destino.php?slug=<?= urlencode((string) ($destino['slug'] ?? '')); ?>"
                                             target="_blank"
                                             rel="noopener"
                                         >Ver</a>

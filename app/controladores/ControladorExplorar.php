@@ -7,7 +7,6 @@ use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
 use Aplicacion\Repositorios\RepositorioDestinos;
 use Aplicacion\Repositorios\RepositorioPaquetes;
 use Aplicacion\Servicios\ServicioAutenticacion;
-use Aplicacion\Servicios\ServicioUrls;
 use Aplicacion\Vistas\Vista;
 
 class ControladorExplorar
@@ -409,7 +408,7 @@ class ControladorExplorar
             'price' => $this->parseFloat($package['precio'] ?? null),
             'currency' => strtoupper((string) ($package['moneda'] ?? 'PEN')),
             'image' => $this->resolveImagePath($package['imagen'] ?? null),
-            'href' => ServicioUrls::paquete($package),
+            'href' => 'paquete.php?slug=' . rawurlencode($slug),
             'styleTags' => $this->extractStyleTags($package),
             'highlights' => $this->extractHighlights($package),
             'rating' => null,
@@ -435,7 +434,7 @@ class ControladorExplorar
             'price' => $this->parseFloat($circuit['precio'] ?? null),
             'currency' => strtoupper((string) ($circuit['moneda'] ?? 'PEN')),
             'image' => $this->resolveImagePath($circuit['imagen'] ?? $circuit['heroImage'] ?? null),
-            'href' => ServicioUrls::circuito($circuit),
+            'href' => 'circuito.php?slug=' . rawurlencode($slug),
             'styleTags' => $this->extractStyleTags($circuit),
             'highlights' => $this->extractHighlights($circuit),
             'rating' => $this->parseFloat($circuit['ratingPromedio'] ?? null),
@@ -465,7 +464,7 @@ class ControladorExplorar
             'price' => null,
             'currency' => 'PEN',
             'image' => $this->resolveImagePath($destination['imagen'] ?? $destination['imagen_destacada'] ?? null),
-            'href' => ServicioUrls::destino($destination),
+            'href' => 'destino.php?slug=' . rawurlencode($slug),
             'styleTags' => $this->extractStyleTags($destination),
             'highlights' => $this->extractHighlights($destination),
             'rating' => null,

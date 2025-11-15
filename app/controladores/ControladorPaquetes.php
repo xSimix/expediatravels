@@ -5,14 +5,13 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
 use Aplicacion\Repositorios\RepositorioPaquetes;
 use Aplicacion\Servicios\ServicioAutenticacion;
-use Aplicacion\Servicios\ServicioUrls;
 use Aplicacion\Vistas\Vista;
 
 class ControladorPaquetes
 {
     public function show(): void
     {
-        $slug = ServicioUrls::extraerSlugDesdeRequest('paquete');
+        $slug = (string) ($_GET['slug'] ?? '');
 
         $packagesRepository = new RepositorioPaquetes();
         $package = $packagesRepository->findBySlug($slug);

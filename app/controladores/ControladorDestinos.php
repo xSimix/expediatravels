@@ -5,14 +5,13 @@ namespace Aplicacion\Controladores;
 use Aplicacion\Repositorios\RepositorioConfiguracionSitio;
 use Aplicacion\Repositorios\RepositorioDestinos;
 use Aplicacion\Servicios\ServicioAutenticacion;
-use Aplicacion\Servicios\ServicioUrls;
 use Aplicacion\Vistas\Vista;
 
 class ControladorDestinos
 {
     public function show(): void
     {
-        $slug = ServicioUrls::extraerSlugDesdeRequest('destino');
+        $slug = (string) ($_GET['slug'] ?? '');
 
         $destinationRepository = new RepositorioDestinos();
         $destination = $destinationRepository->findBySlug($slug);
