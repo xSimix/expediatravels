@@ -98,14 +98,63 @@ $navItems = [
                             <?php if ($displayName !== ''): ?>
                                 <p class="site-header__user-menu-greeting">Hola, <?= htmlspecialchars($displayName); ?></p>
                             <?php endif; ?>
-                            <a class="site-header__user-menu-link" href="perfil.php" data-user-menu-close>Perfil</a>
-                            <a class="site-header__user-menu-link" href="reservaciones.php" data-user-menu-close>Reservaciones</a>
-                            <a class="site-header__user-menu-link" href="favoritos.php" data-user-menu-close>Favoritos</a>
-                            <a class="site-header__user-menu-link" href="carrito.php" data-user-menu-close>Carrito</a>
+                            <a class="site-header__user-menu-link" href="perfil.php" data-user-menu-close>
+                                <span class="site-header__user-menu-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-7 2-7 4.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-1.5C19 16 16 14 12 14Z" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                <span class="site-header__user-menu-text">Perfil</span>
+                            </a>
+                            <a class="site-header__user-menu-link" href="reservaciones.php" data-user-menu-close>
+                                <span class="site-header__user-menu-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7 3v3m10-3v3M5 7h14M6 11h5l3 3h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <rect x="4" y="5" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/>
+                                        <circle cx="9" cy="15" r="1" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                <span class="site-header__user-menu-text">Reservaciones</span>
+                            </a>
+                            <a class="site-header__user-menu-link" href="favoritos.php" data-user-menu-close>
+                                <span class="site-header__user-menu-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12 20s-6-3.5-6-8.5A4.5 4.5 0 0 1 10.5 7 3.5 3.5 0 0 1 12 8.2 3.5 3.5 0 0 1 13.5 7 4.5 4.5 0 0 1 18 11.5c0 5-6 8.5-6 8.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <span class="site-header__user-menu-text">Favoritos</span>
+                            </a>
+                            <a class="site-header__user-menu-link" href="carrito.php" data-user-menu-close>
+                                <span class="site-header__user-menu-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M4 6h1.6a1 1 0 0 1 .98.804L7.5 9.5M7.5 9.5H18a1 1 0 0 1 .98 1.196l-1 5A1 1 0 0 1 17 16H9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <circle cx="9.5" cy="18.5" r="1" fill="currentColor"/>
+                                        <circle cx="16.5" cy="18.5" r="1" fill="currentColor"/>
+                                    </svg>
+                                </span>
+                                <span class="site-header__user-menu-text">Carrito</span>
+                            </a>
                             <?php if ($isAdmin): ?>
-                                <a class="site-header__user-menu-link" href="../administracion/index.php" data-user-menu-close>Panel de Control</a>
+                                <a class="site-header__user-menu-link" href="../administracion/index.php" data-user-menu-close>
+                                    <span class="site-header__user-menu-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 5.5v13M18.5 12h-13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                            <rect x="4" y="4" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/>
+                                        </svg>
+                                    </span>
+                                    <span class="site-header__user-menu-text">Panel de Control</span>
+                                </a>
                             <?php endif; ?>
-                            <button class="site-header__user-menu-link site-header__user-menu-link--logout" type="button" data-auth-logout data-user-menu-close>Cerrar sesión</button>
+                            <button class="site-header__user-menu-link site-header__user-menu-link--logout" type="button" data-auth-logout data-user-menu-close>
+                                <span class="site-header__user-menu-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M14.5 7.5 19 12l-4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M19 12h-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M12 5H7a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                                <span class="site-header__user-menu-text">Cerrar sesión</span>
+                            </button>
                         </nav>
                     </div>
                 <?php else: ?>
