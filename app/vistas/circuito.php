@@ -580,10 +580,11 @@ $pageTitle = $title . ' — ' . $siteTitle;
     <?php endif; ?>
 </head>
 <body class="page page--detail page--circuit">
-    <?php $activeNav = 'circuitos'; include __DIR__ . '/partials/site-header.php'; ?>
+    <div class="layout-shell">
+        <?php $activeNav = 'circuitos'; include __DIR__ . '/partials/site-header.php'; ?>
 
-    <main class="tour-detail">
-        <section class="tour-banner" style="--banner-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');">
+        <main class="tour-detail">
+            <section class="tour-banner" style="--banner-image: url('<?= htmlspecialchars($heroImage, ENT_QUOTES); ?>');">
             <div class="tour-banner__overlay" aria-hidden="true"></div>
             <div class="tour-banner__content">
                 <h1><?= htmlspecialchars($title); ?></h1>
@@ -1099,9 +1100,10 @@ $pageTitle = $title . ' — ' . $siteTitle;
                 </section>
             </aside>
         </div>
-    </main>
+        </main>
 
-    <?php include __DIR__ . '/partials/site-footer.php'; ?>
+        <?php include __DIR__ . '/partials/site-footer.php'; ?>
+    </div>
 
     <script src="scripts/circuito.js" defer></script>
     <?php include __DIR__ . '/partials/site-shell-scripts.php'; ?>
