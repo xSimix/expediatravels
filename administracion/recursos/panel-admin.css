@@ -154,7 +154,7 @@
 
 @media (min-width: 1024px) {
     .team-management {
-        grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+
         align-items: flex-start;
     }
 }
