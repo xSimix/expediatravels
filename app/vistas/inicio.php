@@ -957,7 +957,7 @@
             </div>
         </div>
 
-        <section id="paquetes" class="section section--packages">
+        <!--<section id="paquetes" class="section section--packages">
             <div class="section__header">
                 <h2>Paquetes Turisticos</h2>
                 <p>Itinerarios listos para desconectar, descubrir la biodiversidad y compartir con comunidades locales.</p>
@@ -1033,7 +1033,7 @@
                     </article>
                 <?php endforeach; ?>
             </div>
-        </section>
+        </section> -->
 
         <!--<section class="section section--metrics">
             <div class="metrics">
